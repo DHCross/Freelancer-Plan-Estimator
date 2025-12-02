@@ -3,9 +3,10 @@ import { ProductionPhase } from "@/lib/types";
 
 interface MethodologyViewProps {
   phases: ProductionPhase[];
+  clientMode?: boolean;
 }
 
-export function MethodologyView({ phases }: MethodologyViewProps) {
+export function MethodologyView({ phases, clientMode = false }: MethodologyViewProps) {
   return (
     <div className="space-y-6">
       <div className="bg-slate-900 text-white p-6 rounded-xl shadow-lg flex justify-between items-start">
@@ -34,6 +35,10 @@ export function MethodologyView({ phases }: MethodologyViewProps) {
               <div className="rounded-lg bg-slate-50 p-3 border border-slate-200">
                 <p className="text-xs uppercase text-slate-400">Effort (hrs)</p>
                 <p className="text-xl font-bold text-slate-900">{phase.effortHours}</p>
+                <p className="text-xs text-slate-500 mt-1">{phase.formula}</p>
+                {!clientMode && (
+                  <p className="text-xs text-indigo-600 mt-1">Sourced from Estimator</p>
+                )}
               </div>
               <div className="rounded-lg bg-slate-50 p-3 border border-slate-200">
                 <p className="text-xs uppercase text-slate-400">Outputs</p>

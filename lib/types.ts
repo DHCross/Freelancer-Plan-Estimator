@@ -89,6 +89,7 @@ export interface ProductionPhase {
   description: string;
   investmentType: string;
   effortHours: number;
+  formula: string;
   outcomes: string[];
 }
 

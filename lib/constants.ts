@@ -175,6 +175,7 @@ export const PRODUCTION_PHASES: ProductionPhase[] = [
     description: "Systems building, lore scaffolding, calendars, and workflow design that make high velocity possible.",
     investmentType: "Capital Expense (Preventive)",
     effortHours: 180,
+    formula: "(12 Core Assets × 15h avg)",
     outcomes: [
       "Lore databases + style guides",
       "Production-ready calendars",
@@ -187,6 +188,7 @@ export const PRODUCTION_PHASES: ProductionPhase[] = [
     description: "Deployment of the architecture to produce narrative content at scale with predictable timelines.",
     investmentType: "Operating Expense (Revenue Generating)",
     effortHours: 435,
+    formula: "(60k Words @ High-Velocity Rate)",
     outcomes: [
       "High-velocity drafting",
       "Coordinated editing + layout",

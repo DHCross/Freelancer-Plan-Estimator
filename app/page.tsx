@@ -344,7 +344,7 @@ export default function DashboardPage() {
           />
 
           <div className="p-6 md:p-8 bg-slate-50/50 min-h-[500px] space-y-6">
-            {activeTab === "methodology" && <MethodologyView phases={PRODUCTION_PHASES} />}
+            {activeTab === "methodology" && <MethodologyView phases={PRODUCTION_PHASES} clientMode={isClientMode} />}
 
             {activeTab === "team" && <TeamPlanner writers={writerLoad} clientMode={isClientMode} />}
 
