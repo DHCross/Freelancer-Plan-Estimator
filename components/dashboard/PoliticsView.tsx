@@ -20,6 +20,7 @@ interface PoliticsViewProps {
 }
 
 export function PoliticsView({ stakeholderLoad, clientMode = false }: PoliticsViewProps) {
+  const labelKey = clientMode ? "clientLabel" : "internalLabel";
   return (
     <div className="space-y-6">
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
@@ -44,11 +45,11 @@ export function PoliticsView({ stakeholderLoad, clientMode = false }: PoliticsVi
           <BarChart data={stakeholderLoad} layout="vertical" margin={{ left: 16 }}>
             <CartesianGrid strokeDasharray="3 3" horizontal vertical={false} />
             <XAxis type="number" tick={{ fontSize: 12 }} stroke="#94a3b8" />
-            <YAxis dataKey="name" type="category" width={90} tick={{ fontWeight: 600, fill: "#0f172a" }} />
+            <YAxis dataKey={labelKey} type="category" width={90} tick={{ fontWeight: 600, fill: "#0f172a" }} />
             <Tooltip cursor={{ fill: "rgba(148,163,184,0.1)" }} />
             <Bar dataKey="hours" radius={[0, 4, 4, 0]}>
               {stakeholderLoad.map((entry, index) => (
-                <Cell key={entry.name + index} fill={entry.fill} />
+                <Cell key={entry.stakeholder + index} fill={entry.fill} />
               ))}
             </Bar>
           </BarChart>
