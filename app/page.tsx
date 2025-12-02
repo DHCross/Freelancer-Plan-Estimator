@@ -148,6 +148,7 @@ export default function DashboardPage() {
     draftSpeed: 200,
     bufferPercent: 15,
     dailyHours: 4,
+    teamMemberId: "",
   });
   const [estimatorResult, setEstimatorResult] = useState<EstimatorResult | null>(null);
 

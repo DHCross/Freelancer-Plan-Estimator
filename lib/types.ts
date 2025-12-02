@@ -141,6 +141,7 @@ export interface EstimatorInput {
   draftSpeed: number;
   bufferPercent: number;
   dailyHours: number;
+  teamMemberId?: string;
 }
 
 export interface EstimatorResult {
@@ -148,4 +149,6 @@ export interface EstimatorResult {
   days: number;
   date: string;
   mgrText: string;
+  teamMember?: TeamMember;
+  roleAdjusted?: boolean;
 }
