@@ -1,4 +1,6 @@
 
+"use client";
+
 import { useState, useMemo } from "react";
 import { DollarSign, ShieldAlert, Calendar } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
@@ -23,7 +25,7 @@ export function BudgetView({ analysis, quarters, clientMode }: BudgetViewProps) 
 
   // Calculate total budget
   const totalBudget = useMemo(() => {
-    return items.reduce((acc, item) => acc + (item.total * item.estCost / item.total), 0);
+    return items.reduce((acc, item) => acc + (item.estCost ?? 0), 0);
   }, [items]);
 
   // Group items by quarter
@@ -31,7 +33,7 @@ export function BudgetView({ analysis, quarters, clientMode }: BudgetViewProps) 
     const groups: Record<string, DisplayProject[]> = {};
     QUARTERS.forEach(q => groups[q] = []);
     items.forEach(item => {
-      const key = QUARTERS.find(q => (item.displayProject?.launchWindow ?? item.launchWindow ?? "").includes(q)) || "Q4";
+      const key = QUARTERS.find(q => (item.displayDate ?? item.launchWindow ?? "").includes(q)) || "Q4";
       groups[key].push(item);
     });
     return groups;
@@ -70,7 +72,7 @@ export function BudgetView({ analysis, quarters, clientMode }: BudgetViewProps) 
             </h4>
             <div className="space-y-3 flex-1">
               {groupedItems[q]?.map(item => {
-                const cost = item.total * item.estCost / item.total;
+                const cost = item.estCost ?? 0;
                 return (
                   <div key={item.id} className={`rounded-lg border-l-4 p-3 text-sm transition-all ${clientMode ? "border-indigo-500 bg-white" : "border-slate-400 bg-slate-50"}`}>
                     {clientMode ? (

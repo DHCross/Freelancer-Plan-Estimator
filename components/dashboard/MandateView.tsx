@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { Briefcase } from "lucide-react";
 import { DisplayProject } from "@/lib/types";
 
@@ -7,13 +10,12 @@ interface MandateViewProps {
   clientMode?: boolean;
 }
 
-  const [items, setItems] = useState(projects);
+export function MandateView({ projects, clientMode = false }: MandateViewProps) {
+  const [items, setItems] = useState<DisplayProject[]>(projects);
 
   const handleWindowChange = (id: number, value: string) => {
-    setItems(prev => prev.map(item => item.id === id ? { ...item, launchWindow: value } : item));
+    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, displayDate: value } : item)));
   };
-
-  const clientMode = typeof window !== "undefined" && window.localStorage.getItem("hoskbrew_client_mode") === "true";
 
   return (
     <div className="space-y-6">

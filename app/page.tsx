@@ -348,7 +348,9 @@ export default function DashboardPage() {
 
             {activeTab === "team" && <TeamPlanner writers={writerLoad} clientMode={isClientMode} />}
 
-            {activeTab === "budget" && <BudgetView analysis={analysisWithDisplay} quarters={quarterBuckets} />}
+            {activeTab === "budget" && (
+              <BudgetView analysis={analysisWithDisplay} quarters={quarterBuckets} clientMode={isClientMode} />
+            )}
 
             {activeTab === "efficiency" && (
               <EfficiencyView
@@ -368,7 +370,9 @@ export default function DashboardPage() {
               <PoliticsView stakeholderLoad={stakeholderLoad} clientMode={isClientMode} />
             )}
 
-            {activeTab === "mandates" && <MandateView projects={analysisWithDisplay} />}
+            {activeTab === "mandates" && (
+              <MandateView projects={analysisWithDisplay} clientMode={isClientMode} />
+            )}
 
             {/* Only show Reality Tracker/Execution Kanban in Internal mode */}
             {!isClientMode && activeTab === "status" && (
