@@ -254,6 +254,27 @@ export default function DashboardPage() {
             <p className="text-sm text-slate-400 mt-1">
               This dashboard contains sensitive staffing and budget data. Share the passphrase only with cleared partners.
             </p>
+            <div className="mt-4 flex items-center gap-3 bg-white border border-slate-200 rounded-full px-3 py-2 w-max">
+              <span className={`text-xs font-semibold ${!isClientMode ? "text-slate-900" : "text-slate-400"}`}>
+                Internal
+              </span>
+              <button
+                onClick={() => setIsClientMode((prev) => !prev)}
+                className={`relative w-14 h-7 rounded-full transition-colors ${
+                  isClientMode ? "bg-emerald-500" : "bg-slate-300"
+                }`}
+                aria-label="Toggle client mode"
+              >
+                <span
+                  className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                    isClientMode ? "translate-x-7" : "translate-x-0"
+                  }`}
+                />
+              </button>
+              <span className={`text-xs font-semibold ${isClientMode ? "text-slate-900" : "text-slate-400"}`}>
+                Client
+              </span>
+            </div>
           </div>
           <label className="block text-sm font-medium text-slate-200">
             Passcode
