@@ -34,7 +34,7 @@ import {
   calculateStakeholderDemand,
   runEstimator,
 } from "@/lib/calculations";
-import type { DisplayProject, EstimatorResult, ProjectWithDisplay, Project, Metrics, TeamMember } from "@/lib/types";
+import type { DisplayProject, EstimatorResult, ProjectWithDisplay, Project, Metrics, TeamMember, EstimationBucketEntry } from "@/lib/types";
 import { MainNav } from "@/components/MainNav";
 import {
   BudgetView,
@@ -52,6 +52,7 @@ import { ScenarioEngine } from "@/components/dashboard/ScenarioEngine";
 import { FailureAnalysis } from "@/components/dashboard/FailureAnalysis";
 import { TeamConfiguration } from "@/components/dashboard/TeamConfiguration";
 import { TeamManagement } from "@/components/dashboard/TeamManagement";
+import { EstimatorBuckets } from "@/components/dashboard/EstimatorBuckets";
 
 const INTERNAL_TAB_STYLES = {
   methodology: "text-indigo-700 bg-indigo-50 border-indigo-600",
@@ -152,6 +153,8 @@ export default function DashboardPage() {
     bufferPercent: 15,
     dailyHours: 4,
     teamMemberId: "",
+    projectName: "",
+    roleLabel: "",
   });
   const [estimatorResult, setEstimatorResult] = useState<EstimatorResult | null>(null);
   
@@ -162,6 +165,14 @@ export default function DashboardPage() {
       return saved ? JSON.parse(saved) : TEAM_ROSTER;
     }
     return TEAM_ROSTER;
+  });
+
+  const [estimationBuckets, setEstimationBuckets] = useState<EstimationBucketEntry[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("hoskbrew_estimation_buckets");
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
   });
 
   const handleAuth = (event: React.FormEvent) => {
@@ -340,7 +351,28 @@ export default function DashboardPage() {
   };
 
   const handleEstimate = () => {
-    setEstimatorResult(runEstimator(estimatorInputs, teamRoster));
+    const result = runEstimator(estimatorInputs, teamRoster);
+    setEstimatorResult(result);
+
+    const member = estimatorInputs.teamMemberId
+      ? teamRoster.find((m) => m.id === estimatorInputs.teamMemberId)
+      : undefined;
+
+    const projectName = (estimatorInputs.projectName || estimatorInputs.activity || "Untitled Project").trim();
+    const roleLabel = (estimatorInputs.roleLabel || member?.role || "Unspecified").trim();
+
+    const entry: EstimationBucketEntry = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      projectName,
+      activity: estimatorInputs.activity,
+      roleLabel,
+      teamMemberId: estimatorInputs.teamMemberId,
+      teamMemberName: member?.name,
+      hours: result.hours,
+      days: result.days,
+    };
+
+    setEstimationBuckets((prev) => [...prev, entry]);
   };
 
   const handleTeamMemberUpdate = (updatedTeamMembers: TeamMember[]) => {
@@ -414,6 +446,12 @@ export default function DashboardPage() {
       localStorage.setItem("hoskbrew_team_roster", JSON.stringify(teamRoster));
     }
   }, [teamRoster]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("hoskbrew_estimation_buckets", JSON.stringify(estimationBuckets));
+    }
+  }, [estimationBuckets]);
 
   if (!isAuthed) {
     return (
@@ -584,14 +622,24 @@ export default function DashboardPage() {
 
             {/* Only render Estimator in Internal mode */}
             {!isClientMode && activeTab === "estimator" && (
-              <EstimatorView
-                inputs={estimatorInputs}
-                onChange={handleEstimatorChange}
-                onEstimate={handleEstimate}
-                result={estimatorResult}
-                clientMode={isClientMode}
-                teamRoster={teamRoster}
-              />
+              <div className="space-y-6">
+                <EstimatorView
+                  inputs={estimatorInputs}
+                  onChange={handleEstimatorChange}
+                  onEstimate={handleEstimate}
+                  result={estimatorResult}
+                  clientMode={isClientMode}
+                  teamRoster={teamRoster}
+                />
+                <EstimatorBuckets
+                  entries={estimationBuckets}
+                  onRemove={(id) =>
+                    setEstimationBuckets((prev) => prev.filter((entry) => entry.id !== id))
+                  }
+                  onClear={() => setEstimationBuckets([])}
+                  clientMode={isClientMode}
+                />
+              </div>
             )}
 
             {activeTab === "resourcing" && (

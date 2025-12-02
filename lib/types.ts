@@ -142,6 +142,8 @@ export interface EstimatorInput {
   bufferPercent: number;
   dailyHours: number;
   teamMemberId?: string;
+  projectName?: string;
+  roleLabel?: string;
 }
 
 export interface EstimatorResult {
@@ -151,4 +153,15 @@ export interface EstimatorResult {
   mgrText: string;
   teamMember?: TeamMember;
   roleAdjusted?: boolean;
+}
+
+export interface EstimationBucketEntry {
+  id: string;
+  projectName: string;
+  activity: string;
+  roleLabel: string;
+  teamMemberId?: string;
+  teamMemberName?: string;
+  hours: number;
+  days: number;
 }

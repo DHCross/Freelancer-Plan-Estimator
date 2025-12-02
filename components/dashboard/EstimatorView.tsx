@@ -11,6 +11,8 @@ interface EstimatorInputs {
   bufferPercent: number;
   dailyHours: number;
   teamMemberId?: string;
+  projectName?: string;
+  roleLabel?: string;
 }
 
 interface EstimatorViewProps {
@@ -85,6 +87,26 @@ export function EstimatorView({ inputs, onChange, onEstimate, result, clientMode
                 className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2"
                 value={inputs.activity}
                 onChange={(e) => onChange("activity", e.target.value)}
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="text-slate-500">Project bucket name</span>
+              <input
+                type="text"
+                className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2"
+                value={inputs.projectName ?? ""}
+                onChange={(e) => onChange("projectName", e.target.value)}
+                placeholder="e.g. A1: Narrative Finish, Core GM Guide"
+              />
+            </label>
+            <label className="block text-sm">
+              <span className="text-slate-500">Role / lane for this estimate</span>
+              <input
+                type="text"
+                className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2"
+                value={inputs.roleLabel ?? ""}
+                onChange={(e) => onChange("roleLabel", e.target.value)}
+                placeholder="e.g. Writing, Editing, Layout, PM"
               />
             </label>
             <label className="block text-sm">
