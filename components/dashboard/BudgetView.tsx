@@ -4,17 +4,18 @@
 import { useEffect, useState, useMemo } from "react";
 import { DollarSign, ShieldAlert, Calendar } from "lucide-react";
 import { formatCurrency, getPublished, setPublished } from "@/lib/utils";
-import type { DisplayProject, QuarterBuckets } from "@/lib/types";
+import type { DisplayProject, QuarterBuckets, Project } from "@/lib/types";
 
 interface BudgetViewProps {
   analysis: DisplayProject[];
   quarters: QuarterBuckets;
   clientMode: boolean;
+  onProjectUpdate?: (projectId: number, field: keyof Project, value: any) => void;
 }
 
 const QUARTERS = ["Q1", "Q2", "Q3", "Q4", "Dec 22 Deadline", "Ongoing"];
 
-export function BudgetView({ analysis, quarters, clientMode }: BudgetViewProps) {
+export function BudgetView({ analysis, quarters, clientMode, onProjectUpdate }: BudgetViewProps) {
   // Convert analysis to local state for editing in internal mode
   const [items, setItems] = useState<DisplayProject[]>(analysis);
 
@@ -33,6 +34,40 @@ export function BudgetView({ analysis, quarters, clientMode }: BudgetViewProps) 
   // Helper to update a specific item
   const updateItem = (id: number, field: keyof DisplayProject, value: string | number) => {
     setItems(prev => prev.map(item => item.id === id ? { ...item, [field]: value } : item));
+    // Also update parent data if handler provided
+    if (onProjectUpdate) {
+      onProjectUpdate(id, field as keyof Project, value);
+    }
+  };
+
+  // Helper to add new project
+  const addProject = () => {
+    const newProject: DisplayProject = {
+      id: Math.max(...items.map(p => p.id), 0) + 1,
+      name: "New Project",
+      type: "Custom",
+      clientType: "Internal",
+      targetWords: 25000,
+      assignedTo: "dan",
+      internalStatus: "Planning",
+      clientStatus: "Internal",
+      stakeholder: "Dan",
+      launchWindow: "Q2 2026",
+      budgetType: "Custom",
+      dependency: null,
+      revenuePotential: "TBD",
+      total: 0,
+      estCost: 0
+    };
+    setItems(prev => [...prev, newProject]);
+    if (onProjectUpdate) {
+      onProjectUpdate(newProject.id, 'name', newProject.name);
+    }
+  };
+
+  // Helper to delete project
+  const deleteProject = (id: number) => {
+    setItems(prev => prev.filter(item => item.id !== id));
   };
 
   // Calculate total budget
@@ -85,6 +120,12 @@ export function BudgetView({ analysis, quarters, clientMode }: BudgetViewProps) 
         {!clientMode && (
           <div className="flex items-center gap-3">
             <button
+              onClick={addProject}
+              className="text-xs px-3 py-2 bg-green-50 text-green-700 rounded border border-green-100 hover:bg-green-100"
+            >
+              + Add Project
+            </button>
+            <button
               className="text-xs px-3 py-2 bg-indigo-50 text-indigo-700 rounded border border-indigo-100"
               onClick={handlePublishAll}
             >
@@ -131,8 +172,22 @@ export function BudgetView({ analysis, quarters, clientMode }: BudgetViewProps) 
                     ) : (
                       <div className="space-y-3">
                         <div className="flex justify-between items-center mb-1 border-b border-slate-200 pb-1">
-                          <span className="font-bold text-indigo-900 truncate pr-2">{item.name}</span>
-                          <span className="font-mono font-bold text-green-600">${Math.round(cost).toLocaleString()}</span>
+                          <input
+                            type="text"
+                            value={item.name}
+                            onChange={e => updateItem(item.id, "name", e.target.value)}
+                            className="font-bold text-indigo-900 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none px-1 truncate pr-2"
+                          />
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-bold text-green-600">${Math.round(cost).toLocaleString()}</span>
+                            <button
+                              onClick={() => deleteProject(item.id)}
+                              className="text-rose-500 hover:text-rose-700 text-xs"
+                              title="Delete project"
+                            >
+                              ×
+                            </button>
+                          </div>
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                           <div>
@@ -150,52 +205,84 @@ export function BudgetView({ analysis, quarters, clientMode }: BudgetViewProps) 
                               <span className="absolute left-1 top-1 text-xs text-slate-400">$</span>
                               <input
                                 type="number"
-                                value={item.estCost / item.total}
+                                value={item.total > 0 ? Math.round(item.estCost / item.total) : 20}
                                 onChange={e => updateItem(item.id, "estCost", Number(e.target.value) * item.total)}
-                                className="w-full text-xs p-1 pl-3 border rounded focus:ring-1 focus:ring-indigo-500"
+                                className="w-full text-xs p-1 pl-4 border rounded focus:ring-1 focus:ring-indigo-500"
                               />
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center justify-between gap-2">
-                          <label className="text-[10px] text-slate-500 uppercase font-bold">Target Quarter</label>
-                          <select
-                            value={item.displayDate ?? item.launchWindow}
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[10px] text-slate-500 uppercase font-bold">Words</label>
+                            <input
+                              type="number"
+                              value={item.targetWords}
+                              onChange={e => updateItem(item.id, "targetWords", Number(e.target.value))}
+                              className="w-full text-xs p-1 border rounded focus:ring-1 focus:ring-indigo-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-slate-500 uppercase font-bold">Type</label>
+                            <select
+                              value={item.type}
+                              onChange={e => updateItem(item.id, "type", e.target.value)}
+                              className="w-full text-xs p-1 border rounded focus:ring-1 focus:ring-indigo-500"
+                            >
+                              <option value="Corporate Mandate">Corporate Mandate</option>
+                              <option value="Small Adventure">Small Adventure</option>
+                              <option value="Large Adventure">Large Adventure</option>
+                              <option value="Lore/Structure">Lore/Structure</option>
+                              <option value="Custom">Custom</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[10px] text-slate-500 uppercase font-bold">Assigned To</label>
+                            <select
+                              value={item.assignedTo}
+                              onChange={e => updateItem(item.id, "assignedTo", e.target.value)}
+                              className="w-full text-xs p-1 border rounded focus:ring-1 focus:ring-indigo-500"
+                            >
+                              <option value="dan">Dan</option>
+                              <option value="martin">Martin</option>
+                              <option value="matthew">Matthew</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-[10px] text-slate-500 uppercase font-bold">Status</label>
+                            <select
+                              value={item.internalStatus}
+                              onChange={e => updateItem(item.id, "internalStatus", e.target.value)}
+                              className="w-full text-xs p-1 border rounded focus:ring-1 focus:ring-indigo-500"
+                            >
+                              <option value="Priority">Priority</option>
+                              <option value="Critical">Critical</option>
+                              <option value="Drafting">Drafting</option>
+                              <option value="Layout">Layout</option>
+                              <option value="Planning">Planning</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-[10px] text-slate-500 uppercase font-bold">Launch Window</label>
+                          <input
+                            type="text"
+                            value={item.displayDate || item.launchWindow}
                             onChange={e => updateItem(item.id, "displayDate", e.target.value)}
-                            className="w-full text-xs p-1 border rounded focus:ring-1 focus:ring-indigo-500 bg-white"
-                          >
-                            {QUARTERS.map(opt => (
-                              <option key={opt} value={opt}>{opt}</option>
-                            ))}
-                          </select>
+                            className="w-full text-xs p-1 border rounded focus:ring-1 focus:ring-indigo-500"
+                          />
                         </div>
                         <div className="flex gap-2">
                           <button
                             onClick={() => {
-                              // publish estCost and displayDate for client
                               setPublished(item.id, { estCost: item.estCost, displayDate: item.displayDate ?? item.launchWindow });
                             }}
                             className="text-xs px-2 py-1 rounded bg-emerald-50 border border-emerald-100 text-emerald-600"
                           >
                             Publish
                           </button>
-                        </div>
-                        <div>
-                          <div className="flex justify-between items-center mb-1">
-                            <label className="text-[10px] text-slate-500 uppercase font-bold flex items-center gap-1">
-                              <ShieldAlert className="w-3 h-3 text-amber-500" /> Risk Buffer
-                            </label>
-                            <span className="text-[10px] font-mono text-amber-600">15%</span>
-                          </div>
-                          <input
-                            type="range"
-                            min="1.0"
-                            max="1.5"
-                            step="0.05"
-                            value={1.15}
-                            onChange={e => {/* implement buffer logic if needed */}}
-                            className="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer"
-                          />
                         </div>
                       </div>
                     )}
@@ -209,6 +296,29 @@ export function BudgetView({ analysis, quarters, clientMode }: BudgetViewProps) 
           </div>
         ))}
       </div>
+
+      {!clientMode && (
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+          <h4 className="font-bold text-slate-800 mb-3 flex items-center gap-2">
+            <ShieldAlert className="w-4 h-4 text-amber-500" />
+            Budget Risk Analysis
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div>
+              <span className="text-slate-500">Contingency Buffer:</span>
+              <div className="font-semibold">15% standard</div>
+            </div>
+            <div>
+              <span className="text-slate-500">Risk Level:</span>
+              <div className="font-semibold text-amber-600">Moderate</div>
+            </div>
+            <div>
+              <span className="text-slate-500">Margin Safety:</span>
+              <div className="font-semibold text-emerald-600">Within targets</div>
+            </div>
+          </div>
+    </div>
+      )}
     </div>
   );
 }

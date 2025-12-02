@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   AlertTriangle,
   Briefcase,
@@ -8,9 +8,11 @@ import {
   ClipboardList,
   Cpu,
   DollarSign,
+  Download,
   Ghost,
   Timer,
   TrendingUp,
+  Upload,
   Users,
 } from "lucide-react";
 
@@ -31,7 +33,7 @@ import {
   calculateStakeholderDemand,
   runEstimator,
 } from "@/lib/calculations";
-import type { DisplayProject, EstimatorResult, ProjectWithDisplay } from "@/lib/types";
+import type { DisplayProject, EstimatorResult, ProjectWithDisplay, Project, Metrics } from "@/lib/types";
 import { MainNav } from "@/components/MainNav";
 import {
   BudgetView,
@@ -45,6 +47,9 @@ import {
   PurgeView,
   TeamPlanner,
 } from "@/components/dashboard";
+import { ScenarioEngine } from "@/components/dashboard/ScenarioEngine";
+import { FailureAnalysis } from "@/components/dashboard/FailureAnalysis";
+import { TeamConfiguration } from "@/components/dashboard/TeamConfiguration";
 
 const INTERNAL_TAB_STYLES = {
   methodology: "text-indigo-700 bg-indigo-50 border-indigo-600",
@@ -56,6 +61,9 @@ const INTERNAL_TAB_STYLES = {
   status: "text-rose-700 bg-rose-50 border-rose-600",
   estimator: "text-indigo-700 bg-indigo-50 border-indigo-600",
   resourcing: "text-red-700 bg-red-50 border-red-600",
+  scenarios: "text-emerald-700 bg-emerald-50 border-emerald-600",
+  failures: "text-amber-700 bg-amber-50 border-amber-600",
+  teamconfig: "text-cyan-700 bg-cyan-50 border-cyan-600",
 };
 
 const CLIENT_TAB_STYLES = {
@@ -106,8 +114,23 @@ export default function DashboardPage() {
   const passcode = process.env.NEXT_PUBLIC_DASHBOARD_PASSWORD ?? "hoskbrew";
   const [isClientMode, setIsClientMode] = useState(false);
   const [activeTab, setActiveTab] = useState("methodology");
-  const [projects] = useState(INITIAL_PROJECTS);
-  const [metrics] = useState(DEFAULT_METRICS);
+  
+  // Load saved data from localStorage on mount
+  const [projects, setProjects] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("hoskbrew_projects");
+      return saved ? JSON.parse(saved) : INITIAL_PROJECTS;
+    }
+    return INITIAL_PROJECTS;
+  });
+  
+  const [metrics, setMetrics] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("hoskbrew_metrics");
+      return saved ? JSON.parse(saved) : DEFAULT_METRICS;
+    }
+    return DEFAULT_METRICS;
+  });
   const [isAuthed, setIsAuthed] = useState(() => {
     if (typeof window === "undefined") return false;
     return window.localStorage.getItem("hoskbrew_authed") === "true";
@@ -143,7 +166,7 @@ export default function DashboardPage() {
 
   const projectsWithDisplay = useMemo<ProjectWithDisplay[]>(
     () =>
-      projects.map((project) => ({
+      projects.map((project: Project) => ({
         ...project,
         displayStatus: isClientMode ? project.clientStatus : project.internalStatus,
         displayType: isClientMode ? project.clientType : project.type,
@@ -235,6 +258,12 @@ export default function DashboardPage() {
       label: isClientMode ? "Capacity Gap" : "The Purge",
       icon: isClientMode ? AlertTriangle : Ghost,
     },
+    // New analysis tabs (internal only)
+    ...(!isClientMode ? [
+      { id: "scenarios", label: "Scenario Engine", icon: Calculator },
+      { id: "failures", label: "Failure Analysis", icon: AlertTriangle },
+      { id: "teamconfig", label: "Team Builder", icon: Users }
+    ] : []),
   ];
 
   const tabStyles = isClientMode ? CLIENT_TAB_STYLES : INTERNAL_TAB_STYLES;
@@ -246,6 +275,68 @@ export default function DashboardPage() {
   const handleEstimate = () => {
     setEstimatorResult(runEstimator(estimatorInputs));
   };
+
+  const handleProjectUpdate = (projectId: number, field: keyof Project, value: any) => {
+    setProjects((prev: Project[]) => prev.map((project: Project) => 
+      project.id === projectId ? { ...project, [field]: value } : project
+    ));
+  };
+
+  const handleMetricsUpdate = (field: keyof Metrics, value: number) => {
+    setMetrics((prev: Metrics) => ({ ...prev, [field]: value }));
+  };
+
+  const handleExportData = () => {
+    const data = {
+      projects,
+      metrics,
+      defendHourlyRate,
+      defendWPH,
+      marketPerWord,
+      exportDate: new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `hoskbrew-dashboard-${new Date().toISOString().split("T")[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportData = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target?.result as string);
+        if (data.projects) setProjects(data.projects);
+        if (data.metrics) setMetrics(data.metrics);
+        if (data.defendHourlyRate !== undefined) setDefendHourlyRate(data.defendHourlyRate);
+        if (data.defendWPH !== undefined) setDefendWPH(data.defendWPH);
+        if (data.marketPerWord !== undefined) setMarketPerWord(data.marketPerWord);
+      } catch (error) {
+        console.error("Failed to import data:", error);
+        alert("Invalid file format. Please export a valid dashboard file first.");
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  // Save data to localStorage whenever it changes
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("hoskbrew_projects", JSON.stringify(projects));
+    }
+  }, [projects]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("hoskbrew_metrics", JSON.stringify(metrics));
+    }
+  }, [metrics]);
 
   if (!isAuthed) {
     return (
@@ -318,17 +409,41 @@ export default function DashboardPage() {
             </p>
           </div>
           {!isClientMode && (
-            <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-full px-4 py-2 shadow-sm">
-              <span className={`text-xs font-semibold text-slate-900`}>Internal</span>
-              <button
-                onClick={() => setIsClientMode((prev) => !prev)}
-                className={`relative w-14 h-7 rounded-full transition-colors bg-slate-300`}
-              >
-                <span
-                  className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow transition-transform translate-x-0`}
-                />
-              </button>
-              <span className={`text-xs font-semibold text-slate-400`}>Client</span>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-full px-4 py-2 shadow-sm">
+                <span className={`text-xs font-semibold text-slate-900`}>Internal</span>
+                <button
+                  onClick={() => setIsClientMode((prev) => !prev)}
+                  className={`relative w-14 h-7 rounded-full transition-colors bg-slate-300`}
+                >
+                  <span
+                    className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow transition-transform translate-x-0`}
+                  />
+                </button>
+                <span className={`text-xs font-semibold text-slate-400`}>Client</span>
+              </div>
+              
+              <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2 shadow-sm">
+                <button
+                  onClick={handleExportData}
+                  className="flex items-center gap-1 px-2 py-1 text-xs bg-indigo-50 text-indigo-600 rounded hover:bg-indigo-100 transition-colors"
+                  title="Export dashboard data"
+                >
+                  <Download className="w-3 h-3" />
+                  Export
+                </button>
+                
+                <label className="flex items-center gap-1 px-2 py-1 text-xs bg-emerald-50 text-emerald-600 rounded hover:bg-emerald-100 transition-colors cursor-pointer" title="Import dashboard data">
+                  <Upload className="w-3 h-3" />
+                  Import
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={handleImportData}
+                    className="hidden"
+                  />
+                </label>
+              </div>
             </div>
           )}
         </header>
@@ -349,7 +464,12 @@ export default function DashboardPage() {
             {activeTab === "team" && <TeamPlanner writers={writerLoad} clientMode={isClientMode} />}
 
             {activeTab === "budget" && (
-              <BudgetView analysis={analysisWithDisplay} quarters={quarterBuckets} clientMode={isClientMode} />
+              <BudgetView 
+                analysis={analysisWithDisplay} 
+                quarters={quarterBuckets} 
+                clientMode={isClientMode}
+                onProjectUpdate={handleProjectUpdate}
+              />
             )}
 
             {activeTab === "efficiency" && (
@@ -362,6 +482,8 @@ export default function DashboardPage() {
                 onWphChange={setDefendWPH}
                 onMarketChange={setMarketPerWord}
                 replacementRoles={REPLACEMENT_ROLES}
+                metrics={metrics}
+                onMetricsUpdate={handleMetricsUpdate}
               />
             )}
 
@@ -400,6 +522,19 @@ export default function DashboardPage() {
               ) : (
                 <PurgeView ghostCapacity={LEGACY_GHOST_CAPACITY} />
               )
+            )}
+
+            {/* New analysis tabs - internal only */}
+            {!isClientMode && activeTab === "scenarios" && (
+              <ScenarioEngine clientMode={isClientMode} />
+            )}
+
+            {!isClientMode && activeTab === "failures" && (
+              <FailureAnalysis clientMode={isClientMode} />
+            )}
+
+            {!isClientMode && activeTab === "teamconfig" && (
+              <TeamConfiguration clientMode={isClientMode} />
             )}
           </div>
         </div>

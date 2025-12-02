@@ -1,0 +1,296 @@
+"use client";
+
+import { Calculator, AlertTriangle, Clock, DollarSign } from "lucide-react";
+import { useState } from "react";
+
+interface ScenarioConfig {
+  teamSize: number;
+  budget: number;
+  timeline: number; // months
+  wordCount: number;
+  complexity: "simple" | "standard" | "complex";
+  quality: "basic" | "professional" | "premium";
+}
+
+interface ScenarioResult {
+  feasible: boolean;
+  totalCost: number;
+  timeline: number;
+  quality: string;
+  bottlenecks: string[];
+  riskLevel: "low" | "medium" | "high";
+  recommendations: string[];
+}
+
+export function ScenarioEngine({ clientMode = false }: { clientMode?: boolean }) {
+  const [config, setConfig] = useState<ScenarioConfig>({
+    teamSize: 2,
+    budget: 25000,
+    timeline: 6,
+    wordCount: 50000,
+    complexity: "standard",
+    quality: "professional"
+  });
+
+  const [result, setResult] = useState<ScenarioResult | null>(null);
+
+  const calculateScenario = () => {
+    // Base productivity rates (words/hour per person)
+    const complexityRates = {
+      simple: 200,    // Simple rules, straightforward narrative
+      standard: 150,  // Standard TTRPG complexity  
+      complex: 100    // Pathfinder 1e level crunch
+    };
+
+    const qualityMultipliers = {
+      basic: 1.0,      // Just get it done
+      professional: 1.3, // Professional polish
+      premium: 1.8    // William's table-ready standards
+    };
+
+    // Team role distribution (from your research)
+    const roleDistribution = {
+      writing: 0.45,      // 45% writing
+      editing: 0.15,      // 15% editing  
+      layout: 0.15,      // 15% layout
+      coordination: 0.15, // 15% meetings/sync
+      qa: 0.10           // 10% QA/playtesting
+    };
+
+    // Hourly rates by role
+    const hourlyRates = {
+      writing: 20,
+      editing: 17,
+      layout: 25,
+      coordination: 15,
+      qa: 18
+    };
+
+    // Calculate base hours needed
+    const baseWordsPerHour = complexityRates[config.complexity];
+    const qualityMultiplier = qualityMultipliers[config.quality];
+    const effectiveWordsPerHour = baseWordsPerHour / qualityMultiplier;
+    
+    const totalWritingHours = (config.wordCount / effectiveWordsPerHour) / config.teamSize;
+    
+    // Calculate hours for each role
+    const roleHours = {
+      writing: totalWritingHours,
+      editing: totalWritingHours * roleDistribution.editing / roleDistribution.writing,
+      layout: totalWritingHours * roleDistribution.layout / roleDistribution.writing,
+      coordination: totalWritingHours * roleDistribution.coordination / roleDistribution.writing,
+      qa: totalWritingHours * roleDistribution.qa / roleDistribution.writing
+    };
+
+    // Calculate total cost
+    const totalCost = Object.entries(roleHours).reduce(
+      (total, [role, hours]) => total + (hours * hourlyRates[role as keyof typeof hourlyRates]),
+      0
+    );
+
+    // Calculate timeline (weeks)
+    const weeklyHoursPerPerson = 20; // Your realistic capacity
+    const totalWeeklyHours = config.teamSize * weeklyHoursPerPerson;
+    const totalProjectHours = Object.values(roleHours).reduce((sum, hours) => sum + hours, 0);
+    const requiredWeeks = Math.ceil(totalProjectHours / totalWeeklyHours);
+    const requiredMonths = Math.ceil(requiredWeeks / 4);
+
+    // Identify bottlenecks
+    const bottlenecks: string[] = [];
+    if (config.budget < totalCost * 0.8) bottlenecks.push("Insufficient budget for quality target");
+    if (config.timeline < requiredMonths * 0.8) bottlenecks.push("Timeline too aggressive for team size");
+    if (config.complexity === "complex" && config.teamSize < 3) bottlenecks.push("Complex project needs larger team");
+    if (config.quality === "premium" && config.budget < 30000) bottlenecks.push("Premium quality requires higher budget");
+
+    // Risk assessment
+    let riskLevel: "low" | "medium" | "high" = "low";
+    if (bottlenecks.length >= 2) riskLevel = "high";
+    else if (bottlenecks.length >= 1) riskLevel = "medium";
+
+    // Generate recommendations
+    const recommendations: string[] = [];
+    if (config.budget < totalCost) recommendations.push(`Increase budget to $${Math.round(totalCost).toLocaleString()} or reduce scope`);
+    if (config.timeline < requiredMonths) recommendations.push(`Extend timeline to ${requiredMonths} months or increase team size`);
+    if (config.complexity === "complex" && config.teamSize < 3) recommendations.push("Add team members or reduce complexity");
+    if (riskLevel === "high") recommendations.push("Consider reducing scope or increasing both budget and timeline");
+
+    setResult({
+      feasible: config.budget >= totalCost && config.timeline >= requiredMonths,
+      totalCost,
+      timeline: requiredMonths,
+      quality: config.quality,
+      bottlenecks,
+      riskLevel,
+      recommendations
+    });
+  };
+
+  const getRiskColor = (risk: string) => {
+    switch(risk) {
+      case "low": return "text-emerald-600 bg-emerald-50";
+      case "medium": return "text-amber-600 bg-amber-50";
+      case "high": return "text-rose-600 bg-rose-50";
+      default: return "text-slate-600 bg-slate-50";
+    }
+  };
+
+  if (clientMode) return null;
+
+  return (
+    <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-6">
+      <div className="flex items-center gap-2">
+        <Calculator className="w-5 h-5 text-indigo-600" />
+        <h3 className="text-lg font-semibold text-slate-900">Project Scenario Engine</h3>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Team Size</label>
+          <input
+            type="range"
+            min="1"
+            max="5"
+            value={config.teamSize}
+            onChange={(e) => setConfig(prev => ({ ...prev, teamSize: parseInt(e.target.value) }))}
+            className="w-full"
+          />
+          <div className="text-center text-sm text-slate-600">{config.teamSize} people</div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Budget</label>
+          <input
+            type="number"
+            value={config.budget}
+            onChange={(e) => setConfig(prev => ({ ...prev, budget: parseInt(e.target.value) || 0 }))}
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+          />
+          <div className="text-center text-sm text-slate-600">${config.budget.toLocaleString()}</div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Timeline (months)</label>
+          <input
+            type="number"
+            min="1"
+            max="12"
+            value={config.timeline}
+            onChange={(e) => setConfig(prev => ({ ...prev, timeline: parseInt(e.target.value) || 1 }))}
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Word Count</label>
+          <select
+            value={config.wordCount}
+            onChange={(e) => setConfig(prev => ({ ...prev, wordCount: parseInt(e.target.value) }))}
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+          >
+            <option value={15000}>Micro Module (15k)</option>
+            <option value={50000}>Small Adventure (50k)</option>
+            <option value={100000}>Large Adventure (100k)</option>
+            <option value={150000}>Core Rulebook (150k)</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Complexity</label>
+          <select
+            value={config.complexity}
+            onChange={(e) => setConfig(prev => ({ ...prev, complexity: e.target.value as any }))}
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+          >
+            <option value="simple">Simple (5e style)</option>
+            <option value="standard">Standard TTRPG</option>
+            <option value="complex">Complex (Pathfinder 1e)</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">Quality Target</label>
+          <select
+            value={config.quality}
+            onChange={(e) => setConfig(prev => ({ ...prev, quality: e.target.value as any }))}
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg"
+          >
+            <option value="basic">Basic (functional)</option>
+            <option value="professional">Professional (market ready)</option>
+            <option value="premium">Premium (William's table)</option>
+          </select>
+        </div>
+      </div>
+
+      <button
+        onClick={calculateScenario}
+        className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
+      >
+        Calculate Scenario
+      </button>
+
+      {result && (
+        <div className="space-y-4">
+          <div className={`p-4 rounded-lg border ${result.feasible ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'}`}>
+            <div className="flex items-center justify-between">
+              <span className="font-semibold">{result.feasible ? '✅ Feasible' : '❌ Not Feasible'}</span>
+              <span className={`px-2 py-1 rounded text-xs font-medium ${getRiskColor(result.riskLevel)}`}>
+                {result.riskLevel.toUpperCase()} RISK
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-slate-50 p-3 rounded-lg">
+              <div className="flex items-center gap-2 text-slate-600 mb-1">
+                <DollarSign className="w-4 h-4" />
+                <span className="text-sm font-medium">Total Cost</span>
+              </div>
+              <div className="text-xl font-bold text-slate-900">${Math.round(result.totalCost).toLocaleString()}</div>
+              <div className="text-xs text-slate-500">vs ${config.budget.toLocaleString()} budget</div>
+            </div>
+
+            <div className="bg-slate-50 p-3 rounded-lg">
+              <div className="flex items-center gap-2 text-slate-600 mb-1">
+                <Clock className="w-4 h-4" />
+                <span className="text-sm font-medium">Timeline</span>
+              </div>
+              <div className="text-xl font-bold text-slate-900">{result.timeline} months</div>
+              <div className="text-xs text-slate-500">vs {config.timeline} months requested</div>
+            </div>
+
+            <div className="bg-slate-50 p-3 rounded-lg">
+              <div className="flex items-center gap-2 text-slate-600 mb-1">
+                <AlertTriangle className="w-4 h-4" />
+                <span className="text-sm font-medium">Bottlenecks</span>
+              </div>
+              <div className="text-lg font-bold text-slate-900">{result.bottlenecks.length}</div>
+              <div className="text-xs text-slate-500">critical issues</div>
+            </div>
+          </div>
+
+          {result.bottlenecks.length > 0 && (
+            <div className="bg-rose-50 border border-rose-200 rounded-lg p-4">
+              <h4 className="font-semibold text-rose-800 mb-2">Bottlenecks</h4>
+              <ul className="text-sm text-rose-700 space-y-1">
+                {result.bottlenecks.map((bottleneck, i) => (
+                  <li key={i}>• {bottleneck}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {result.recommendations.length > 0 && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <h4 className="font-semibold text-amber-800 mb-2">Recommendations</h4>
+              <ul className="text-sm text-amber-700 space-y-1">
+                {result.recommendations.map((rec, i) => (
+                  <li key={i}>• {rec}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

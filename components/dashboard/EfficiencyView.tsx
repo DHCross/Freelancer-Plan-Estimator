@@ -1,8 +1,9 @@
 "use client";
 
 import { Calculator, ShieldCheck } from "lucide-react";
-import { DefenseAnalysisResult, ReplacementRole } from "@/lib/types";
+import { DefenseAnalysisResult, ReplacementRole, Metrics } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils";
+import { MetricsEditor } from "./MetricsEditor";
 
 interface EfficiencyViewProps {
   defense: DefenseAnalysisResult;
@@ -13,6 +14,9 @@ interface EfficiencyViewProps {
   onWphChange: (value: number) => void;
   onMarketChange: (value: number) => void;
   replacementRoles: ReplacementRole[];
+  metrics?: Metrics;
+  onMetricsUpdate?: (field: keyof Metrics, value: number) => void;
+  clientMode?: boolean;
 }
 
 export function EfficiencyView({
@@ -24,6 +28,9 @@ export function EfficiencyView({
   onWphChange,
   onMarketChange,
   replacementRoles,
+  metrics,
+  onMetricsUpdate,
+  clientMode = false,
 }: EfficiencyViewProps) {
   return (
     <div className="space-y-6">
@@ -117,6 +124,14 @@ export function EfficiencyView({
           </div>
         </div>
       </div>
+
+      {metrics && onMetricsUpdate && (
+        <MetricsEditor 
+          metrics={metrics} 
+          onMetricsUpdate={onMetricsUpdate}
+          clientMode={clientMode}
+        />
+      )}
     </div>
   );
 }
