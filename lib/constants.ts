@@ -15,7 +15,7 @@ export const TEAM_ROSTER: TeamMember[] = [
   {
     id: "dan",
     name: "Dan Cross",
-    role: "Setting Expert / Archivist",
+    role: "Creative Infrastructure Lead / Setting Expert",
     hourlyRate: 20,
     weeklyCapacity: 20,
     draftSpeed: 200,
@@ -25,7 +25,7 @@ export const TEAM_ROSTER: TeamMember[] = [
   {
     id: "martin",
     name: "Martin",
-    role: "Lead Creative (A-Series)",
+    role: "Marketing & Creative Strategy Lead / Primary Narrative Author",
     hourlyRate: 50,
     weeklyCapacity: 15,
     draftSpeed: 400,
@@ -35,7 +35,7 @@ export const TEAM_ROSTER: TeamMember[] = [
   {
     id: "matthew",
     name: "Matthew",
-    role: "PM / Production Lead",
+    role: "Project Manager / Production Lead",
     hourlyRate: 0,
     weeklyCapacity: 10,
     draftSpeed: 0,
@@ -43,6 +43,105 @@ export const TEAM_ROSTER: TeamMember[] = [
     chaosBuffer: 0,
   },
 ];
+
+export const ROLE_TEMPLATES = {
+  "Creative Infrastructure Lead": {
+    hourlyRate: 20,
+    weeklyCapacity: 20,
+    draftSpeed: 200,
+    compileSpeed: 2500,
+    chaosBuffer: 15,
+    description: "Steward of canon, narrative consistency, worldbuilding integrity, and production pipeline management"
+  },
+  "Marketing & Creative Strategy Lead": {
+    hourlyRate: 50,
+    weeklyCapacity: 15,
+    draftSpeed: 400,
+    compileSpeed: 500,
+    chaosBuffer: 30,
+    description: "External-facing strategies, product positioning, brand development, audience engagement"
+  },
+  "Primary Narrative Author": {
+    hourlyRate: 45,
+    weeklyCapacity: 20,
+    draftSpeed: 350,
+    compileSpeed: 1000,
+    chaosBuffer: 25,
+    description: "Develops core storylines, establishes setting lore, crafts character arcs and thematic elements"
+  },
+  "Narrative Coordinator": {
+    hourlyRate: 35,
+    weeklyCapacity: 15,
+    draftSpeed: 250,
+    compileSpeed: 800,
+    chaosBuffer: 20,
+    description: "Ensures narrative consistency, manages writer contributions, maintains canon alignment"
+  },
+  "Developmental Editor": {
+    hourlyRate: 25,
+    weeklyCapacity: 15,
+    draftSpeed: 300,
+    compileSpeed: 1200,
+    chaosBuffer: 15,
+    description: "Refines structure, pacing, clarity; addresses inconsistencies and scope issues"
+  },
+  "Copy Editor": {
+    hourlyRate: 18,
+    weeklyCapacity: 20,
+    draftSpeed: 500,
+    compileSpeed: 2000,
+    chaosBuffer: 10,
+    description: "Ensures grammar, stylistic consistency, readability, and professional standards"
+  },
+  "Layout Designer": {
+    hourlyRate: 22,
+    weeklyCapacity: 15,
+    draftSpeed: 0,
+    compileSpeed: 3000,
+    chaosBuffer: 10,
+    description: "Integrates text, artwork, and maps into cohesive, user-friendly documents"
+  },
+  "Art Coordinator": {
+    hourlyRate: 20,
+    weeklyCapacity: 10,
+    draftSpeed: 0,
+    compileSpeed: 0,
+    chaosBuffer: 15,
+    description: "Oversees commissioning and selection of artwork and maps, ensures visual consistency"
+  },
+  "Project Manager": {
+    hourlyRate: 30,
+    weeklyCapacity: 25,
+    draftSpeed: 0,
+    compileSpeed: 0,
+    chaosBuffer: 10,
+    description: "Tracks timelines, manages milestones, facilitates communication, budget adherence"
+  },
+  "QA & Playtest Coordinator": {
+    hourlyRate: 15,
+    weeklyCapacity: 12,
+    draftSpeed: 0,
+    compileSpeed: 0,
+    chaosBuffer: 5,
+    description: "Organizes playtesting sessions, compiles feedback, provides revision recommendations"
+  },
+  "Lead Writer": {
+    hourlyRate: 40,
+    weeklyCapacity: 20,
+    draftSpeed: 300,
+    compileSpeed: 1500,
+    chaosBuffer: 20,
+    description: "Crafts detailed narrative content, drafts and revises textual elements"
+  },
+  "Technical Writer": {
+    hourlyRate: 22,
+    weeklyCapacity: 20,
+    draftSpeed: 250,
+    compileSpeed: 1800,
+    chaosBuffer: 15,
+    description: "Specialized tasks like stat blocks, mechanics, rules systems"
+  }
+};
 
 export const INITIAL_PROJECTS: Project[] = [
   {

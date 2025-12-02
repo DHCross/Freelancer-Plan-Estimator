@@ -1,9 +1,8 @@
 "use client";
 
-import { Timer, Users } from "lucide-react";
+import { Users } from "lucide-react";
 
 import { EstimatorResult, TeamMember } from "@/lib/types";
-import { TEAM_ROSTER } from "@/lib/constants";
 
 interface EstimatorInputs {
   activity: string;
@@ -20,13 +19,14 @@ interface EstimatorViewProps {
   onEstimate: () => void;
   result: EstimatorResult | null;
   clientMode?: boolean;
+  teamRoster?: TeamMember[];
 }
 
-export function EstimatorView({ inputs, onChange, onEstimate, result, clientMode = false }: EstimatorViewProps) {
-  const selectedTeamMember = TEAM_ROSTER.find(member => member.id === inputs.teamMemberId);
+export function EstimatorView({ inputs, onChange, onEstimate, result, clientMode = false, teamRoster = [] }: EstimatorViewProps) {
+  const selectedTeamMember = teamRoster.find(member => member.id === inputs.teamMemberId);
   
   const handleTeamMemberChange = (teamMemberId: string) => {
-    const member = TEAM_ROSTER.find(m => m.id === teamMemberId);
+    const member = teamRoster.find(m => m.id === teamMemberId);
     if (member) {
       // Auto-populate draft speed when team member is selected
       onChange("teamMemberId", teamMemberId);
@@ -71,7 +71,7 @@ export function EstimatorView({ inputs, onChange, onEstimate, result, clientMode
                 onChange={(e) => handleTeamMemberChange(e.target.value)}
               >
                 <option value="">Individual estimation (no team member)</option>
-                {TEAM_ROSTER.map((member) => (
+                {teamRoster.map((member) => (
                   <option key={member.id} value={member.id}>
                     {member.name} - {member.role} ({member.draftSpeed} w/hr)
                   </option>
@@ -162,7 +162,7 @@ export function EstimatorView({ inputs, onChange, onEstimate, result, clientMode
           ) : (
             <div className="bg-slate-100 border border-dashed border-slate-300 rounded-2xl p-6 text-sm text-slate-500">
               {selectedTeamMember 
-                ? `Enter task parameters to generate ${selectedTeamMember.name}'s delivery estimate.`
+                ? `Enter task parameters to generate ${selectedTeamMember.name}&#39;s delivery estimate.`
                 : "Select a team member and enter task parameters to generate an accurate estimate."
               }
             </div>

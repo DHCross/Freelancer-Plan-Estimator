@@ -24,6 +24,7 @@ import {
   ORPHANED_ASSETS,
   PRODUCTION_PHASES,
   REPLACEMENT_ROLES,
+  TEAM_ROSTER,
 } from "@/lib/constants";
 import {
   bucketByQuarter,
@@ -33,7 +34,7 @@ import {
   calculateStakeholderDemand,
   runEstimator,
 } from "@/lib/calculations";
-import type { DisplayProject, EstimatorResult, ProjectWithDisplay, Project, Metrics } from "@/lib/types";
+import type { DisplayProject, EstimatorResult, ProjectWithDisplay, Project, Metrics, TeamMember } from "@/lib/types";
 import { MainNav } from "@/components/MainNav";
 import {
   BudgetView,
@@ -50,6 +51,7 @@ import {
 import { ScenarioEngine } from "@/components/dashboard/ScenarioEngine";
 import { FailureAnalysis } from "@/components/dashboard/FailureAnalysis";
 import { TeamConfiguration } from "@/components/dashboard/TeamConfiguration";
+import { TeamManagement } from "@/components/dashboard/TeamManagement";
 
 const INTERNAL_TAB_STYLES = {
   methodology: "text-indigo-700 bg-indigo-50 border-indigo-600",
@@ -64,6 +66,7 @@ const INTERNAL_TAB_STYLES = {
   scenarios: "text-emerald-700 bg-emerald-50 border-emerald-600",
   failures: "text-amber-700 bg-amber-50 border-amber-600",
   teamconfig: "text-cyan-700 bg-cyan-50 border-cyan-600",
+  teammanagement: "text-violet-700 bg-violet-50 border-violet-600",
 };
 
 const CLIENT_TAB_STYLES = {
@@ -151,6 +154,15 @@ export default function DashboardPage() {
     teamMemberId: "",
   });
   const [estimatorResult, setEstimatorResult] = useState<EstimatorResult | null>(null);
+  
+  // Dynamic team roster state
+  const [teamRoster, setTeamRoster] = useState<TeamMember[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("hoskbrew_team_roster");
+      return saved ? JSON.parse(saved) : TEAM_ROSTER;
+    }
+    return TEAM_ROSTER;
+  });
 
   const handleAuth = (event: React.FormEvent) => {
     event.preventDefault();
@@ -175,7 +187,7 @@ export default function DashboardPage() {
     [projects, isClientMode]
   );
 
-  const writerLoad = useMemo(() => calculateAnnualLoad(projectsWithDisplay), [projectsWithDisplay]);
+  const writerLoad = useMemo(() => calculateAnnualLoad(projectsWithDisplay, teamRoster), [projectsWithDisplay, teamRoster]);
 
   const analysis = useMemo(
     () => calculateProjectAnalysis(projectsWithDisplay, metrics),
@@ -263,7 +275,8 @@ export default function DashboardPage() {
     ...(!isClientMode ? [
       { id: "scenarios", label: "Scenario Engine", icon: Calculator },
       { id: "failures", label: "Failure Analysis", icon: AlertTriangle },
-      { id: "teamconfig", label: "Team Builder", icon: Users }
+      { id: "teamconfig", label: "Team Builder", icon: Users },
+      { id: "teammanagement", label: "Team Management", icon: Users }
     ] : []),
   ];
 
@@ -274,7 +287,11 @@ export default function DashboardPage() {
   };
 
   const handleEstimate = () => {
-    setEstimatorResult(runEstimator(estimatorInputs));
+    setEstimatorResult(runEstimator(estimatorInputs, teamRoster));
+  };
+
+  const handleTeamMemberUpdate = (updatedTeamMembers: TeamMember[]) => {
+    setTeamRoster(updatedTeamMembers);
   };
 
   const handleProjectUpdate = (projectId: number, field: keyof Project, value: any) => {
@@ -338,6 +355,12 @@ export default function DashboardPage() {
       localStorage.setItem("hoskbrew_metrics", JSON.stringify(metrics));
     }
   }, [metrics]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("hoskbrew_team_roster", JSON.stringify(teamRoster));
+    }
+  }, [teamRoster]);
 
   if (!isAuthed) {
     return (
@@ -514,6 +537,7 @@ export default function DashboardPage() {
                 onEstimate={handleEstimate}
                 result={estimatorResult}
                 clientMode={isClientMode}
+                teamRoster={teamRoster}
               />
             )}
 
@@ -536,6 +560,14 @@ export default function DashboardPage() {
 
             {!isClientMode && activeTab === "teamconfig" && (
               <TeamConfiguration clientMode={isClientMode} />
+            )}
+
+            {!isClientMode && activeTab === "teammanagement" && (
+              <TeamManagement 
+                teamMembers={teamRoster} 
+                onUpdateTeamMembers={handleTeamMemberUpdate}
+                clientMode={isClientMode}
+              />
             )}
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { DEFAULT_METRICS, STAKEHOLDER_COLORS, TEAM_ROSTER } from "./constants";
+import { DEFAULT_METRICS, STAKEHOLDER_COLORS } from "./constants";
 import {
   DefenseAnalysisResult,
   EstimatorInput,
@@ -12,12 +12,13 @@ import {
   StakeholderDemand,
   WriterLoad,
   IncomeScenario,
+  TeamMember,
 } from "./types";
 
-export function calculateAnnualLoad(projects: Project[]): WriterLoad[] {
+export function calculateAnnualLoad(projects: Project[], teamRoster: TeamMember[] = []): WriterLoad[] {
   const writers: Record<string, WriterLoad> = {};
 
-  TEAM_ROSTER.forEach((member) => {
+  teamRoster.forEach((member) => {
     writers[member.id] = {
       ...member,
       projects: [],
@@ -140,9 +141,9 @@ export function runEstimator({
   bufferPercent,
   dailyHours,
   teamMemberId,
-}: EstimatorInput): EstimatorResult {
+}: EstimatorInput, teamRoster: TeamMember[] = []): EstimatorResult {
   // Get team member if specified
-  const teamMember = teamMemberId ? TEAM_ROSTER.find(m => m.id === teamMemberId) : undefined;
+  const teamMember = teamMemberId ? teamRoster.find(m => m.id === teamMemberId) : undefined;
   
   // Use team member's specific values if available, otherwise use provided inputs
   const actualDraftSpeed = teamMember?.draftSpeed || draftSpeed;
