@@ -114,6 +114,39 @@ const STATUS_COLUMN_CONFIG: StatusColumnConfig[] = [
   },
 ];
 
+const DEFAULT_ESTIMATION_BUCKETS: EstimationBucketEntry[] = [
+  {
+    id: "example-a1-martin-writing",
+    projectName: "A1: Narrative Finish",
+    activity: "Draft new scenes (Martin)",
+    roleLabel: "Writing",
+    teamMemberId: "martin",
+    teamMemberName: "Martin",
+    hours: 120,
+    days: 30,
+  },
+  {
+    id: "example-a1-dan-editing",
+    projectName: "A1: Narrative Finish",
+    activity: "Development edit pass (Dan)",
+    roleLabel: "Editing",
+    teamMemberId: "dan",
+    teamMemberName: "Dan",
+    hours: 40,
+    days: 10,
+  },
+  {
+    id: "example-gmguide-dan-writing",
+    projectName: "Core System GM Guide",
+    activity: "Draft GM tools chapter (Dan)",
+    roleLabel: "Writing",
+    teamMemberId: "dan",
+    teamMemberName: "Dan",
+    hours: 80,
+    days: 20,
+  },
+];
+
 export default function DashboardPage() {
   const passcode = process.env.NEXT_PUBLIC_DASHBOARD_PASSWORD ?? "hoskbrew";
   const [isClientMode, setIsClientMode] = useState(false);
@@ -147,14 +180,14 @@ export default function DashboardPage() {
   const [marketPerWord, setMarketPerWord] = useState(0.08);
 
   const [estimatorInputs, setEstimatorInputs] = useState({
-    activity: "New Request",
+    activity: "A1: Draft new section",
     totalWords: 20000,
-    draftSpeed: 200,
-    bufferPercent: 15,
+    draftSpeed: 400,
+    bufferPercent: 30,
     dailyHours: 4,
-    teamMemberId: "",
-    projectName: "",
-    roleLabel: "",
+    teamMemberId: "martin",
+    projectName: "A1: Narrative Finish",
+    roleLabel: "Writing",
   });
   const [estimatorResult, setEstimatorResult] = useState<EstimatorResult | null>(null);
   
@@ -170,9 +203,9 @@ export default function DashboardPage() {
   const [estimationBuckets, setEstimationBuckets] = useState<EstimationBucketEntry[]>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("hoskbrew_estimation_buckets");
-      return saved ? JSON.parse(saved) : [];
+      return saved ? JSON.parse(saved) : DEFAULT_ESTIMATION_BUCKETS;
     }
-    return [];
+    return DEFAULT_ESTIMATION_BUCKETS;
   });
 
   const handleAuth = (event: React.FormEvent) => {
@@ -372,7 +405,20 @@ export default function DashboardPage() {
       days: result.days,
     };
 
-    setEstimationBuckets((prev) => [...prev, entry]);
+    setEstimationBuckets((prev) => {
+      return [
+        // Remove any previous entry for same project + role + person
+        ...prev.filter(
+          (e) =>
+            !(
+              e.projectName === entry.projectName &&
+              e.roleLabel === entry.roleLabel &&
+              (e.teamMemberId || "") === (entry.teamMemberId || "")
+            )
+        ),
+        entry,
+      ];
+    });
   };
 
   const handleTeamMemberUpdate = (updatedTeamMembers: TeamMember[]) => {
