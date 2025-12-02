@@ -261,6 +261,18 @@ export default function DashboardPage() {
     return formatted;
   }, [analysis, isClientMode]);
 
+  // Aggregate total execution hours across all active projects (assembly load)
+  const totalAssemblyHours = useMemo(
+    () => writerLoad.reduce((sum, writer) => sum + writer.totalHours, 0),
+    [writerLoad]
+  );
+
+  // Current team weekly capacity (used for converting hours into weeks/months)
+  const teamWeeklyCapacity = useMemo(
+    () => teamRoster.reduce((sum, member) => sum + (member.weeklyCapacity || 0), 0),
+    [teamRoster]
+  );
+
   // Baseline scenario configuration for Scenario Engine, derived from current plan
   const baselineScenarioConfig = useMemo(() => {
     // Aggregate total words across active projects
@@ -620,7 +632,14 @@ export default function DashboardPage() {
           />
 
           <div className="p-6 md:p-8 bg-slate-50/50 min-h-[500px] space-y-6">
-            {activeTab === "methodology" && <MethodologyView phases={PRODUCTION_PHASES} clientMode={isClientMode} />}
+            {activeTab === "methodology" && (
+              <MethodologyView
+                phases={PRODUCTION_PHASES}
+                clientMode={isClientMode}
+                portfolioAssemblyHours={totalAssemblyHours}
+                teamWeeklyCapacity={teamWeeklyCapacity}
+              />
+            )}
 
             {activeTab === "team" && <TeamPlanner writers={writerLoad} clientMode={isClientMode} />}
 
@@ -679,7 +698,7 @@ export default function DashboardPage() {
                 />
                 <EstimatorBuckets
                   entries={estimationBuckets}
-                  onRemove={(id) =>
+                  onRemove={(id: string) =>
                     setEstimationBuckets((prev) => prev.filter((entry) => entry.id !== id))
                   }
                   onClear={() => setEstimationBuckets([])}
