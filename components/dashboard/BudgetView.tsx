@@ -1,9 +1,9 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { DollarSign, ShieldAlert, Calendar } from "lucide-react";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, getPublished, setPublished } from "@/lib/utils";
 import type { DisplayProject, QuarterBuckets } from "@/lib/types";
 
 interface BudgetViewProps {
@@ -17,6 +17,18 @@ const QUARTERS = ["Q1", "Q2", "Q3", "Q4", "Dec 22 Deadline", "Ongoing"];
 export function BudgetView({ analysis, quarters, clientMode }: BudgetViewProps) {
   // Convert analysis to local state for editing in internal mode
   const [items, setItems] = useState<DisplayProject[]>(analysis);
+
+  useEffect(() => {
+    const merged = analysis.map((p) => {
+      const published = getPublished(p.id);
+      return {
+        ...p,
+        estCost: published?.estCost ?? p.estCost,
+        displayDate: published?.displayDate ?? p.displayDate ?? p.launchWindow,
+      } as DisplayProject;
+    });
+    setItems(merged);
+  }, [analysis]);
 
   // Helper to update a specific item
   const updateItem = (id: number, field: keyof DisplayProject, value: string | number) => {
@@ -39,6 +51,17 @@ export function BudgetView({ analysis, quarters, clientMode }: BudgetViewProps) 
     return groups;
   }, [items]);
 
+  const [publishMessage, setPublishMessage] = useState<string | null>(null);
+
+  const handlePublishAll = () => {
+    if (!confirm("Publish all current internal changes to client view? This will overwrite current client values.")) return;
+    items.forEach((item) => {
+      setPublished(item.id, { estCost: item.estCost, displayDate: item.displayDate ?? item.launchWindow });
+    });
+    setPublishMessage("All items published to Client view.");
+    setTimeout(() => setPublishMessage(null), 3000);
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className={`p-6 rounded-xl shadow-lg flex flex-col md:flex-row md:items-center md:justify-between gap-4 ${clientMode ? "bg-slate-900 text-white" : "bg-indigo-900 text-white border-b-4 border-indigo-500"}`}>
@@ -59,7 +82,22 @@ export function BudgetView({ analysis, quarters, clientMode }: BudgetViewProps) 
           </div>
           <div className="text-xs text-slate-400 uppercase tracking-widest mt-1">Total {clientMode ? "Investment" : "Exposure"}</div>
         </div>
+        {!clientMode && (
+          <div className="flex items-center gap-3">
+            <button
+              className="text-xs px-3 py-2 bg-indigo-50 text-indigo-700 rounded border border-indigo-100"
+              onClick={handlePublishAll}
+            >
+              Publish All
+            </button>
+          </div>
+        )}
       </div>
+      {publishMessage && (
+        <div className="text-sm text-emerald-600">
+          {publishMessage}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {QUARTERS.map(q => (
@@ -86,7 +124,7 @@ export function BudgetView({ analysis, quarters, clientMode }: BudgetViewProps) 
                             {item.budgetType}
                           </span>
                           <span className="text-[10px] text-slate-400 flex items-center gap-1">
-                            <Calendar className="w-3 h-3" /> {item.displayDate ?? item.launchWindow}
+                            <Calendar className="w-3 h-3" /> {getPublished(item.id)?.displayDate ?? item.displayDate ?? item.launchWindow}
                           </span>
                         </div>
                       </div>
@@ -119,7 +157,7 @@ export function BudgetView({ analysis, quarters, clientMode }: BudgetViewProps) 
                             </div>
                           </div>
                         </div>
-                        <div>
+                        <div className="flex items-center justify-between gap-2">
                           <label className="text-[10px] text-slate-500 uppercase font-bold">Target Quarter</label>
                           <select
                             value={item.displayDate ?? item.launchWindow}
@@ -130,6 +168,17 @@ export function BudgetView({ analysis, quarters, clientMode }: BudgetViewProps) 
                               <option key={opt} value={opt}>{opt}</option>
                             ))}
                           </select>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              // publish estCost and displayDate for client
+                              setPublished(item.id, { estCost: item.estCost, displayDate: item.displayDate ?? item.launchWindow });
+                            }}
+                            className="text-xs px-2 py-1 rounded bg-emerald-50 border border-emerald-100 text-emerald-600"
+                          >
+                            Publish
+                          </button>
                         </div>
                         <div>
                           <div className="flex justify-between items-center mb-1">
