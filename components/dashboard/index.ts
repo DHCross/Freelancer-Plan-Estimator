@@ -4,7 +4,6 @@ export * from "./EstimatorView";
 export * from "./EfficiencyView";
 export * from "./MandateView";
 export * from "./MethodologyView";
-export * from "./PoliticsView";
 export * from "./ProjectStatusView";
 export * from "./PurgeView";
 export * from "./TeamPlanner";

@@ -11,7 +11,6 @@ import {
   Download,
   Ghost,
   Timer,
-  TrendingUp,
   Upload,
   Users,
 } from "lucide-react";
@@ -31,7 +30,6 @@ import {
   calculateAnnualLoad,
   calculateDefenseAnalysis,
   calculateProjectAnalysis,
-  calculateStakeholderDemand,
   runEstimator,
 } from "@/lib/calculations";
 import type { DisplayProject, EstimatorResult, ProjectWithDisplay, Project, Metrics, TeamMember, EstimationBucketEntry } from "@/lib/types";
@@ -43,7 +41,6 @@ import {
   EstimatorView,
   MandateView,
   MethodologyView,
-  PoliticsView,
   ProjectStatusView,
   PurgeView,
   TeamPlanner,
@@ -59,7 +56,6 @@ const INTERNAL_TAB_STYLES = {
   team: "text-blue-700 bg-blue-50 border-blue-600",
   budget: "text-green-700 bg-green-50 border-green-600",
   efficiency: "text-purple-700 bg-purple-50 border-purple-600",
-  politics: "text-orange-700 bg-orange-50 border-orange-600",
   mandates: "text-slate-700 bg-slate-50 border-slate-600",
   status: "text-rose-700 bg-rose-50 border-rose-600",
   estimator: "text-indigo-700 bg-indigo-50 border-indigo-600",
@@ -331,8 +327,6 @@ export default function DashboardPage() {
     [defendHourlyRate, defendWPH, marketPerWord]
   );
 
-  const stakeholderLoad = useMemo(() => calculateStakeholderDemand(analysis), [analysis]);
-
   const statusBuckets = useMemo(() => {
     const base = STATUS_COLUMN_CONFIG.reduce<Record<string, DisplayProject[]>>((acc, column) => {
       acc[column.id] = [];
@@ -361,10 +355,6 @@ export default function DashboardPage() {
     { id: "team", label: isClientMode ? "Capacity Plan" : "Team Load", icon: Users },
     { id: "budget", label: "Budget 2026", icon: DollarSign },
     { id: "efficiency", label: "Studio Value", icon: Calculator },
-    // Only show Stakeholder Map/Politics tab in Internal mode
-    ...(!isClientMode ? [
-      { id: "politics", label: "Politics", icon: TrendingUp }
-    ] : []),
     { id: "mandates", label: "Mandates", icon: Briefcase },
     {
       id: "status",
@@ -665,11 +655,6 @@ export default function DashboardPage() {
                 metrics={metrics}
                 onMetricsUpdate={handleMetricsUpdate}
               />
-            )}
-
-            {/* Only render Stakeholder Map/Politics in Internal mode */}
-            {!isClientMode && activeTab === "politics" && (
-              <PoliticsView stakeholderLoad={stakeholderLoad} clientMode={isClientMode} />
             )}
 
             {activeTab === "mandates" && (
