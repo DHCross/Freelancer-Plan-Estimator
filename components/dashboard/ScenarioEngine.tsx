@@ -22,14 +22,24 @@ interface ScenarioResult {
   recommendations: string[];
 }
 
-export function ScenarioEngine({ clientMode = false }: { clientMode?: boolean }) {
-  const [config, setConfig] = useState<ScenarioConfig>({
+interface ScenarioEngineProps {
+  clientMode?: boolean;
+  initialConfig?: Partial<ScenarioConfig>;
+}
+
+export function ScenarioEngine({ clientMode = false, initialConfig }: ScenarioEngineProps) {
+  const defaultConfig: ScenarioConfig = {
     teamSize: 2,
     budget: 25000,
     timeline: 6,
     wordCount: 50000,
     complexity: "standard",
-    quality: "professional"
+    quality: "professional",
+  };
+
+  const [config, setConfig] = useState<ScenarioConfig>({
+    ...defaultConfig,
+    ...initialConfig,
   });
 
   const [result, setResult] = useState<ScenarioResult | null>(null);

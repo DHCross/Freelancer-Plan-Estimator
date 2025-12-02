@@ -217,6 +217,59 @@ export default function DashboardPage() {
     return formatted;
   }, [analysis, isClientMode]);
 
+  // Baseline scenario configuration for Scenario Engine, derived from current plan
+  const baselineScenarioConfig = useMemo(() => {
+    // Aggregate total words across active projects
+    const totalWords = projects.reduce((sum: number, project: Project) => sum + (project.targetWords || 0), 0);
+
+    // Sum estimated cost from analysis (already includes contingency + blended rate)
+    const totalEstCost = analysis.reduce((sum, project) => sum + (project.estCost || 0), 0);
+    const baselineBudget = Math.round(totalEstCost);
+
+    // Derive timeline from total hours vs team weekly capacity
+    const totalHours = writerLoad.reduce((sum, writer) => sum + writer.totalHours, 0);
+    const totalWeeklyCapacity = writerLoad.reduce((sum, writer) => sum + (writer.weeklyCapacity || 0), 0);
+
+    let timelineMonths = 6;
+    if (totalWeeklyCapacity > 0 && totalHours > 0) {
+      const weeksNeeded = totalHours / totalWeeklyCapacity;
+      timelineMonths = Math.max(1, Math.ceil(weeksNeeded / 4));
+    }
+
+    // Team size = active contributors with non-zero weekly capacity
+    const teamSize = teamRoster.filter((member) => member.weeklyCapacity > 0).length || 1;
+
+    // Snap word count to the buckets used by ScenarioEngine's selector
+    const wordBuckets = [
+      { value: 15000, max: 30000 },
+      { value: 50000, max: 75000 },
+      { value: 100000, max: 130000 },
+      { value: 150000, max: Infinity },
+    ];
+
+    const snappedWordCount = (() => {
+      if (!totalWords) return 50000;
+      const bucket = wordBuckets.find((b) => totalWords <= b.max);
+      return bucket?.value ?? 150000;
+    })();
+
+    // Complexity heuristic based on total scope
+    const complexity: "simple" | "standard" | "complex" =
+      totalWords <= 30000 ? "simple" : totalWords <= 100000 ? "standard" : "complex";
+
+    // Default to professional quality as baseline from your compensation docs
+    const quality: "basic" | "professional" | "premium" = "professional";
+
+    return {
+      teamSize,
+      budget: baselineBudget || 25000,
+      timeline: timelineMonths,
+      wordCount: snappedWordCount,
+      complexity,
+      quality,
+    };
+  }, [projects, analysis, writerLoad, teamRoster]);
+
   const defenseAnalysis = useMemo(
     () => calculateDefenseAnalysis(defendHourlyRate, defendWPH, marketPerWord),
     [defendHourlyRate, defendWPH, marketPerWord]
@@ -551,7 +604,7 @@ export default function DashboardPage() {
 
             {/* New analysis tabs - internal only */}
             {!isClientMode && activeTab === "scenarios" && (
-              <ScenarioEngine clientMode={isClientMode} />
+              <ScenarioEngine clientMode={isClientMode} initialConfig={baselineScenarioConfig} />
             )}
 
             {!isClientMode && activeTab === "failures" && (
