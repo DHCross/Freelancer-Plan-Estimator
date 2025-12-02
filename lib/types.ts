@@ -22,7 +22,10 @@ export interface Project {
   internalStatus: string;
   clientStatus: string;
   stakeholder: Stakeholder;
-  launchWindow: string;
+  launchWindow: string; // deprecated, use displayDate
+  targetDate?: string; // ISO string for sorting
+  displayDate?: string; // free-form label for UI
+  isLocked?: boolean; // true if deadline is externally dictated
   budgetType: string;
   dependency: string | null;
   revenuePotential: string;
@@ -90,6 +93,7 @@ export interface ProductionPhase {
   investmentType: string;
   effortHours: number;
   formula: string;
+  breakdown: string[];
   outcomes: string[];
 }
 

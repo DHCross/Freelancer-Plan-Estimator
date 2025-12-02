@@ -216,14 +216,20 @@ export default function DashboardPage() {
     { id: "team", label: isClientMode ? "Capacity Plan" : "Team Load", icon: Users },
     { id: "budget", label: "Budget 2026", icon: DollarSign },
     { id: "efficiency", label: "Studio Value", icon: Calculator },
-    { id: "politics", label: isClientMode ? "Stakeholder Map" : "Politics", icon: TrendingUp },
+    // Only show Stakeholder Map/Politics tab in Internal mode
+    ...(!isClientMode ? [
+      { id: "politics", label: "Politics", icon: TrendingUp }
+    ] : []),
     { id: "mandates", label: "Mandates", icon: Briefcase },
     {
       id: "status",
       label: isClientMode ? "Delivery Tracker" : "Reality Tracker",
       icon: ClipboardList,
     },
-    { id: "estimator", label: "Estimator", icon: Timer },
+    // Only show Estimator tab in Internal mode
+    ...(!isClientMode ? [
+      { id: "estimator", label: "Estimator", icon: Timer }
+    ] : []),
     {
       id: "resourcing",
       label: isClientMode ? "Capacity Gap" : "The Purge",
@@ -311,26 +317,20 @@ export default function DashboardPage() {
               Toggle between War Room status and Client-ready narrative before walking into the budget meeting.
             </p>
           </div>
-          <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-full px-4 py-2 shadow-sm">
-            <span className={`text-xs font-semibold ${!isClientMode ? "text-slate-900" : "text-slate-400"}`}>
-              Internal
-            </span>
-            <button
-              onClick={() => setIsClientMode((prev) => !prev)}
-              className={`relative w-14 h-7 rounded-full transition-colors ${
-                isClientMode ? "bg-emerald-500" : "bg-slate-300"
-              }`}
-            >
-              <span
-                className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow transition-transform ${
-                  isClientMode ? "translate-x-7" : "translate-x-0"
-                }`}
-              />
-            </button>
-            <span className={`text-xs font-semibold ${isClientMode ? "text-slate-900" : "text-slate-400"}`}>
-              Client
-            </span>
-          </div>
+          {!isClientMode && (
+            <div className="flex items-center gap-3 bg-white border border-slate-200 rounded-full px-4 py-2 shadow-sm">
+              <span className={`text-xs font-semibold text-slate-900`}>Internal</span>
+              <button
+                onClick={() => setIsClientMode((prev) => !prev)}
+                className={`relative w-14 h-7 rounded-full transition-colors bg-slate-300`}
+              >
+                <span
+                  className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow transition-transform translate-x-0`}
+                />
+              </button>
+              <span className={`text-xs font-semibold text-slate-400`}>Client</span>
+            </div>
+          )}
         </header>
 
         <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
@@ -363,13 +363,15 @@ export default function DashboardPage() {
               />
             )}
 
-            {activeTab === "politics" && (
+            {/* Only render Stakeholder Map/Politics in Internal mode */}
+            {!isClientMode && activeTab === "politics" && (
               <PoliticsView stakeholderLoad={stakeholderLoad} clientMode={isClientMode} />
             )}
 
             {activeTab === "mandates" && <MandateView projects={analysisWithDisplay} />}
 
-            {activeTab === "status" && (
+            {/* Only show Reality Tracker/Execution Kanban in Internal mode */}
+            {!isClientMode && activeTab === "status" && (
               <ProjectStatusView
                 columns={statusColumns}
                 statusBuckets={statusBuckets}
@@ -377,7 +379,8 @@ export default function DashboardPage() {
               />
             )}
 
-            {activeTab === "estimator" && (
+            {/* Only render Estimator in Internal mode */}
+            {!isClientMode && activeTab === "estimator" && (
               <EstimatorView
                 inputs={estimatorInputs}
                 onChange={handleEstimatorChange}

@@ -1,11 +1,20 @@
 import { Briefcase } from "lucide-react";
 import { DisplayProject } from "@/lib/types";
 
+
 interface MandateViewProps {
   projects: DisplayProject[];
+  clientMode?: boolean;
 }
 
-export function MandateView({ projects }: MandateViewProps) {
+  const [items, setItems] = useState(projects);
+
+  const handleWindowChange = (id: number, value: string) => {
+    setItems(prev => prev.map(item => item.id === id ? { ...item, launchWindow: value } : item));
+  };
+
+  const clientMode = typeof window !== "undefined" && window.localStorage.getItem("hoskbrew_client_mode") === "true";
+
   return (
     <div className="space-y-6">
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex items-center justify-between">
@@ -31,7 +40,7 @@ export function MandateView({ projects }: MandateViewProps) {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {projects.map((project) => (
+            {items.map((project) => (
               <tr key={project.id} className="hover:bg-slate-50">
                 <td className="px-4 py-3">
                   <p className="font-semibold text-slate-800">{project.name}</p>
@@ -44,7 +53,18 @@ export function MandateView({ projects }: MandateViewProps) {
                     {project.displayStatus ?? project.internalStatus}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-slate-600">{project.launchWindow}</td>
+                <td className="px-4 py-3 text-slate-600">
+                  {clientMode ? (
+                    project.launchWindow
+                  ) : (
+                    <input
+                      type="text"
+                      value={project.launchWindow}
+                      onChange={e => handleWindowChange(project.id, e.target.value)}
+                      className="w-full p-1 border rounded bg-white text-xs"
+                    />
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
