@@ -260,13 +260,13 @@ export default function DashboardPage() {
               </span>
               <button
                 onClick={() => setIsClientMode((prev) => !prev)}
-                className={`relative w-14 h-7 rounded-full transition-colors ${
+                className={`relative w-14 h-7 rounded-full transition-all duration-300 ${
                   isClientMode ? "bg-emerald-500" : "bg-slate-300"
                 }`}
                 aria-label="Toggle client mode"
               >
                 <span
-                  className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                  className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow transition-all duration-300 ${
                     isClientMode ? "translate-x-7" : "translate-x-0"
                   }`}
                 />
