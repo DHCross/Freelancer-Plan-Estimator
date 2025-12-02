@@ -103,10 +103,17 @@ const STATUS_COLUMN_CONFIG: StatusColumnConfig[] = [
 ];
 
 export default function DashboardPage() {
+  const passcode = process.env.NEXT_PUBLIC_DASHBOARD_PASSWORD ?? "hoskbrew";
   const [isClientMode, setIsClientMode] = useState(false);
   const [activeTab, setActiveTab] = useState("methodology");
   const [projects] = useState(INITIAL_PROJECTS);
   const [metrics] = useState(DEFAULT_METRICS);
+  const [isAuthed, setIsAuthed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("hoskbrew_authed") === "true";
+  });
+  const [password, setPassword] = useState("");
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const [defendHourlyRate, setDefendHourlyRate] = useState(20);
   const [defendWPH, setDefendWPH] = useState(250);
@@ -120,6 +127,19 @@ export default function DashboardPage() {
     dailyHours: 4,
   });
   const [estimatorResult, setEstimatorResult] = useState<EstimatorResult | null>(null);
+
+  const handleAuth = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (password.trim() === passcode) {
+      setIsAuthed(true);
+      setAuthError(null);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("hoskbrew_authed", "true");
+      }
+    } else {
+      setAuthError("Incorrect password.");
+    }
+  };
 
   const projectsWithDisplay = useMemo<ProjectWithDisplay[]>(
     () =>
@@ -220,6 +240,42 @@ export default function DashboardPage() {
   const handleEstimate = () => {
     setEstimatorResult(runEstimator(estimatorInputs));
   };
+
+  if (!isAuthed) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center px-4">
+        <form
+          onSubmit={handleAuth}
+          className="bg-slate-900 border border-slate-800 rounded-2xl p-8 w-full max-w-sm space-y-6 shadow-2xl"
+        >
+          <div>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Hoskbrew Access</p>
+            <h1 className="text-2xl font-bold mt-2">Enter the production passcode</h1>
+            <p className="text-sm text-slate-400 mt-1">
+              This dashboard contains sensitive staffing and budget data. Share the passphrase only with cleared partners.
+            </p>
+          </div>
+          <label className="block text-sm font-medium text-slate-200">
+            Passcode
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder="••••••••"
+            />
+          </label>
+          {authError && <p className="text-sm text-rose-400">{authError}</p>}
+          <button
+            type="submit"
+            className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold py-2.5 rounded-lg transition"
+          >
+            Unlock Dashboard
+          </button>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-100 p-4 md:p-8 font-sans text-slate-800">
