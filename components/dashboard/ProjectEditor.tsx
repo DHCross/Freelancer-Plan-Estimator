@@ -85,7 +85,7 @@ export function ProjectEditor({ project, onUpdate, clientMode = false }: Project
       </div>
 
       {isEditing && (
-        <div className several="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-medium text-slate-700 mb-1">Target Words</label>
             <input
