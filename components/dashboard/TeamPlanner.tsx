@@ -88,6 +88,16 @@ export function TeamPlanner({ writers, clientMode = false }: TeamPlannerProps) {
           );
         })}
       </div>
+
+      <div className="bg-white border border-slate-200 rounded-xl p-4 text-sm text-slate-600">
+        <h4 className="font-semibold text-slate-900 mb-1">How load % is calculated</h4>
+        <p>
+          Each card compares the hours currently assigned to a person to their annual capacity
+          (weekly capacity × 48 working weeks). For example, someone with 40 hrs/week capacity has
+          <strong> 1,920 hrs</strong> available per year. If projects add up to 805 hrs, their card shows
+          <strong> 42%</strong> load (805 ÷ 1,920). Bars turn red only when assigned hours exceed that capacity.
+        </p>
+      </div>
     </div>
   );
 }

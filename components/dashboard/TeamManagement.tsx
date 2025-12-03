@@ -53,10 +53,19 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
   const handleSaveMember = () => {
     if (!editingMember || !editingMember.name.trim() || !editingMember.role.trim()) return;
 
+    const normalized: TeamMember = {
+      ...editingMember,
+      hourlyRate: Number(editingMember.hourlyRate) || 0,
+      weeklyCapacity: Number(editingMember.weeklyCapacity) || 0,
+      draftSpeed: Number(editingMember.draftSpeed) || 0,
+      compileSpeed: Number(editingMember.compileSpeed) || 0,
+      chaosBuffer: Number(editingMember.chaosBuffer) || 0,
+    };
+
     if (isAddingNew) {
-      onUpdateTeamMembers([...teamMembers, editingMember]);
+      onUpdateTeamMembers([...teamMembers, normalized]);
     } else {
-      onUpdateTeamMembers(teamMembers.map(m => m.id === editingMember.id ? editingMember : m));
+      onUpdateTeamMembers(teamMembers.map(m => m.id === normalized.id ? normalized : m));
     }
     
     setEditingMember(null);
@@ -76,7 +85,7 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
 
   const handleFieldChange = (field: keyof TeamMember, value: string | number) => {
     if (editingMember) {
-      setEditingMember({ ...editingMember, [field]: value });
+      setEditingMember({ ...editingMember, [field]: value === "" ? "" : value });
     }
   };
 

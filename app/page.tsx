@@ -67,7 +67,7 @@ const CLIENT_TAB_STYLES = {
   resourcing: "text-amber-700 bg-amber-50 border-amber-600",
 };
 
-type TeamWorkspaceView = "builder" | "management" | "estimator";
+type TeamWorkspaceView = "management" | "estimator";
 
 type StatusColumnConfig = {
   id: string;
@@ -145,7 +145,7 @@ export default function DashboardPage() {
   const passcode = process.env.NEXT_PUBLIC_DASHBOARD_PASSWORD ?? "hoskbrew";
   const [isClientMode, setIsClientMode] = useState(false);
   const [activeTab, setActiveTab] = useState("methodology");
-  const [teamWorkspaceView, setTeamWorkspaceView] = useState<TeamWorkspaceView>("builder");
+  const [teamWorkspaceView, setTeamWorkspaceView] = useState<TeamWorkspaceView>("management");
   
   // Load saved data from localStorage on mount
   const [projects, setProjects] = useState(() => {
@@ -345,17 +345,13 @@ export default function DashboardPage() {
           { id: "status", label: "Task Board", icon: ClipboardList },
           { id: "scenarios", label: "What-If Lab", icon: Calculator },
           { id: "failures", label: "Lessons Learned", icon: AlertTriangle },
+          { id: "teambuilder", label: "Team Builder", icon: Users },
           { id: "teamworkspace", label: "Estimator Tools", icon: Users },
         ]
       : []),
   ];
 
   const teamWorkspaceNav: { id: TeamWorkspaceView; label: string; description: string }[] = [
-    {
-      id: "builder",
-      label: "Build the Team",
-      description: "Model ideal roles and headcount",
-    },
     {
       id: "management",
       label: "People & Rates",
@@ -631,6 +627,10 @@ export default function DashboardPage() {
               <FailureAnalysis clientMode={isClientMode} />
             )}
 
+            {!isClientMode && activeTab === "teambuilder" && (
+              <TeamConfiguration clientMode={isClientMode} />
+            )}
+
             {!isClientMode && activeTab === "teamworkspace" && (
               <div className="flex flex-col md:flex-row gap-6">
                 <div className="md:w-64 w-full">
@@ -661,7 +661,6 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <div className="flex-1 space-y-6">
-                  {teamWorkspaceView === "builder" && <TeamConfiguration clientMode={isClientMode} />}
                   {teamWorkspaceView === "management" && (
                     <TeamManagement
                       teamMembers={teamRoster}
