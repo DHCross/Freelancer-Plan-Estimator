@@ -48,10 +48,10 @@ export function MandateView({ projects, clientMode = false }: MandateViewProps) 
     <div className="space-y-6">
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex items-center justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Mandates</p>
-          <h2 className="text-2xl font-bold text-slate-900">Strategic Workload List</h2>
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Product Lines</p>
+          <h2 className="text-2xl font-bold text-slate-900">Product Line Roadmap</h2>
           <p className="text-sm text-slate-600 mt-2">
-            Single source of truth for every in-flight or queued deliverable, showing stakeholder ownership and window.
+            Single source of truth for every in-flight or queued product line, with owner, type, and launch window.
           </p>
         </div>
         <div className="flex items-center gap-3">

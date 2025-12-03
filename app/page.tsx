@@ -54,22 +54,21 @@ import { EstimatorBuckets } from "@/components/dashboard/EstimatorBuckets";
 const INTERNAL_TAB_STYLES = {
   methodology: "text-indigo-700 bg-indigo-50 border-indigo-600",
   team: "text-blue-700 bg-blue-50 border-blue-600",
-  budget: "text-green-700 bg-green-50 border-green-600",
+  products: "text-teal-700 bg-teal-50 border-teal-600",
   efficiency: "text-purple-700 bg-purple-50 border-purple-600",
-  mandates: "text-slate-700 bg-slate-50 border-slate-600",
   status: "text-rose-700 bg-rose-50 border-rose-600",
-  estimator: "text-indigo-700 bg-indigo-50 border-indigo-600",
   resourcing: "text-red-700 bg-red-50 border-red-600",
   scenarios: "text-emerald-700 bg-emerald-50 border-emerald-600",
   failures: "text-amber-700 bg-amber-50 border-amber-600",
-  teamconfig: "text-cyan-700 bg-cyan-50 border-cyan-600",
-  teammanagement: "text-violet-700 bg-violet-50 border-violet-600",
+  teamworkspace: "text-cyan-700 bg-cyan-50 border-cyan-600",
 };
 
 const CLIENT_TAB_STYLES = {
   ...INTERNAL_TAB_STYLES,
   resourcing: "text-amber-700 bg-amber-50 border-amber-600",
 };
+
+type TeamWorkspaceView = "builder" | "management" | "estimator";
 
 type StatusColumnConfig = {
   id: string;
@@ -82,7 +81,7 @@ type StatusColumnConfig = {
 const STATUS_COLUMN_CONFIG: StatusColumnConfig[] = [
   {
     id: "critical",
-    internalLabel: "Critical Mandates",
+    internalLabel: "Critical Product Lines",
     clientLabel: "Strategic Priorities",
     description: "Non-negotiable revenue protection",
     matcher: (status) => /priority|critical/.test(status),
@@ -147,6 +146,7 @@ export default function DashboardPage() {
   const passcode = process.env.NEXT_PUBLIC_DASHBOARD_PASSWORD ?? "hoskbrew";
   const [isClientMode, setIsClientMode] = useState(false);
   const [activeTab, setActiveTab] = useState("methodology");
+  const [teamWorkspaceView, setTeamWorkspaceView] = useState<TeamWorkspaceView>("builder");
   
   // Load saved data from localStorage on mount
   const [projects, setProjects] = useState(() => {
@@ -353,30 +353,44 @@ export default function DashboardPage() {
   const tabs = [
     { id: "methodology", label: "Production Engine", icon: Cpu },
     { id: "team", label: isClientMode ? "Capacity Plan" : "Team Load", icon: Users },
-    { id: "budget", label: "Budget 2026", icon: DollarSign },
+    { id: "products", label: "Product Lines & Budget", icon: Briefcase },
     { id: "efficiency", label: "Studio Value", icon: Calculator },
-    { id: "mandates", label: "Mandates", icon: Briefcase },
     {
       id: "status",
       label: isClientMode ? "Delivery Tracker" : "Reality Tracker",
       icon: ClipboardList,
     },
-    // Only show Estimator tab in Internal mode
-    ...(!isClientMode ? [
-      { id: "estimator", label: "Estimator", icon: Timer }
-    ] : []),
     {
       id: "resourcing",
       label: isClientMode ? "Capacity Gap" : "The Purge",
       icon: isClientMode ? AlertTriangle : Ghost,
     },
-    // New analysis tabs (internal only)
-    ...(!isClientMode ? [
-      { id: "scenarios", label: "Scenario Engine", icon: Calculator },
-      { id: "failures", label: "Failure Analysis", icon: AlertTriangle },
-      { id: "teamconfig", label: "Team Builder", icon: Users },
-      { id: "teammanagement", label: "Team Management", icon: Users }
-    ] : []),
+    // Analysis + tooling tabs (internal only)
+    ...(!isClientMode
+      ? [
+          { id: "scenarios", label: "Scenario Engine", icon: Calculator },
+          { id: "failures", label: "Failure Analysis", icon: AlertTriangle },
+          { id: "teamworkspace", label: "Team Workspace", icon: Users },
+        ]
+      : []),
+  ];
+
+  const teamWorkspaceNav: { id: TeamWorkspaceView; label: string; description: string }[] = [
+    {
+      id: "builder",
+      label: "Team Builder",
+      description: "Model ideal roles and headcount",
+    },
+    {
+      id: "management",
+      label: "Roster & Profiles",
+      description: "Manage real people, rates, and capacity",
+    },
+    {
+      id: "estimator",
+      label: "Estimator",
+      description: "Turn work into hours, days, and deadlines",
+    },
   ];
 
   const tabStyles = isClientMode ? CLIENT_TAB_STYLES : INTERNAL_TAB_STYLES;
@@ -633,13 +647,16 @@ export default function DashboardPage() {
 
             {activeTab === "team" && <TeamPlanner writers={writerLoad} clientMode={isClientMode} />}
 
-            {activeTab === "budget" && (
-              <BudgetView 
-                analysis={analysisWithDisplay} 
-                quarters={quarterBuckets} 
-                clientMode={isClientMode}
-                onProjectUpdate={handleProjectUpdate}
-              />
+            {activeTab === "products" && (
+              <div className="space-y-6">
+                <MandateView projects={analysisWithDisplay} clientMode={isClientMode} />
+                <BudgetView
+                  analysis={analysisWithDisplay}
+                  quarters={quarterBuckets}
+                  clientMode={isClientMode}
+                  onProjectUpdate={handleProjectUpdate}
+                />
+              </div>
             )}
 
             {activeTab === "efficiency" && (
@@ -657,10 +674,6 @@ export default function DashboardPage() {
               />
             )}
 
-            {activeTab === "mandates" && (
-              <MandateView projects={analysisWithDisplay} clientMode={isClientMode} />
-            )}
-
             {/* Only show Reality Tracker/Execution Kanban in Internal mode */}
             {!isClientMode && activeTab === "status" && (
               <ProjectStatusView
@@ -668,28 +681,6 @@ export default function DashboardPage() {
                 statusBuckets={statusBuckets}
                 orphanedAssets={ORPHANED_ASSETS}
               />
-            )}
-
-            {/* Only render Estimator in Internal mode */}
-            {!isClientMode && activeTab === "estimator" && (
-              <div className="space-y-6">
-                <EstimatorView
-                  inputs={estimatorInputs}
-                  onChange={handleEstimatorChange}
-                  onEstimate={handleEstimate}
-                  result={estimatorResult}
-                  clientMode={isClientMode}
-                  teamRoster={teamRoster}
-                />
-                <EstimatorBuckets
-                  entries={estimationBuckets}
-                  onRemove={(id: string) =>
-                    setEstimationBuckets((prev) => prev.filter((entry) => entry.id !== id))
-                  }
-                  onClear={() => setEstimationBuckets([])}
-                  clientMode={isClientMode}
-                />
-              </div>
             )}
 
             {activeTab === "resourcing" && (
@@ -709,16 +700,66 @@ export default function DashboardPage() {
               <FailureAnalysis clientMode={isClientMode} />
             )}
 
-            {!isClientMode && activeTab === "teamconfig" && (
-              <TeamConfiguration clientMode={isClientMode} />
-            )}
-
-            {!isClientMode && activeTab === "teammanagement" && (
-              <TeamManagement 
-                teamMembers={teamRoster} 
-                onUpdateTeamMembers={handleTeamMemberUpdate}
-                clientMode={isClientMode}
-              />
+            {!isClientMode && activeTab === "teamworkspace" && (
+              <div className="flex flex-col md:flex-row gap-6">
+                <div className="md:w-64 w-full">
+                  <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 space-y-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Team Workspace</p>
+                      <h4 className="text-lg font-semibold text-slate-900 mt-1">Plan • Staff • Estimate</h4>
+                    </div>
+                    <div className="space-y-2">
+                      {teamWorkspaceNav.map((item) => {
+                        const isActive = teamWorkspaceView === item.id;
+                        return (
+                          <button
+                            key={item.id}
+                            onClick={() => setTeamWorkspaceView(item.id)}
+                            className={`w-full text-left p-4 rounded-xl border transition-all ${
+                              isActive
+                                ? "bg-indigo-50 border-indigo-200 text-indigo-900"
+                                : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+                            }`}
+                          >
+                            <div className="font-semibold">{item.label}</div>
+                            <p className="text-sm mt-1 text-slate-500">{item.description}</p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex-1 space-y-6">
+                  {teamWorkspaceView === "builder" && <TeamConfiguration clientMode={isClientMode} />}
+                  {teamWorkspaceView === "management" && (
+                    <TeamManagement
+                      teamMembers={teamRoster}
+                      onUpdateTeamMembers={handleTeamMemberUpdate}
+                      clientMode={isClientMode}
+                    />
+                  )}
+                  {teamWorkspaceView === "estimator" && (
+                    <div className="space-y-6">
+                      <EstimatorView
+                        inputs={estimatorInputs}
+                        onChange={handleEstimatorChange}
+                        onEstimate={handleEstimate}
+                        result={estimatorResult}
+                        clientMode={isClientMode}
+                        teamRoster={teamRoster}
+                      />
+                      <EstimatorBuckets
+                        entries={estimationBuckets}
+                        onRemove={(id: string) =>
+                          setEstimationBuckets((prev) => prev.filter((entry) => entry.id !== id))
+                        }
+                        onClear={() => setEstimationBuckets([])}
+                        clientMode={isClientMode}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         </div>
