@@ -107,8 +107,8 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
       </div>
 
       {!clientMode && (
-        <div className="bg-white border border-slate-200 rounded-2xl p-6">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-6">
+          <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-slate-900">Team Roster</h3>
             <button
               onClick={handleAddMember}
@@ -120,23 +120,6 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
           </div>
 
           <div className="space-y-4">
-            {/* Role Templates Reference */}
-            <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-              <h4 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
-                <Info className="w-4 h-4" />
-                Role Templates (Based on Operating Charter)
-              </h4>
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-2 text-xs">
-                {Object.entries(ROLE_TEMPLATES).map(([roleName, template]) => (
-                  <div key={roleName} className="bg-white border border-slate-200 rounded p-2">
-                    <p className="font-medium text-slate-800">{roleName}</p>
-                    <p className="text-slate-600">${template.hourlyRate}/hr • {template.draftSpeed} w/hr</p>
-                    <p className="text-slate-500 mt-1">{template.description}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
             {teamMembers.map((member) => (
               <div key={member.id} className="border border-slate-200 rounded-lg p-4">
                 {editingMember?.id === member.id ? (
@@ -362,6 +345,22 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
                 <p className="text-sm">Add your first team member to get started with team-based estimation.</p>
               </div>
             )}
+          </div>
+
+          <div className="bg-slate-50 border border-slate-200 rounded-lg p-4">
+            <h4 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+              <Info className="w-4 h-4" />
+              Role Templates (Based on Operating Charter)
+            </h4>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-2 text-xs">
+              {Object.entries(ROLE_TEMPLATES).map(([roleName, template]) => (
+                <div key={roleName} className="bg-white border border-slate-200 rounded p-2">
+                  <p className="font-medium text-slate-800">{roleName}</p>
+                  <p className="text-slate-600">${template.hourlyRate}/hr • {template.draftSpeed} w/hr</p>
+                  <p className="text-slate-500 mt-1">{template.description}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
