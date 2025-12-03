@@ -626,16 +626,20 @@ export default function DashboardPage() {
         </header>
 
         <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
-          <MainNav
-            tabs={tabs.map((tab) => ({
-              ...tab,
-              accentClass: tabStyles[tab.id as keyof typeof tabStyles],
-            }))}
-            activeTab={activeTab}
-            onChange={setActiveTab}
-          />
+          <div className="flex flex-col md:flex-row">
+            <div className="md:w-64 border-b md:border-b-0 md:border-r border-slate-200 bg-slate-50/50 p-4">
+              <MainNav
+                tabs={tabs.map((tab) => ({
+                  ...tab,
+                  accentClass: tabStyles[tab.id as keyof typeof tabStyles],
+                }))}
+                activeTab={activeTab}
+                onChange={setActiveTab}
+                orientation="vertical"
+              />
+            </div>
 
-          <div className="p-6 md:p-8 bg-slate-50/50 min-h-[500px] space-y-6">
+            <div className="flex-1 p-6 md:p-8 bg-slate-50/50 min-h-[500px] space-y-6">
             {activeTab === "methodology" && (
               <MethodologyView
                 phases={PRODUCTION_PHASES}
@@ -761,6 +765,7 @@ export default function DashboardPage() {
                 </div>
               </div>
             )}
+            </div>
           </div>
         </div>
       </div>
