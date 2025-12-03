@@ -38,7 +38,6 @@ import {
   BudgetView,
   CapacityGapView,
   EfficiencyView,
-  EstimatorView,
   MandateView,
   MethodologyView,
   ProjectStatusView,
@@ -49,7 +48,7 @@ import { ScenarioEngine } from "@/components/dashboard/ScenarioEngine";
 import { FailureAnalysis } from "@/components/dashboard/FailureAnalysis";
 import { TeamConfiguration } from "@/components/dashboard/TeamConfiguration";
 import { TeamManagement } from "@/components/dashboard/TeamManagement";
-import { EstimatorBuckets } from "@/components/dashboard/EstimatorBuckets";
+import { QuickEstimator } from "@/components/dashboard/QuickEstimator";
 
 const INTERNAL_TAB_STYLES = {
   methodology: "text-indigo-700 bg-indigo-50 border-indigo-600",
@@ -175,18 +174,6 @@ export default function DashboardPage() {
   const [defendWPH, setDefendWPH] = useState(250);
   const [marketPerWord, setMarketPerWord] = useState(0.08);
 
-  const [estimatorInputs, setEstimatorInputs] = useState({
-    activity: "A1: Draft new section",
-    totalWords: 20000,
-    draftSpeed: 400,
-    bufferPercent: 30,
-    dailyHours: 4,
-    teamMemberId: "martin",
-    projectName: "A1: Narrative Finish",
-    roleLabel: "Writing",
-  });
-  const [estimatorResult, setEstimatorResult] = useState<EstimatorResult | null>(null);
-  
   // Dynamic team roster state
   const [teamRoster, setTeamRoster] = useState<TeamMember[]>(() => {
     if (typeof window !== "undefined") {
@@ -194,14 +181,6 @@ export default function DashboardPage() {
       return saved ? JSON.parse(saved) : TEAM_ROSTER;
     }
     return TEAM_ROSTER;
-  });
-
-  const [estimationBuckets, setEstimationBuckets] = useState<EstimationBucketEntry[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("hoskbrew_estimation_buckets");
-      return saved ? JSON.parse(saved) : DEFAULT_ESTIMATION_BUCKETS;
-    }
-    return DEFAULT_ESTIMATION_BUCKETS;
   });
 
   const handleAuth = (event: React.FormEvent) => {
@@ -351,26 +330,22 @@ export default function DashboardPage() {
   }));
 
   const tabs = [
-    { id: "methodology", label: "Production Engine", icon: Cpu },
-    { id: "team", label: isClientMode ? "Capacity Plan" : "Team Load", icon: Users },
-    { id: "products", label: "Product Lines & Budget", icon: Briefcase },
-    { id: "efficiency", label: "Studio Value", icon: Calculator },
-    {
-      id: "status",
-      label: isClientMode ? "Delivery Tracker" : "Reality Tracker",
-      icon: ClipboardList,
-    },
+    { id: "methodology", label: "How We Build", icon: Cpu },
+    { id: "team", label: "Who Does What", icon: Users },
+    { id: "products", label: "Budget & Plan", icon: Briefcase },
+    { id: "efficiency", label: "Cost Savings", icon: Calculator },
     {
       id: "resourcing",
-      label: isClientMode ? "Capacity Gap" : "The Purge",
+      label: "Team Health",
       icon: isClientMode ? AlertTriangle : Ghost,
     },
-    // Analysis + tooling tabs (internal only)
+    // Internal-only deep-dive tabs
     ...(!isClientMode
       ? [
-          { id: "scenarios", label: "Scenario Engine", icon: Calculator },
-          { id: "failures", label: "Failure Analysis", icon: AlertTriangle },
-          { id: "teamworkspace", label: "Team Workspace", icon: Users },
+          { id: "status", label: "Task Board", icon: ClipboardList },
+          { id: "scenarios", label: "What-If Lab", icon: Calculator },
+          { id: "failures", label: "Lessons Learned", icon: AlertTriangle },
+          { id: "teamworkspace", label: "Estimator Tools", icon: Users },
         ]
       : []),
   ];
@@ -378,64 +353,22 @@ export default function DashboardPage() {
   const teamWorkspaceNav: { id: TeamWorkspaceView; label: string; description: string }[] = [
     {
       id: "builder",
-      label: "Team Builder",
+      label: "Build the Team",
       description: "Model ideal roles and headcount",
     },
     {
       id: "management",
-      label: "Roster & Profiles",
-      description: "Manage real people, rates, and capacity",
+      label: "People & Rates",
+      description: "Manage real humans, pay, and capacity",
     },
     {
       id: "estimator",
-      label: "Estimator",
-      description: "Turn work into hours, days, and deadlines",
+      label: "Quick Estimate",
+      description: "Push button • Get timeline",
     },
   ];
 
   const tabStyles = isClientMode ? CLIENT_TAB_STYLES : INTERNAL_TAB_STYLES;
-
-  const handleEstimatorChange = (field: keyof typeof estimatorInputs, value: string | number) => {
-    setEstimatorInputs((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleEstimate = () => {
-    const result = runEstimator(estimatorInputs, teamRoster);
-    setEstimatorResult(result);
-
-    const member = estimatorInputs.teamMemberId
-      ? teamRoster.find((m) => m.id === estimatorInputs.teamMemberId)
-      : undefined;
-
-    const projectName = (estimatorInputs.projectName || estimatorInputs.activity || "Untitled Project").trim();
-    const roleLabel = (estimatorInputs.roleLabel || member?.role || "Unspecified").trim();
-
-    const entry: EstimationBucketEntry = {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      projectName,
-      activity: estimatorInputs.activity,
-      roleLabel,
-      teamMemberId: estimatorInputs.teamMemberId,
-      teamMemberName: member?.name,
-      hours: result.hours,
-      days: result.days,
-    };
-
-    setEstimationBuckets((prev) => {
-      return [
-        // Remove any previous entry for same project + role + person
-        ...prev.filter(
-          (e) =>
-            !(
-              e.projectName === entry.projectName &&
-              e.roleLabel === entry.roleLabel &&
-              (e.teamMemberId || "") === (entry.teamMemberId || "")
-            )
-        ),
-        entry,
-      ];
-    });
-  };
 
   const handleTeamMemberUpdate = (updatedTeamMembers: TeamMember[]) => {
     setTeamRoster(updatedTeamMembers);
@@ -508,12 +441,6 @@ export default function DashboardPage() {
       localStorage.setItem("hoskbrew_team_roster", JSON.stringify(teamRoster));
     }
   }, [teamRoster]);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("hoskbrew_estimation_buckets", JSON.stringify(estimationBuckets));
-    }
-  }, [estimationBuckets]);
 
   if (!isAuthed) {
     return (
@@ -742,26 +669,7 @@ export default function DashboardPage() {
                       clientMode={isClientMode}
                     />
                   )}
-                  {teamWorkspaceView === "estimator" && (
-                    <div className="space-y-6">
-                      <EstimatorView
-                        inputs={estimatorInputs}
-                        onChange={handleEstimatorChange}
-                        onEstimate={handleEstimate}
-                        result={estimatorResult}
-                        clientMode={isClientMode}
-                        teamRoster={teamRoster}
-                      />
-                      <EstimatorBuckets
-                        entries={estimationBuckets}
-                        onRemove={(id: string) =>
-                          setEstimationBuckets((prev) => prev.filter((entry) => entry.id !== id))
-                        }
-                        onClear={() => setEstimationBuckets([])}
-                        clientMode={isClientMode}
-                      />
-                    </div>
-                  )}
+                  {teamWorkspaceView === "estimator" && <QuickEstimator teamRoster={teamRoster} />}
                 </div>
               </div>
             )}
