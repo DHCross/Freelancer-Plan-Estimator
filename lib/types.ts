@@ -165,3 +165,32 @@ export interface EstimationBucketEntry {
   hours: number;
   days: number;
 }
+
+export interface EstimatorInputV2 {
+  activity: string;
+  totalWords: number;
+  existingWords?: number; // default 0
+  draftSpeed: number; // words per hour
+  compileSpeed: number; // words per hour, 0 if not applicable
+  bufferPercent: number; // chaos buffer percentage
+  pacingMode: "daily" | "weekly";
+  dailyHours: number; // used when pacingMode === "daily"
+  weeklyHours?: number; // optional, for future weekly pacing
+  includeWeekends: boolean;
+  startDate: string; // ISO date string (e.g. 2025-12-02)
+  roleId?: string; // optional role or person identifier
+}
+
+export interface PaceScenario {
+  hours: number;
+  days: number;
+  finishDate: string; // ISO date string
+}
+
+export interface EstimatorOutputV2 {
+  effectiveWords: number;
+  draftScenario: PaceScenario;
+  compileScenario: PaceScenario;
+  managerText: string;
+  selfText: string;
+}
