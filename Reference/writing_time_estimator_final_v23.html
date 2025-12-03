@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Writing Time Estimator & Manager Report (v24)</title>
+  <style>
+    body { font-family: sans-serif; max-width: 700px; margin: 2em auto; padding: 0 1em; }
+    h1 { text-align: center; }
+    label { display: block; margin: 1em 0 0.5em; }
+    input, select, textarea, button { width: 100%; padding: 0.5em; margin-top: 0.3em; margin-bottom: 1em; box-sizing: border-box; }
+    textarea { height: 80px; }
+    input[type="checkbox"] { width: auto; margin-top: 0.5em; margin-bottom: 0.5em; }
+    button { margin-top: 1.5em; font-size: 1em; }
+    #results { margin-top: 2em; padding: 1em; border-radius: 4px; }
+    #results.error { background: #ffe6e6; color: #a00; }
+    #results.success { background: #e6ffe6; color: #070; }
+    .note { display: block; font-size: 0.85em; color: #555; margin: 0.3em 0 1em; }
+    .report p { margin: 0.5em 0; }
+    .report { white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>Writing Time Estimator & Manager Report (v24)</h1>
+
+  <label>Start Date<input type="date" id="startDate"></label>
+  <label>Activity Description<input type="text" id="activityText" value="Writing Task"></label>
+  <label>Page Count (zero to use word count)<input type="number" id="pageCount" value="0" min="0"></label>
+  <label>Avg Words / Page<input type="number" id="wordsPerPage" value="650" min="1"></label>
+  <label>Total Word Count (if no pages)<input type="number" id="totalWords" value="0" min="0"></label>
+  <label>Existing Usable Words<input type="number" id="existingWords" value="0" min="0"></label>
+  <p class="note">Enter total words from completed sections; these will be excluded.</p>
+  <label>Draft Speed (wph)<input type="number" id="draftSpeed" value="200" min="1"></label>
+  <label>Compile Speed (wph)<input type="number" id="compileSpeed" value="2500" min="1"></label>
+  <label><input type="checkbox" id="useCompile"> Use compile speed for best-case scenario</label>
+  <p class="note">Uncheck to use draft speed for all calculations.</p>
+  <label>Chaos Buffer<select id="bufferSelect">
+      <option value="0">0% (None)</option>
+      <option value="5">5% (Low)</option>
+      <option value="15" selected>15% (Moderate)</option>
+      <option value="30">30% (High)</option>
+      <option value="50">50% (Extreme)</option>
+    </select></label>
+  <p class="note">Allowance for interruptions and context switches.</p>
+  <label>Daily Writing Hours Max<input type="number" id="dailyHours" value="4" min="0" step="0.5"></label>
+  <label>Ideal Weekly Hours<input type="number" id="idealWeekly" value="15" min="1"></label>
+  <label>Burnout Weekly Hours<input type="number" id="burnoutWeekly" value="30" min="1"></label>
+  <label>Section Names (optional, semicolon-separated)<textarea id="sectionNames" placeholder="I. Intro; II. Cosmology; III. Geography of Ar'Neth and Veloss"></textarea></label>
+  <p class="note">List only sections that remain; completed sections go in Existing Usable Words above.</p>
+
+  <button id="estimateBtn">Estimate & Generate Report</button>
+  <button id="printReport" disabled>Generate Full Report</button>
+  <div id="results"></div>
+
+  <script>
+    // Initialize date
+    document.getElementById('startDate').value = new Date().toISOString().slice(0,10);
+
+    function formatDuration(hours) {
+      const h = Math.floor(hours);
+      const m = Math.round((hours - h) * 60);
+      let parts = [];
+      if (h) parts.push(h + (h === 1 ? ' hour' : ' hours'));
+      if (m) parts.push(m + (m === 1 ? ' minute' : ' minutes'));
+      return parts.length ? parts.join(' ') : '0 minutes';
+    }
+
+    function formatDays(days) {
+      const d = Math.floor(days);
+      const remH = Math.round((days - d) * 24);
+      let parts = [];
+      if (d) parts.push(d + (d === 1 ? ' day' : ' days'));
+      if (remH) parts.push(remH + (remH === 1 ? ' hour' : ' hours'));
+      return parts.length ? parts.join(' ') : '0 hours';
+    }
+
+    function estimate() {
+      const r = document.getElementById('results');
+      r.className = '';
+      r.innerHTML = '';
+
+      // Gather inputs
+      const start = document.getElementById('startDate').value;
+      const desc = document.getElementById('activityText').value.trim() || 'Writing Task';
+      const pc = +document.getElementById('pageCount').value || 0;
+      const wpp = +document.getElementById('wordsPerPage').value || 650;
+      const twc = +document.getElementById('totalWords').value || 0;
+      const exist = +document.getElementById('existingWords').value || 0;
+      const draft = +document.getElementById('draftSpeed').value || 200;
+      const compile = +document.getElementById('compileSpeed').value || 2500;
+      const useC = document.getElementById('useCompile').checked;
+      const buf = +document.getElementById('bufferSelect').value;
+      const daily = +document.getElementById('dailyHours').value || 4;
+      const ideal = +document.getElementById('idealWeekly').value || 15;
+      const burn = +document.getElementById('burnoutWeekly').value || 30;
+      const sectionText = document.getElementById('sectionNames').value.trim();
+
+      // Validation
+      const errs = [];
+      if (!start) errs.push('Select a valid Start Date.');
+      if (daily <= 0) errs.push('Daily Writing Hours Max must be greater than zero.');
+      const totalWords = pc > 0 ? pc * wpp : twc;
+      if (totalWords <= 0) errs.push('Enter a positive Page Count or Total Word Count.');
+      const eff = Math.max(0, totalWords - exist);
+      if (eff <= 0) errs.push('Effective words is zero; ensure Existing Words is less than Total.');
+      if (errs.length) {
+        r.className = 'error';
+        r.innerHTML = '<ul><li>' + errs.join('</li><li>') + '</li></ul>';
+        return;
+      }
+
+      // Compute hours
+      const slow = draft;
+      const fast = useC ? compile : draft;
+      const mult = 1 + buf / 100;
+      const hWorst = (eff / slow) * mult;
+      const hBest = (eff / fast) * mult;
+
+      // Compute days
+      const daysMin = hBest / daily;
+      const daysMax = hWorst / daily;
+      const sd = new Date(start);
+      const edMax = new Date(sd);
+      edMax.setDate(sd.getDate() + Math.ceil(daysMax) - 1);
+
+      // Weekly strategies
+      const idealRate = ideal / 7;
+      const burnRate = burn / 7;
+      const daysIdeal = hWorst / idealRate;
+      const daysBurn = hWorst / burnRate;
+
+      const dm = Math.ceil(daysMin);
+      const dM = Math.ceil(daysMax);
+
+      // Manager text
+      let mgrText;
+      if (dm === dM) {
+        mgrText = `This "${desc}" will take about ${formatDuration(hWorst)}, finishing in ${formatDays(dM)} on ${edMax.toISOString().slice(0,10)}.`;
+      } else {
+        mgrText = `This "${desc}" will take about ${formatDuration(hWorst)}, finishing in ${formatDays(dm)}–${formatDays(dM)} (from ${start} through ${edMax.toISOString().slice(0,10)}).`;
+      }
+
+      // Self text
+      let selfText = `• Draft-only (${draft} wph): ${formatDuration(hWorst)} over ${formatDays(dM)}.`;
+      if (useC) selfText += `\n• Compile boost (${compile} wph): ${formatDuration(hBest)} over ${formatDays(dm)}.`;
+      selfText += `\n• Steady pace (${ideal}h/week ≈${formatDays(ideal/7)}/day): ${formatDays(daysIdeal)}.`;
+      selfText += `\n• Intensive push (${burn}h/week ≈${formatDays(burn/7)}/day): ${formatDays(daysBurn)}.`;
+
+      // Sections breakdown
+      if (sectionText) {
+        const sections = sectionText.split(';').map(s => s.trim()).filter(s => s);
+        if (sections.length) {
+          const perWords = eff / sections.length;
+          selfText += `\n\nBreakdown by Section:`;
+          sections.forEach(name => {
+            const draftH = (perWords / slow) * mult;
+            selfText += `\n• ${name} (${Math.round(perWords)} words): ${formatDuration(draftH)} draft`;
+          });
+        }
+      }
+
+      // Render
+      r.className = 'success';
+      r.innerHTML = `<div class="report"><p><strong>Answer for Manager:</strong><br>${mgrText}</p><p><strong>Information for Self:</strong><br>${selfText.replace(/\n/g, '<br>')}</p></div>`;
+      document.getElementById('printReport').disabled = false;
+    }
+
+    // Event listeners
+    document.getElementById('estimateBtn').addEventListener('click', estimate);
+    document.getElementById('printReport').addEventListener('click', () => {
+      const content = document.querySelector('#results .report').outerHTML;
+      const win = window.open('', '_blank');
+      win.document.write(`
+        <html><head><title>Full Writing Task Report</title>
+        <style>body { font-family: sans-serif; padding: 2em; max-width: 600px; margin: auto; } h1 {text-align: center;} .report p { margin: 1em 0; }</style>
+        </head><body><h1>Writing Task Full Report</h1>${content}</body></html>
+      `);
+      win.document.close();
+      win.print();
+    });
+  </script>
+</body>
+</html>
