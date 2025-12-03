@@ -1,10 +1,20 @@
-import { DEFAULT_METRICS, STAKEHOLDER_COLORS } from "./constants";
+import {
+  DEFAULT_METRICS,
+  STAKEHOLDER_COLORS,
+  COVER_ART_RATE_DEFAULT,
+  INTERIOR_SPOT_DEFAULT,
+  INTERIOR_HALF_DEFAULT,
+  INTERIOR_FULL_DEFAULT,
+  PORTRAIT_DEFAULT,
+} from "./constants";
 import {
   DefenseAnalysisResult,
   EstimatorInput,
   EstimatorResult,
   EstimatorInputV2,
   EstimatorOutputV2,
+   ArtModuleInput,
+   ArtBudgetBreakdown,
   Metrics,
   Project,
   ProjectAnalysis,
@@ -350,5 +360,32 @@ export function runEstimator(
     mgrText,
     teamMember,
     roleAdjusted: false,
+  };
+}
+
+export function runArtBudget(input: ArtModuleInput): ArtBudgetBreakdown {
+  const safe = (n: number | undefined | null): number => (n && n > 0 ? n : 0);
+
+  const numCovers = safe(input.numCovers);
+  const numSpots = safe(input.numSpots);
+  const numHalf = safe(input.numHalfPage);
+  const numFull = safe(input.numFullPage);
+  const numPortraits = safe(input.numPortraits);
+
+  const coverCost = numCovers * COVER_ART_RATE_DEFAULT;
+  const spotCost = numSpots * INTERIOR_SPOT_DEFAULT;
+  const halfPageCost = numHalf * INTERIOR_HALF_DEFAULT;
+  const fullPageCost = numFull * INTERIOR_FULL_DEFAULT;
+  const portraitCost = numPortraits * PORTRAIT_DEFAULT;
+
+  const totalArtCost = coverCost + spotCost + halfPageCost + fullPageCost + portraitCost;
+
+  return {
+    coverCost,
+    spotCost,
+    halfPageCost,
+    fullPageCost,
+    portraitCost,
+    totalArtCost,
   };
 }

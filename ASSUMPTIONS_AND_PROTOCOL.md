@@ -199,3 +199,22 @@ When adding such features, ensure they:
 - Respect this document’s governance rules.
 - Keep conservative defaults intact.
 - Maintain a clear distinction between **global configuration** and **per‑scenario overrides**.
+
+---
+
+## 10. Art Pricing Defaults
+
+For 2025–2026 planning, the estimator uses the following **global art pricing defaults**, derived from TRPG industry ranges and the "Art Order Rules" reference:
+
+- **Cover art**
+  - Planning default: **$1,500 per cover** (pro‑quality cover; gives headroom above the $1,000 "floor").
+
+- **Interior art**
+  - Spot pieces (small): **$150** each.
+  - Half‑page illustrations: **$300** each.
+  - Full‑page illustrations: **$500** each.
+  - Portraits / key NPCs or monsters: **$300** each (midpoint of $250–$400).
+
+These values are **global assumptions**, not negotiated rates. Scenario‑level overrides (e.g. cheaper art tiers, higher‑end premium artists) must be modeled explicitly as separate scenarios or via configuration, not by silently weakening these defaults.
+
+If art pricing assumptions change materially (e.g. a new standard vendor rate, or a strategic decision to downgrade/upgrade tier), update both the code constants and this section.

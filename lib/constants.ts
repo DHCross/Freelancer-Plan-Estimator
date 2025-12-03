@@ -9,6 +9,7 @@ import {
   TeamMember,
   ReplacementRole,
   OrphanedAsset,
+  ArtTierConfig,
 } from "./types";
 
 export const TEAM_ROSTER: TeamMember[] = [
@@ -307,6 +308,55 @@ export const RATE_PRESETS: Record<string, RatePreset> = {
   medium: { label: "Medium (8 cents/word)", rate: 0.08 },
   high: { label: "High (12 cents/word)", rate: 0.12 },
 };
+
+export const ART_TIER_CONFIGS: ArtTierConfig[] = [
+  {
+    id: "BEGINNER",
+    label: "Beginner / Hobbyist",
+    min: 100,
+    max: 400,
+    default: 250,
+    notes: "Simple character sketches, icons, or small commissions",
+  },
+  {
+    id: "EMERGING",
+    label: "Emerging Artist",
+    min: 400,
+    max: 1200,
+    default: 800,
+    notes: "Character portraits, basic environments, maps",
+  },
+  {
+    id: "MID_PRO",
+    label: "Mid-Level Professional",
+    min: 1200,
+    max: 3500,
+    default: 2000,
+    notes: "Full color portraits, complex maps, multi-piece illustrations",
+  },
+  {
+    id: "ESTABLISHED",
+    label: "Established Artist",
+    min: 3500,
+    max: 7500,
+    default: 5000,
+    notes: "Covers and major flagship illustrations",
+  },
+  {
+    id: "PREMIUM",
+    label: "Premium / High Profile",
+    min: 7500,
+    max: 20000,
+    default: 12000,
+    notes: "High-profile covers and exclusive assets",
+  },
+];
+
+export const COVER_ART_RATE_DEFAULT = 1500;
+export const INTERIOR_SPOT_DEFAULT = 150;
+export const INTERIOR_HALF_DEFAULT = 300;
+export const INTERIOR_FULL_DEFAULT = 500;
+export const PORTRAIT_DEFAULT = 300;
 
 export const INCOME_SCENARIOS: IncomeScenario[] = [
   { id: "freelance_modest", label: "Modest Freelance Year", desiredIncome: 20000 },

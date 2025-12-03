@@ -194,3 +194,32 @@ export interface EstimatorOutputV2 {
   managerText: string;
   selfText: string;
 }
+
+export type ArtTier = "BEGINNER" | "EMERGING" | "MID_PRO" | "ESTABLISHED" | "PREMIUM";
+
+export interface ArtTierConfig {
+  id: ArtTier;
+  label: string;
+  min: number;
+  max: number;
+  default: number;
+  notes: string;
+}
+
+export interface ArtModuleInput {
+  artTier: ArtTier;
+  numSpots: number;
+  numHalfPage: number;
+  numFullPage: number;
+  numPortraits: number;
+  numCovers: number;
+}
+
+export interface ArtBudgetBreakdown {
+  coverCost: number;
+  spotCost: number;
+  halfPageCost: number;
+  fullPageCost: number;
+  portraitCost: number;
+  totalArtCost: number;
+}
