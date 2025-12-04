@@ -18,6 +18,7 @@ export interface Project {
   clientType: string;
   targetWords: number;
   manualHours?: number;
+  layoutHours?: number;
   assignedTo: string;
   internalStatus: string;
   clientStatus: string;
