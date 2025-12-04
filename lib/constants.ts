@@ -453,6 +453,59 @@ export const LEGACY_GHOST_CAPACITY = [
   { label: "Randy (Production Lead)", hours: "40h/wk" },
 ];
 
+// Human-friendly workflow categories
+export const WORKFLOW_CATEGORIES = {
+  PRIME_DIRECTIVE: {
+    id: "prime_directive",
+    label: "Prime Directive",
+    description: "Must ship to protect revenue, reputation, or contracts",
+    color: "red",
+    priority: 0
+  },
+  ACTIVELY_WORKING: {
+    id: "actively_working", 
+    label: "Actively Working",
+    description: "Someone is touching this week",
+    color: "blue",
+    priority: 1
+  },
+  READY_TO_ADVANCE: {
+    id: "ready_to_advance",
+    label: "Ready to Advance", 
+    description: "Clear to work, waiting for capacity",
+    color: "green",
+    priority: 2
+  },
+  BLOCKED: {
+    id: "blocked",
+    label: "Blocked",
+    description: "Needs input/approval/asset",
+    color: "orange", 
+    priority: 3
+  },
+  DORMANT: {
+    id: "dormant",
+    label: "Dormant Projects",
+    description: "Real, but unstaffed or on ice",
+    color: "purple",
+    priority: 4
+  },
+  TRASH_FIRE: {
+    id: "trash_fire",
+    label: "Trash Fire Watchlist",
+    description: "At risk or needs truth-telling",
+    color: "red",
+    priority: 5
+  },
+  SANDBOX: {
+    id: "sandbox",
+    label: "Optional Sandbox",
+    description: "Explorations and experiments",
+    color: "gray",
+    priority: 6
+  }
+};
+
 export const PRODUCTION_PHASES: ProductionPhase[] = [
   {
     id: "architecture",
