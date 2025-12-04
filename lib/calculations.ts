@@ -13,8 +13,8 @@ import {
   EstimatorResult,
   EstimatorInputV2,
   EstimatorOutputV2,
-   ArtModuleInput,
-   ArtBudgetBreakdown,
+  ArtModuleInput,
+  ArtBudgetBreakdown,
   Metrics,
   Project,
   ProjectAnalysis,
@@ -26,6 +26,10 @@ import {
   IncomeScenario,
   TeamMember,
   PaceScenario,
+  PrintRunConfig,
+  ProductPricing,
+  DistributionChannel,
+  RoiResult,
 } from "./types";
 
 export function calculateAnnualLoad(projects: Project[], teamRoster: TeamMember[] = []): WriterLoad[] {
@@ -387,5 +391,64 @@ export function runArtBudget(input: ArtModuleInput): ArtBudgetBreakdown {
     fullPageCost,
     portraitCost,
     totalArtCost,
+  };
+}
+
+export function calculateRoi(
+  devCost: number,
+  printRun: PrintRunConfig,
+  pricing: ProductPricing,
+  channel: DistributionChannel
+): RoiResult {
+  const quantity = Math.max(0, printRun.quantity || 0);
+  const msrp = Math.max(0, pricing.msrp || 0);
+
+  if (quantity === 0 || msrp === 0) {
+    return {
+      channelId: channel.id,
+      netRevenuePerUnit: 0,
+      totalRevenue: 0,
+      totalCogs: 0,
+      grossMargin: 0,
+      netProfit: -devCost,
+      breakEvenUnits: devCost > 0 ? Number.POSITIVE_INFINITY : 0,
+      roiPercent: 0,
+    };
+  }
+
+  const discountMult = 1 - (channel.discountPercent || 0) / 100;
+  const platformFeeMult = (channel.platformFeePercent || 0) / 100;
+
+  const grossPerUnit = msrp * discountMult;
+  const platformFeePerUnit = grossPerUnit * platformFeeMult;
+
+  const tariffMult = 1 + (printRun.tariffPercent || 0) / 100;
+  const printAndFreightPerUnit =
+    (printRun.unitCost || 0) * tariffMult +
+    (printRun.freightPerUnit || 0) +
+    (printRun.warehousingPerUnit || 0);
+
+  const fulfillmentPerUnit = channel.fulfillmentFeePerUnit || 0;
+
+  const cogsPerUnit = printAndFreightPerUnit + fulfillmentPerUnit + platformFeePerUnit;
+  const netRevenuePerUnit = grossPerUnit - cogsPerUnit;
+
+  const totalRevenue = grossPerUnit * quantity;
+  const totalCogs = cogsPerUnit * quantity;
+  const grossMargin = totalRevenue - totalCogs;
+  const netProfit = grossMargin - devCost;
+
+  const breakEvenUnits = netRevenuePerUnit > 0 ? Math.ceil(devCost / netRevenuePerUnit) : Number.POSITIVE_INFINITY;
+  const roiPercent = devCost > 0 ? (netProfit / devCost) * 100 : 0;
+
+  return {
+    channelId: channel.id,
+    netRevenuePerUnit,
+    totalRevenue,
+    totalCogs,
+    grossMargin,
+    netProfit,
+    breakEvenUnits,
+    roiPercent,
   };
 }

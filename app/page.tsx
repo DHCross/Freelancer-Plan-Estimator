@@ -44,6 +44,7 @@ import {
   ProjectStatusView,
   PurgeView,
   TeamPlanner,
+  DossierView,
 } from "@/components/dashboard";
 import { ScenarioEngine } from "@/components/dashboard/ScenarioEngine";
 import { FailureAnalysis } from "@/components/dashboard/FailureAnalysis";
@@ -372,6 +373,7 @@ export default function DashboardPage() {
         { id: "failures", label: "Lessons Learned", icon: AlertTriangle },
         { id: "teambuilder", label: "Team Builder", icon: Users },
         { id: "teamworkspace", label: "Estimator Tools", icon: Users },
+        { id: "dossier", label: "Dossier", icon: ClipboardList },
         { id: "financials", label: "Financial Model", icon: DollarSign },
       ]
       : []),
@@ -762,6 +764,18 @@ export default function DashboardPage() {
                     )}
                   </div>
                 </div>
+              )}
+
+              {!isClientMode && activeTab === "dossier" && (
+                <DossierView
+                  analysis={analysisWithDisplay}
+                  metrics={metrics}
+                  defense={defenseAnalysis}
+                  defendHourlyRate={defendHourlyRate}
+                  defendWPH={defendWPH}
+                  marketPerWord={marketPerWord}
+                  teamWeeklyCapacity={teamWeeklyCapacity}
+                />
               )}
 
               {!isClientMode && activeTab === "financials" && (

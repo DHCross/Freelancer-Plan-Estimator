@@ -8,3 +8,4 @@ export * from "./ProjectStatusView";
 export * from "./PurgeView";
 export * from "./TeamPlanner";
 export * from "./FinancialModel";
+export * from "./DossierView";
