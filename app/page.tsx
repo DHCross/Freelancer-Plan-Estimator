@@ -354,7 +354,8 @@ export default function DashboardPage() {
   const tabs = [
     { id: "methodology", label: "How We Build", icon: Cpu },
     { id: "team", label: "Who Does What", icon: Users },
-    { id: "products", label: "Budget & Plan", icon: Briefcase },
+    { id: "products", label: "Product Listing", icon: Briefcase },
+    { id: "budget", label: "Budget & Plan", icon: DollarSign },
     { id: "efficiency", label: "Cost Savings", icon: Calculator },
     {
       id: "resourcing",
@@ -644,15 +645,16 @@ export default function DashboardPage() {
             {activeTab === "team" && <TeamPlanner writers={writerLoad} clientMode={isClientMode} />}
 
             {activeTab === "products" && (
-              <div className="space-y-6">
-                <MandateView projects={analysisWithDisplay} clientMode={isClientMode} />
-                <BudgetView
-                  analysis={analysisWithDisplay}
-                  quarters={quarterBuckets}
-                  clientMode={isClientMode}
-                  onProjectUpdate={handleProjectUpdate}
-                />
-              </div>
+              <MandateView projects={analysisWithDisplay} clientMode={isClientMode} />
+            )}
+
+            {activeTab === "budget" && (
+              <BudgetView
+                analysis={analysisWithDisplay}
+                quarters={quarterBuckets}
+                clientMode={isClientMode}
+                onProjectUpdate={handleProjectUpdate}
+              />
             )}
 
             {activeTab === "efficiency" && (
