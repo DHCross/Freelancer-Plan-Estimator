@@ -224,3 +224,37 @@ export interface ArtBudgetBreakdown {
   portraitCost: number;
   totalArtCost: number;
 }
+
+export type DistributionChannelType = "direct" | "kickstarter" | "distributor_standard" | "distributor_hybrid";
+
+export interface DistributionChannel {
+  id: DistributionChannelType;
+  label: string;
+  discountPercent: number; // e.g. 60 for 60% off MSRP
+  fulfillmentFeePerUnit: number; // e.g. $2.00 pick & pack
+  platformFeePercent: number; // e.g. 5% for KS
+}
+
+export interface PrintRunConfig {
+  quantity: number;
+  unitCost: number;
+  freightPerUnit: number;
+  warehousingPerUnit: number;
+  tariffPercent: number; // e.g. 7.5
+}
+
+export interface ProductPricing {
+  msrp: number;
+}
+
+export interface RoiResult {
+  channelId: DistributionChannelType;
+  netRevenuePerUnit: number;
+  totalRevenue: number;
+  totalCogs: number; // Cost of Goods Sold (Print + Freight + Fees)
+  grossMargin: number;
+  netProfit: number; // Gross Margin - Dev Cost
+  breakEvenUnits: number;
+  roiPercent: number;
+}
+

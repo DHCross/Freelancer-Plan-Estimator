@@ -7,3 +7,4 @@ export * from "./MethodologyView";
 export * from "./ProjectStatusView";
 export * from "./PurgeView";
 export * from "./TeamPlanner";
+export * from "./FinancialModel";
