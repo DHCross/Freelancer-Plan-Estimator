@@ -477,21 +477,33 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
             <div className="bg-gradient-to-r from-slate-50 to-indigo-50 rounded-lg p-3 space-y-2">
               <p className="text-xs font-medium text-slate-700">Quick Comparison (A1: 97k words)</p>
               <div className="grid grid-cols-3 gap-2 text-xs">
-                <div className={`p-2 rounded ${marketPreset === 'osr' ? 'bg-indigo-100 border border-indigo-300' : 'bg-white'}`}>
+                <button
+                  type="button"
+                  onClick={() => setMarketPreset('osr')}
+                  className={`p-2 rounded text-left transition-colors ${marketPreset === 'osr' ? 'bg-indigo-100 border border-indigo-300' : 'bg-white hover:bg-slate-50 border border-transparent'}`}
+                >
                   <p className="font-medium">OSR/Indie</p>
                   <p className="text-slate-600">{marketComparison.osr.totalPieces} pieces</p>
                   <p className="text-slate-600">${marketComparison.osr.totalCost.toLocaleString()}</p>
-                </div>
-                <div className={`p-2 rounded ${marketPreset === '5e' ? 'bg-indigo-100 border border-indigo-300' : 'bg-white'}`}>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMarketPreset('5e')}
+                  className={`p-2 rounded text-left transition-colors ${marketPreset === '5e' ? 'bg-indigo-100 border border-indigo-300' : 'bg-white hover:bg-slate-50 border border-transparent'}`}
+                >
                   <p className="font-medium">5E Standard</p>
                   <p className="text-slate-600">{marketComparison["5e"].totalPieces} pieces</p>
                   <p className="text-slate-600">${marketComparison["5e"].totalCost.toLocaleString()}</p>
-                </div>
-                <div className={`p-2 rounded ${marketPreset === 'pathfinder' ? 'bg-indigo-100 border border-indigo-300' : 'bg-white'}`}>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMarketPreset('pathfinder')}
+                  className={`p-2 rounded text-left transition-colors ${marketPreset === 'pathfinder' ? 'bg-indigo-100 border border-indigo-300' : 'bg-white hover:bg-slate-50 border border-transparent'}`}
+                >
                   <p className="font-medium">Pathfinder</p>
                   <p className="text-slate-600">{marketComparison.pathfinder.totalPieces} pieces</p>
                   <p className="text-slate-600">${marketComparison.pathfinder.totalCost.toLocaleString()}</p>
-                </div>
+                </button>
               </div>
             </div>
           </div>
