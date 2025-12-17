@@ -24,6 +24,15 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
   const [investmentLow, setInvestmentLow] = useState(8500);
   const [investmentHigh, setInvestmentHigh] = useState(12000);
   const [generatedMarkdown, setGeneratedMarkdown] = useState("");
+  const [danWeeklyHours, setDanWeeklyHours] = useState(18);
+  const [martinWeeklyHours, setMartinWeeklyHours] = useState(30);
+  const [workingWeeksPerYear, setWorkingWeeksPerYear] = useState(48);
+  const [narrativeLead, setNarrativeLead] = useState("Martin");
+  const [systemsLead, setSystemsLead] = useState("Dan");
+  const [productionArbiter, setProductionArbiter] = useState("Dan");
+  const [finalEditor, setFinalEditor] = useState("Dan");
+  const [assetCoordinator, setAssetCoordinator] = useState("TBD");
+  const [projectManagerRole, setProjectManagerRole] = useState("Dan");
 
   const reportConfig: ReportConfig = useMemo(() => ({
     title: reportTitle,
@@ -41,7 +50,50 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
       low: investmentLow,
       high: investmentHigh,
     },
-  }), [reportTitle, reportSubtitle, projects, metrics, teamRoster, interiorPieces, interiorCostPerPiece, cartographyCost, coverCost, investmentLow, investmentHigh]);
+    teamCapacity: {
+      danWeeklyHours,
+      martinWeeklyHours,
+      workingWeeksPerYear,
+    },
+    roleOwnership: {
+      narrativeLead,
+      systemsLead,
+      productionArbiter,
+      finalEditor,
+      assetCoordinator,
+      projectManager: projectManagerRole,
+    },
+  }), [
+    reportTitle,
+    reportSubtitle,
+    projects,
+    metrics,
+    teamRoster,
+    interiorPieces,
+    interiorCostPerPiece,
+    cartographyCost,
+    coverCost,
+    investmentLow,
+    investmentHigh,
+    danWeeklyHours,
+    martinWeeklyHours,
+    workingWeeksPerYear,
+    narrativeLead,
+    systemsLead,
+    productionArbiter,
+    finalEditor,
+    assetCoordinator,
+    projectManagerRole,
+  ]);
+
+  const capacitySnapshot = useMemo(() => {
+    const combinedWeekly = danWeeklyHours + martinWeeklyHours;
+    const annualCapacity = combinedWeekly * workingWeeksPerYear;
+    return {
+      combinedWeekly,
+      annualCapacity,
+    };
+  }, [danWeeklyHours, martinWeeklyHours, workingWeeksPerYear]);
 
   const totalArtBudget = useMemo(() => {
     return (interiorPieces * interiorCostPerPiece) + cartographyCost + coverCost;
@@ -117,6 +169,119 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
             </h2>
             <p className="text-sm text-slate-600 max-w-2xl mt-2">
               Generate a professional production plan report matching the format you sent to Martin. Export as Markdown, HTML, or print to PDF.
+            </p>
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Team Capacity Reality</p>
+
+            <div className="grid grid-cols-3 gap-3">
+              <label className="block">
+                <span className="text-xs font-medium text-slate-600">Dan hrs/week</span>
+                <input
+                  type="number"
+                  value={danWeeklyHours}
+                  onChange={(e) => setDanWeeklyHours(Number(e.target.value))}
+                  className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs font-medium text-slate-600">Martin hrs/week</span>
+                <input
+                  type="number"
+                  value={martinWeeklyHours}
+                  onChange={(e) => setMartinWeeklyHours(Number(e.target.value))}
+                  className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs font-medium text-slate-600">Working weeks</span>
+                <input
+                  type="number"
+                  value={workingWeeksPerYear}
+                  onChange={(e) => setWorkingWeeksPerYear(Number(e.target.value))}
+                  className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                />
+              </label>
+            </div>
+
+            <div className="bg-slate-50 rounded-lg p-3 text-sm">
+              <p className="text-slate-600 flex justify-between">
+                <span>Combined weekly capacity</span>
+                <span className="font-semibold text-slate-900">{capacitySnapshot.combinedWeekly} hrs/week</span>
+              </p>
+              <p className="text-slate-600 flex justify-between mt-1">
+                <span>Annualized (realistic)</span>
+                <span className="font-semibold text-slate-900">{capacitySnapshot.annualCapacity.toLocaleString()} hrs/year</span>
+              </p>
+              <p className="text-xs text-slate-500 mt-2">
+                These values drive the Capacity Reality Check section of the report.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Role Ownership</p>
+
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block">
+                <span className="text-xs font-medium text-slate-600">Narrative Lead</span>
+                <input
+                  type="text"
+                  value={narrativeLead}
+                  onChange={(e) => setNarrativeLead(e.target.value)}
+                  className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs font-medium text-slate-600">Systems Lead</span>
+                <input
+                  type="text"
+                  value={systemsLead}
+                  onChange={(e) => setSystemsLead(e.target.value)}
+                  className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs font-medium text-slate-600">Production Arbiter</span>
+                <input
+                  type="text"
+                  value={productionArbiter}
+                  onChange={(e) => setProductionArbiter(e.target.value)}
+                  className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs font-medium text-slate-600">Final Editor</span>
+                <input
+                  type="text"
+                  value={finalEditor}
+                  onChange={(e) => setFinalEditor(e.target.value)}
+                  className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs font-medium text-slate-600">Asset Coordinator</span>
+                <input
+                  type="text"
+                  value={assetCoordinator}
+                  onChange={(e) => setAssetCoordinator(e.target.value)}
+                  className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                />
+              </label>
+              <label className="block">
+                <span className="text-xs font-medium text-slate-600">Project Manager</span>
+                <input
+                  type="text"
+                  value={projectManagerRole}
+                  onChange={(e) => setProjectManagerRole(e.target.value)}
+                  className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                />
+              </label>
+            </div>
+
+            <p className="text-xs text-slate-500">
+              These assignments drive the Role Ownership & Decision Authority section.
             </p>
           </div>
           <div className="flex items-center gap-2">

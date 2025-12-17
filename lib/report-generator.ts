@@ -18,6 +18,25 @@ export interface ReportConfig {
     high: number;
   };
   generatedDate?: string;
+  teamCapacity?: {
+    danWeeklyHours: number;
+    martinWeeklyHours: number;
+    workingWeeksPerYear: number;
+  };
+  roleOwnership?: {
+    narrativeLead: string;
+    systemsLead: string;
+    productionArbiter: string;
+    finalEditor: string;
+    assetCoordinator: string;
+    projectManager: string;
+  };
+}
+
+const ROMAN_NUMERALS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+
+function getRomanNumeral(index: number): string {
+  return ROMAN_NUMERALS[index - 1] || `${index}`;
 }
 
 interface QuarterGroup {
@@ -33,6 +52,168 @@ function formatCurrency(value: number): string {
 
 function formatNumber(value: number): string {
   return Math.round(value).toLocaleString("en-US");
+}
+
+function calculateCapacityAnalysis(config: ReportConfig, totalHours: number) {
+  const capacity = config.teamCapacity;
+  if (!capacity) return null;
+
+  const { danWeeklyHours, martinWeeklyHours, workingWeeksPerYear } = capacity;
+  
+  // Calculate actual capacity
+  const combinedWeeklyHours = danWeeklyHours + martinWeeklyHours;
+  const annualCapacity = combinedWeeklyHours * workingWeeksPerYear;
+  
+  // Calculate gaps
+  const hourGap = totalHours - annualCapacity;
+  const weeklyGap = hourGap / workingWeeksPerYear;
+  const isOverallocated = hourGap > 0;
+  
+  // Calculate equivalent team size
+  const equivalentTeamSize = totalHours / (workingWeeksPerYear * 40); // 40 = standard full-time week
+  
+  return {
+    danWeeklyHours,
+    martinWeeklyHours,
+    combinedWeeklyHours,
+    annualCapacity,
+    totalHours,
+    hourGap,
+    weeklyGap,
+    isOverallocated,
+    equivalentTeamSize,
+    workingWeeksPerYear
+  };
+}
+
+function generateCapacityAnalysisSection(analysis: ReturnType<typeof calculateCapacityAnalysis>) {
+  if (!analysis) return "";
+
+  const {
+    danWeeklyHours,
+    martinWeeklyHours,
+    combinedWeeklyHours,
+    annualCapacity,
+    totalHours,
+    hourGap,
+    weeklyGap,
+    isOverallocated,
+    equivalentTeamSize,
+    workingWeeksPerYear
+  } = analysis;
+
+  const gapDescription = isOverallocated
+    ? `**Gap:** Short ${formatNumber(Math.abs(hourGap))} hours (${weeklyGap.toFixed(1)} hrs/week) — roughly a third teammate at halftime.`
+    : `**Surplus:** ${formatNumber(Math.abs(hourGap))} hours of slack capacity.`;
+
+  const cleanFixes = [
+    "Push one Q4 deliverable (e.g., Grimdark Skeleton) into Q1 2027.",
+    "De-scope Ravenous Coast to a Phase 1 book (regional core + bastions).",
+    "Serialize A2 development — outline in Q3, full production after A1 ship."
+  ];
+
+  const cleanFixList = cleanFixes.map(item => `- ${item}`).join("\n");
+
+  return `
+**Actual capacity (realistic):**
+- Dan: ${danWeeklyHours} hrs/week
+- Martin: ${martinWeeklyHours} hrs/week
+- Combined: ${combinedWeeklyHours} hrs/week × ${workingWeeksPerYear} working weeks ≈ ${formatNumber(annualCapacity)} hrs/year
+
+**Plan demand:** ${formatNumber(totalHours)} hrs/year (${Math.round(totalHours / workingWeeksPerYear)} hrs/week equivalent)
+
+${gapDescription}
+
+**Equivalent team size implied by plan:** ${equivalentTeamSize.toFixed(1)} FTE (plan assumes ~${Math.round(totalHours / workingWeeksPerYear)} hrs/week).
+
+**Where load concentrates:**
+1. **Q3 overlap:** A1 polish + Players Guide + Maps + A2 ramp assume parallel throughput you don't have.
+2. **Q4 stack:** Ravenous Coast + Grimdark Skeleton double-book the same window; ~${formatNumber(Math.max(0, hourGap))} missing hours live here.
+
+**Cleanest fixes (no heroics):**
+${cleanFixList}
+`;
+}
+
+function generateRoleOwnershipAnalysis(roles: ReportConfig['roleOwnership'], headingNumeral: string = "V"): string {
+  if (!roles) return "";
+  
+  const {
+    narrativeLead,
+    systemsLead,
+    productionArbiter,
+    finalEditor,
+    assetCoordinator,
+    projectManager
+  } = roles;
+  
+  return `## ${headingNumeral}. Role Ownership & Decision Authority
+
+### Explicit Role Coverage
+
+**1. Creative Lead / Setting Architect — ${narrativeLead || "Martin"}**
+- Primary narrative authoring
+- Tone, theme, and scene conception
+- Module-level storytelling momentum
+
+**2. Systems & Structure Lead — ${systemsLead || "Dan"}**
+- Rules translation & system fluency
+- Structural consistency across books
+- Layout-aware writing and editorial hygiene
+- Long-horizon continuity thinking
+
+**3. Production Arbiter — ${productionArbiter || "Dan"}**
+- Final calls on scope cuts
+- Priority conflict resolution
+- "Good enough" threshold decisions
+- Completion sign-off authority
+
+**4. Final Editor & Integrator — ${finalEditor || "Dan"}**
+- Editorial enforcement phase
+- Cross-project consistency
+- Layout integration oversight
+
+**5. Asset Coordinator — ${assetCoordinator || "TBD"}**
+- Art brief preparation
+- Map dependency tracking
+- Layout question triage
+- External creator liaison
+
+**6. Project Manager / Throughput Guardian — ${projectManager || "Dan"}**
+- Calendar vs reality monitoring
+- Early slippage detection
+- Capacity bottleneck identification
+
+### Identified Gaps & Mitigations
+
+**GAP 1: Explicit Project Ownership**
+- **Risk:** Polite deadlocks, quiet rework, scope creep by omission
+- **Mitigation:** Single Final Arbiter per deliverable (not globally)
+
+**GAP 2: Production Management**
+- **Risk:** Discovering overload at worst possible moment
+- **Mitigation:** Named throughput guardian role
+
+**GAP 3: Editorial Phase Distinction**
+- **Risk:** Late-stage quality panic, tone drift, layout friction
+- **Mitigation:** Dedicated editorial pass boundary
+
+**GAP 4: Asset Coordination**
+- **Risk:** Last-minute scrambling, art mismatches, layout bottlenecks
+- **Mitigation:** Lightweight coordinator role (5 hrs/week)
+
+### Decision Authority Matrix
+
+| Decision Area | Primary Authority | Backup Authority | Escalation |
+|---------------|-------------------|------------------|------------|
+| Narrative Content | ${narrativeLead || "Martin"} | ${systemsLead || "Dan"} | Joint discussion |
+| Rules & Systems | ${systemsLead || "Dan"} | ${narrativeLead || "Martin"} | ${productionArbiter || "Dan"} final call |
+| Scope & Priority | ${productionArbiter || "Dan"} | ${narrativeLead || "Martin"} | Joint discussion |
+| Editorial Quality | ${finalEditor || "Dan"} | ${narrativeLead || "Martin"} | ${productionArbiter || "Dan"} final call |
+| Asset Integration | ${assetCoordinator || "TBD"} | ${finalEditor || "Dan"} | ${projectManager || "Dan"} escalation |
+
+---
+`;
 }
 
 function getQuarterFromProject(project: DisplayProject): string {
@@ -98,6 +279,9 @@ export function generateProductionPlanMarkdown(config: ReportConfig): string {
   const quarterGroups = groupProjectsByQuarter(projects);
   const totalBudget = projects.reduce((sum, p) => sum + (p.estCost || 0), 0);
   const totalHours = projects.reduce((sum, p) => sum + (p.total || p.manualHours || 0), 0);
+  
+  // Calculate capacity analysis
+  const capacityAnalysis = calculateCapacityAnalysis(config, totalHours);
 
   // Calculate art budget if not provided
   const calculatedArtBudget = artBudget || {
@@ -119,6 +303,9 @@ export function generateProductionPlanMarkdown(config: ReportConfig): string {
   const flagshipProject = projects.find(p => p.name.toLowerCase().includes("a1") && p.name.toLowerCase().includes("problem"));
   const flagshipHours = flagshipProject?.total || flagshipProject?.manualHours || 400;
 
+  let sectionIndex = 1;
+  const nextHeading = (title: string) => `## ${getRomanNumeral(sectionIndex++)}. ${title}`;
+
   const sections: string[] = [];
 
   // Header
@@ -132,7 +319,7 @@ ${subtitle || ""}
 `);
 
   // Strategic Priorities
-  sections.push(`## I. Strategic Priorities
+  sections.push(`${nextHeading("Strategic Priorities")}
 
 ### Primary Deliverable
 The A-Series Adventure Path (A0–A4) represents the core publishing initiative for the year.
@@ -150,7 +337,7 @@ Primary print strategy will use domestic offset printing (runs in 1k–2k units)
 `);
 
   // Release Calendar
-  sections.push(`## II. Release Calendar
+  sections.push(`${nextHeading("Release Calendar")}
 
 | Title | Format | Target Date | Notes |
 |-------|--------|-------------|-------|`);
@@ -178,7 +365,7 @@ Primary print strategy will use domestic offset printing (runs in 1k–2k units)
 `);
 
   // Quarterly Execution Path
-  sections.push(`## III. Quarterly Execution Path
+  sections.push(`${nextHeading("Quarterly Execution Path")}
 `);
 
   quarterGroups.forEach(group => {
@@ -222,7 +409,7 @@ Primary print strategy will use domestic offset printing (runs in 1k–2k units)
 `);
 
   // Budget & Resourcing
-  sections.push(`## IV. Budget & Resourcing (A1-Centered)
+  sections.push(`${nextHeading("Budget & Resourcing (A1-Centered)")}
 
 **Recommended investment range:** ${formatCurrency(calculatedInvestmentRange.low)}–${formatCurrency(calculatedInvestmentRange.high)}
 
@@ -247,8 +434,20 @@ Approximately ${formatNumber(flagshipHours)} hours invested into A1 development 
 ---
 `);
 
+  if (capacityAnalysis) {
+    sections.push(`${nextHeading("Capacity Reality Check")}
+
+${generateCapacityAnalysisSection(capacityAnalysis)}
+---
+`);
+  }
+
+  if (config.roleOwnership) {
+    sections.push(generateRoleOwnershipAnalysis(config.roleOwnership, getRomanNumeral(sectionIndex++)));
+  }
+
   // Immediate Action Items
-  sections.push(`## V. Immediate Action Items
+  sections.push(`${nextHeading("Immediate Action Items")}
 
 To maintain Q2 release readiness:
 
@@ -265,7 +464,7 @@ Final files should be routed mid-April for uninterrupted layout flow.
 `);
 
   // Footer
-  sections.push(`## Summary
+  sections.push(`${nextHeading("Summary")}
 
 This plan forms the baseline working schedule, financial model, and operational sequencing for full execution of the A-Series cycle in 2026. Additional downstream planning—as marketing timing, distribution routing, and sales cadence—is available upon request.
 
