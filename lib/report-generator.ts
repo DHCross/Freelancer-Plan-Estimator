@@ -1,5 +1,6 @@
 import { DisplayProject, Metrics, TeamMember } from "./types";
-import { DEFAULT_METRICS, COVER_ART_RATE_DEFAULT, CARTOGRAPHY_DEFAULT, INTERIOR_SPOT_DEFAULT } from "./constants";
+import { DEFAULT_METRICS, COVER_ART_RATE_DEFAULT, INTERIOR_SPOT_DEFAULT, INTERIOR_FULL_DEFAULT, REGIONAL_MAP_DEFAULT, ENCOUNTER_MAP_DEFAULT, A1_ART_BASELINE, ART_DENSITY_PRESETS, ArtDensityPreset } from "./constants";
+import { estimateProjectArt } from "./calculations";
 
 export interface ReportConfig {
   title: string;
@@ -8,10 +9,19 @@ export interface ReportConfig {
   metrics: Metrics;
   teamRoster: TeamMember[];
   artBudget?: {
-    interiorPieces: number;
+    regionalMaps: number;
+    encounterMaps: number;
+    interiorIllustrations: number;
+    spotArt: number;
+    npcPortraits: number;
+    covers: number;
+    regionalMapCost: number;
+    encounterMapCost: number;
     interiorCost: number;
-    cartographyCost: number;
+    spotCost: number;
+    portraitCost: number;
     coverCost: number;
+    totalPieces: number;
   };
   investmentRange?: {
     low: number;
@@ -31,6 +41,8 @@ export interface ReportConfig {
     assetCoordinator: string;
     projectManager: string;
   };
+  marketPreset?: ArtDensityPreset;
+  showMarketComparison?: boolean;
 }
 
 const ROMAN_NUMERALS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
@@ -283,15 +295,24 @@ export function generateProductionPlanMarkdown(config: ReportConfig): string {
   // Calculate capacity analysis
   const capacityAnalysis = calculateCapacityAnalysis(config, totalHours);
 
-  // Calculate art budget if not provided
+  // Calculate art budget if not provided - uses A1 manuscript reality baseline
   const calculatedArtBudget = artBudget || {
-    interiorPieces: 38,
-    interiorCost: 38 * INTERIOR_SPOT_DEFAULT,
-    cartographyCost: CARTOGRAPHY_DEFAULT,
-    coverCost: COVER_ART_RATE_DEFAULT,
+    regionalMaps: A1_ART_BASELINE.regionalMaps,
+    encounterMaps: A1_ART_BASELINE.encounterMaps,
+    interiorIllustrations: A1_ART_BASELINE.interiorIllustrations,
+    spotArt: A1_ART_BASELINE.spotArt,
+    npcPortraits: A1_ART_BASELINE.npcPortraits,
+    covers: A1_ART_BASELINE.covers,
+    regionalMapCost: A1_ART_BASELINE.regionalMaps * REGIONAL_MAP_DEFAULT,
+    encounterMapCost: A1_ART_BASELINE.encounterMaps * ENCOUNTER_MAP_DEFAULT,
+    interiorCost: A1_ART_BASELINE.interiorIllustrations * INTERIOR_FULL_DEFAULT,
+    spotCost: A1_ART_BASELINE.spotArt * INTERIOR_SPOT_DEFAULT,
+    portraitCost: A1_ART_BASELINE.npcPortraits * 250,
+    coverCost: A1_ART_BASELINE.covers * COVER_ART_RATE_DEFAULT,
+    totalPieces: A1_ART_BASELINE.totalPieces,
   };
 
-  const totalArtBudget = calculatedArtBudget.interiorCost + calculatedArtBudget.cartographyCost + calculatedArtBudget.coverCost;
+  const totalArtBudget = calculatedArtBudget.regionalMapCost + calculatedArtBudget.encounterMapCost + calculatedArtBudget.interiorCost + calculatedArtBudget.spotCost + calculatedArtBudget.portraitCost + calculatedArtBudget.coverCost;
 
   // Calculate investment range if not provided
   const calculatedInvestmentRange = investmentRange || {
@@ -413,13 +434,16 @@ Primary print strategy will use domestic offset printing (runs in 1k–2k units)
 
 **Recommended investment range:** ${formatCurrency(calculatedInvestmentRange.low)}–${formatCurrency(calculatedInvestmentRange.high)}
 
-### Distribution:
+### Art Asset Breakdown (A1 Manuscript Reality - ${calculatedArtBudget.totalPieces} pieces total):
 
-| Category | Allocation |
-|----------|------------|
-| Interior Art (~${calculatedArtBudget.interiorPieces} pieces) | ~${formatCurrency(calculatedArtBudget.interiorCost)} |
-| Cartography | ~${formatCurrency(calculatedArtBudget.cartographyCost)} |
-| Cover Art | ~${formatCurrency(calculatedArtBudget.coverCost)} |
+| Category | Count | Classification | Allocation |
+|----------|-------|----------------|------------|
+| Regional Maps | ${calculatedArtBudget.regionalMaps} | REQUIRED | ~${formatCurrency(calculatedArtBudget.regionalMapCost)} |
+| Encounter Maps | ${calculatedArtBudget.encounterMaps} | REQUIRED | ~${formatCurrency(calculatedArtBudget.encounterMapCost)} |
+| Interior Illustrations | ${calculatedArtBudget.interiorIllustrations} | REQUIRED/ENHANCING | ~${formatCurrency(calculatedArtBudget.interiorCost)} |
+| Spot Art/Chapter Openers | ${calculatedArtBudget.spotArt} | COSMETIC | ~${formatCurrency(calculatedArtBudget.spotCost)} |
+| NPC Portraits | ${calculatedArtBudget.npcPortraits} | N/A | ~${formatCurrency(calculatedArtBudget.portraitCost)} |
+| Cover Art | ${calculatedArtBudget.covers} | REQUIRED | ~${formatCurrency(calculatedArtBudget.coverCost)} |
 
 This tier prioritizes consistent execution at predictable schedules and quality.
 
@@ -433,6 +457,48 @@ Approximately ${formatNumber(flagshipHours)} hours invested into A1 development 
 
 ---
 `);
+
+  // Market Comparison Section (if enabled)
+  if (config.showMarketComparison !== false) {
+    const a1Words = A1_ART_BASELINE.wordCount;
+    const osrEstimate = estimateProjectArt(a1Words, "Large Adventure", "osr");
+    const fiveEEstimate = estimateProjectArt(a1Words, "Large Adventure", "5e");
+    const pfEstimate = estimateProjectArt(a1Words, "Large Adventure", "pathfinder");
+    
+    const currentPreset = config.marketPreset || "osr";
+    const currentLabel = ART_DENSITY_PRESETS[currentPreset].label;
+    
+    sections.push(`${nextHeading("Market Comparison Analysis")}
+
+This section compares your current art budget against industry standards for different market segments.
+
+### A1 Art Density Comparison (${formatNumber(a1Words)} words)
+
+| Category | OSR/Indie (Current) | 5E Standard | Pathfinder Premium |
+|----------|---------------------|-------------|--------------------|
+| Regional Maps | ${osrEstimate.regionalMaps} | ${fiveEEstimate.regionalMaps} | ${pfEstimate.regionalMaps} |
+| Encounter Maps | ${osrEstimate.encounterMaps} | ${fiveEEstimate.encounterMaps} | ${pfEstimate.encounterMaps} |
+| Interior Illustrations | ${osrEstimate.interiorIllustrations} | ${fiveEEstimate.interiorIllustrations} | ${pfEstimate.interiorIllustrations} |
+| Spot Art/Openers | ${osrEstimate.spotArt} | ${fiveEEstimate.spotArt} | ${pfEstimate.spotArt} |
+| NPC Portraits | ${osrEstimate.npcPortraits} | ${fiveEEstimate.npcPortraits} | ${pfEstimate.npcPortraits} |
+| **Total Pieces** | **${osrEstimate.totalPieces}** | **${fiveEEstimate.totalPieces}** | **${pfEstimate.totalPieces}** |
+| **Est. Art Cost** | **${formatCurrency(osrEstimate.totalCost)}** | **${formatCurrency(fiveEEstimate.totalCost)}** | **${formatCurrency(pfEstimate.totalCost)}** |
+
+### Market Positioning
+
+**Current Selection:** ${currentLabel}
+
+| Market Tier | Words/Piece | Budget Multiplier | Best For |
+|-------------|-------------|-------------------|----------|
+| OSR / Indie | ~4,200 | 1.0× | Classic TSR aesthetic, budget-conscious, text-dense |
+| 5E Standard | ~3,000 | 1.5× | WotC market expectations, NPC portraits, chapter splashes |
+| Pathfinder Premium | ~1,600 | 2.5× | Lavish illustration, competitive differentiator |
+
+> **Note:** Your current A1 model (${calculatedArtBudget.totalPieces} pieces) aligns with the **${currentLabel}** tier. To match 5E expectations, budget ~50% more. For Pathfinder-level presentation, budget ~150% more.
+
+---
+`);
+  }
 
   if (capacityAnalysis) {
     sections.push(`${nextHeading("Capacity Reality Check")}

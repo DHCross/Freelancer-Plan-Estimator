@@ -214,6 +214,8 @@ export interface ArtModuleInput {
   numFullPage: number;
   numPortraits: number;
   numCovers: number;
+  numRegionalMaps: number;
+  numEncounterMaps: number;
 }
 
 export interface ArtBudgetBreakdown {
@@ -222,6 +224,8 @@ export interface ArtBudgetBreakdown {
   halfPageCost: number;
   fullPageCost: number;
   portraitCost: number;
+  regionalMapCost: number;
+  encounterMapCost: number;
   totalArtCost: number;
 }
 

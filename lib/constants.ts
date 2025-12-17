@@ -501,6 +501,106 @@ export const INTERIOR_SPOT_DEFAULT = 120;
 export const INTERIOR_HALF_DEFAULT = 250;
 export const INTERIOR_FULL_DEFAULT = 400;
 export const PORTRAIT_DEFAULT = 250;
+export const REGIONAL_MAP_DEFAULT = 800;
+export const ENCOUNTER_MAP_DEFAULT = 400;
+
+// A1 Manuscript Reality Baseline (audited from A1: Problem of Possibility 4.1.25)
+// Total: 23 pieces (not 38 as previously assumed)
+export const A1_ART_BASELINE = {
+  regionalMaps: 1,        // REQUIRED - Essential for campaign orientation
+  encounterMaps: 3,       // REQUIRED - Necessary for combat/exploration areas
+  interiorIllustrations: 7, // REQUIRED/ENHANCING - Core scene-setting pieces
+  spotArt: 12,            // COSMETIC - Chapter/section openers for layout consistency
+  npcPortraits: 0,        // N/A - No structural requirement in A1 text
+  covers: 1,              // REQUIRED - Standard cover commission
+  totalPieces: 23,        // Corrected from previous 38-piece assumption
+  wordCount: 97000,       // A1 reference word count for scaling
+};
+
+// Art Density Market Presets
+// Based on industry research comparing A1 baseline to major publishers
+export type ArtDensityPreset = "osr" | "5e" | "pathfinder";
+
+export interface ArtDensityConfig {
+  id: ArtDensityPreset;
+  label: string;
+  description: string;
+  wordsPerPiece: number;           // Overall density target
+  encounterMapsPerWord: number;
+  illustrationsPerWord: number;
+  spotArtPerWord: number;
+  portraitsPerWord: number;        // 0 = disabled by default
+  regionalMapsPerBook: number;
+  coversPerBook: number;
+  costMultiplier: number;          // Relative to OSR baseline
+}
+
+export const ART_DENSITY_PRESETS: Record<ArtDensityPreset, ArtDensityConfig> = {
+  // OSR / A1 Baseline (your current model)
+  // ~1 piece per 4,200 words, 23 pieces for 97k words
+  osr: {
+    id: "osr",
+    label: "OSR / Indie (A1 Baseline)",
+    description: "Conservative, text-dense. Aligns with classic TSR-era modules and indie publisher standards.",
+    wordsPerPiece: 4200,
+    encounterMapsPerWord: 3 / 97000,      // ~1 per 32k words
+    illustrationsPerWord: 7 / 97000,      // ~1 per 14k words
+    spotArtPerWord: 12 / 97000,           // ~1 per 8k words
+    portraitsPerWord: 0,                  // Not standard in OSR
+    regionalMapsPerBook: 1,
+    coversPerBook: 1,
+    costMultiplier: 1.0,
+  },
+  
+  // 5E Standard (WotC hardcover adventures)
+  // ~1 piece per 2,800-3,200 words, 32-38 pieces for 97k words
+  "5e": {
+    id: "5e",
+    label: "5E Standard (WotC Style)",
+    description: "Market expectation for 5E adventures. More NPC portraits, chapter splashes, decorative elements.",
+    wordsPerPiece: 3000,
+    encounterMapsPerWord: 6 / 97000,      // ~1 per 16k words (50-100% more maps)
+    illustrationsPerWord: 12 / 97000,     // ~1 per 8k words (+71% more)
+    spotArtPerWord: 15 / 97000,           // ~1 per 6.5k words
+    portraitsPerWord: 5 / 97000,          // ~1 per 19k words (major NPCs)
+    regionalMapsPerBook: 1,
+    coversPerBook: 1,
+    costMultiplier: 1.5,                  // ~50% higher art budget
+  },
+  
+  // Pathfinder Premium (Paizo Adventure Paths)
+  // ~1 piece per 1,400-1,900 words, 50-70 pieces for 97k words
+  pathfinder: {
+    id: "pathfinder",
+    label: "Pathfinder Premium (Paizo Style)",
+    description: "Lavish illustration as competitive differentiator. Heavy NPC portraits, multiple map scales, spot art every 2-3 pages.",
+    wordsPerPiece: 1600,
+    encounterMapsPerWord: 10 / 97000,     // ~1 per 10k words (100-200% more maps)
+    illustrationsPerWord: 20 / 97000,     // ~1 per 5k words (+185% more)
+    spotArtPerWord: 25 / 97000,           // ~1 per 4k words
+    portraitsPerWord: 12 / 97000,         // ~1 per 8k words (8-15 per volume)
+    regionalMapsPerBook: 2,               // Regional + local scale
+    coversPerBook: 1,
+    costMultiplier: 2.5,                  // ~150% higher art budget
+  },
+};
+
+// Default to OSR/A1 baseline
+export const ART_SCALING_RATIOS = ART_DENSITY_PRESETS.osr;
+
+// Project type multipliers for art density
+// Some project types need more/less art relative to word count
+export const PROJECT_TYPE_ART_MULTIPLIERS: Record<string, number> = {
+  "Large Adventure": 1.0,       // A1 baseline
+  "Small Adventure": 1.1,       // Slightly higher density (shorter = more visual)
+  "Player Sourcebook": 0.8,     // More text-heavy, fewer scenes
+  "Setting Sourcebook": 0.9,    // Moderate illustration needs
+  "Battle Maps": 2.0,           // Map-heavy by definition
+  "Core Rules": 0.6,            // Text/diagram heavy
+  "Lore/Structure": 0.3,        // Minimal art needs
+  "Lore Infrastructure": 0.2,   // Internal docs, minimal art
+  "Corporate Mandate": 0.7,     // Varies, conservative default
+};
 
 export const INCOME_SCENARIOS: IncomeScenario[] = [
   { id: "freelance_modest", label: "Modest Freelance Year", desiredIncome: 20000 },

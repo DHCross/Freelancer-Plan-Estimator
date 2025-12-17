@@ -6,6 +6,11 @@ import {
   INTERIOR_HALF_DEFAULT,
   INTERIOR_FULL_DEFAULT,
   PORTRAIT_DEFAULT,
+  REGIONAL_MAP_DEFAULT,
+  ENCOUNTER_MAP_DEFAULT,
+  ART_DENSITY_PRESETS,
+  PROJECT_TYPE_ART_MULTIPLIERS,
+  ArtDensityPreset,
 } from "./constants";
 import {
   DefenseAnalysisResult,
@@ -367,6 +372,92 @@ export function runEstimator(
   };
 }
 
+export interface ProjectArtEstimate {
+  regionalMaps: number;
+  encounterMaps: number;
+  interiorIllustrations: number;
+  spotArt: number;
+  npcPortraits: number;
+  covers: number;
+  totalPieces: number;
+  regionalMapCost: number;
+  encounterMapCost: number;
+  interiorCost: number;
+  spotCost: number;
+  portraitCost: number;
+  coverCost: number;
+  totalCost: number;
+  projectType: string;
+  wordCount: number;
+  multiplier: number;
+  marketPreset: ArtDensityPreset;
+  marketLabel: string;
+}
+
+/**
+ * Estimate art needs for a project based on word count, project type, and market target.
+ * 
+ * Market Presets:
+ * - "osr" (default): A1 baseline, ~1 piece per 4,200 words, 23 pieces for 97k words
+ * - "5e": WotC standard, ~1 piece per 3,000 words, 32-38 pieces for 97k words (+50% budget)
+ * - "pathfinder": Paizo premium, ~1 piece per 1,600 words, 50-70 pieces for 97k words (+150% budget)
+ * 
+ * @param wordCount - Total word count of the project
+ * @param projectType - Type of project (e.g., "Large Adventure", "Player Sourcebook")
+ * @param marketPreset - Target market aesthetic ("osr", "5e", "pathfinder")
+ */
+export function estimateProjectArt(
+  wordCount: number,
+  projectType: string = "Large Adventure",
+  marketPreset: ArtDensityPreset = "osr"
+): ProjectArtEstimate {
+  const density = ART_DENSITY_PRESETS[marketPreset];
+  const typeMultiplier = PROJECT_TYPE_ART_MULTIPLIERS[projectType] ?? 1.0;
+  
+  // Fixed assets (per book, scaled by density preset)
+  const regionalMaps = density.regionalMapsPerBook;
+  const covers = density.coversPerBook;
+  
+  // Variable assets scaled by word count, project type, and market density
+  const encounterMaps = Math.max(1, Math.round(wordCount * density.encounterMapsPerWord * typeMultiplier));
+  const interiorIllustrations = Math.max(1, Math.round(wordCount * density.illustrationsPerWord * typeMultiplier));
+  const spotArt = Math.max(1, Math.round(wordCount * density.spotArtPerWord * typeMultiplier));
+  const npcPortraits = Math.max(0, Math.round(wordCount * density.portraitsPerWord * typeMultiplier));
+  
+  const totalPieces = regionalMaps + encounterMaps + interiorIllustrations + spotArt + npcPortraits + covers;
+  
+  // Calculate costs
+  const regionalMapCost = regionalMaps * REGIONAL_MAP_DEFAULT;
+  const encounterMapCost = encounterMaps * ENCOUNTER_MAP_DEFAULT;
+  const interiorCost = interiorIllustrations * INTERIOR_FULL_DEFAULT;
+  const spotCost = spotArt * INTERIOR_SPOT_DEFAULT;
+  const portraitCost = npcPortraits * PORTRAIT_DEFAULT;
+  const coverCost = covers * COVER_ART_RATE_DEFAULT;
+  const totalCost = regionalMapCost + encounterMapCost + interiorCost + spotCost + portraitCost + coverCost;
+  
+  return {
+    regionalMaps,
+    encounterMaps,
+    interiorIllustrations,
+    spotArt,
+    npcPortraits,
+    covers,
+    totalPieces,
+    regionalMapCost,
+    encounterMapCost,
+    interiorCost,
+    spotCost,
+    portraitCost,
+    coverCost,
+    totalCost,
+    projectType,
+    wordCount,
+    multiplier: typeMultiplier,
+    marketPreset,
+    marketLabel: density.label,
+  };
+}
+
 export function runArtBudget(input: ArtModuleInput): ArtBudgetBreakdown {
   const safe = (n: number | undefined | null): number => (n && n > 0 ? n : 0);
 
@@ -375,14 +466,18 @@ export function runArtBudget(input: ArtModuleInput): ArtBudgetBreakdown {
   const numHalf = safe(input.numHalfPage);
   const numFull = safe(input.numFullPage);
   const numPortraits = safe(input.numPortraits);
+  const numRegionalMaps = safe(input.numRegionalMaps);
+  const numEncounterMaps = safe(input.numEncounterMaps);
 
   const coverCost = numCovers * COVER_ART_RATE_DEFAULT;
   const spotCost = numSpots * INTERIOR_SPOT_DEFAULT;
   const halfPageCost = numHalf * INTERIOR_HALF_DEFAULT;
   const fullPageCost = numFull * INTERIOR_FULL_DEFAULT;
   const portraitCost = numPortraits * PORTRAIT_DEFAULT;
+  const regionalMapCost = numRegionalMaps * REGIONAL_MAP_DEFAULT;
+  const encounterMapCost = numEncounterMaps * ENCOUNTER_MAP_DEFAULT;
 
-  const totalArtCost = coverCost + spotCost + halfPageCost + fullPageCost + portraitCost;
+  const totalArtCost = coverCost + spotCost + halfPageCost + fullPageCost + portraitCost + regionalMapCost + encounterMapCost;
 
   return {
     coverCost,
@@ -390,6 +485,8 @@ export function runArtBudget(input: ArtModuleInput): ArtBudgetBreakdown {
     halfPageCost,
     fullPageCost,
     portraitCost,
+    regionalMapCost,
+    encounterMapCost,
     totalArtCost,
   };
 }

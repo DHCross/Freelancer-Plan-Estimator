@@ -1,6 +1,7 @@
 import { DisplayProject, Metrics, DefenseAnalysisResult } from "./types";
-import { DEFAULT_METRICS } from "./constants";
+import { DEFAULT_METRICS, A1_ART_BASELINE, REGIONAL_MAP_DEFAULT, ENCOUNTER_MAP_DEFAULT, INTERIOR_FULL_DEFAULT, INTERIOR_SPOT_DEFAULT, COVER_ART_RATE_DEFAULT, ART_DENSITY_PRESETS } from "./constants";
 import { RPG_ADVENTURE_TEMPLATE } from "./dossier-types";
+import { estimateProjectArt } from "./calculations";
 
 export type DossierTone = "internal" | "external";
 
@@ -40,10 +41,21 @@ export function generateDossierMarkdown(ctx: DossierContext, tone: DossierTone =
   const pages = totalWords > 0 ? totalWords / metrics.wordsPerPage : 0;
   const estimatedPages = Math.round(pages || 0);
 
-  const artPieces = estimatedPages > 0 ? Math.max(1, Math.round(estimatedPages / 3)) : 0;
-  const artLow = artPieces * 50; // ~$50/spot
-  const artMid = artPieces * 120; // ~$120/spot
-  const artHigh = artPieces * 250; // ~$250/spot
+  // A1 Manuscript Reality Baseline (audited from A1: Problem of Possibility 4.1.25)
+  // Total: 23 pieces - NOT the old 1 piece per 3 pages formula which overstated needs
+  const artBaseline = A1_ART_BASELINE;
+  const artPieces = artBaseline.totalPieces;
+  
+  // Calculate costs using proper categorization
+  const mapCost = (artBaseline.regionalMaps * REGIONAL_MAP_DEFAULT) + (artBaseline.encounterMaps * ENCOUNTER_MAP_DEFAULT);
+  const illustrationCost = artBaseline.interiorIllustrations * INTERIOR_FULL_DEFAULT;
+  const spotCost = artBaseline.spotArt * INTERIOR_SPOT_DEFAULT;
+  const portraitCost = artBaseline.npcPortraits * 250; // $0 for A1 since no portraits needed
+  const coverCost = artBaseline.covers * COVER_ART_RATE_DEFAULT;
+  
+  const artLow = Math.round((mapCost + illustrationCost + spotCost + portraitCost + coverCost) * 0.85);
+  const artMid = mapCost + illustrationCost + spotCost + portraitCost + coverCost;
+  const artHigh = Math.round((mapCost + illustrationCost + spotCost + portraitCost + coverCost) * 1.2);
 
   const actualHours = project.total ?? project.manualHours ?? 0;
 
@@ -89,7 +101,7 @@ export function generateDossierMarkdown(ctx: DossierContext, tone: DossierTone =
       ? `With current team capacity, the modeled execution window is approximately ${minWeeks || roundedWeeks}–${maxWeeks || roundedWeeks} weeks from greenlight to print-ready files.`
       : "Timeline modeling depends on confirmed weekly capacity inputs.",
     artPieces
-      ? `Art is the primary variable cost driver: about ${formatNumber(artPieces)} pieces for ~${estimatedPages} pages, with a working budget band of ${formatCurrency(artLow)}–${formatCurrency(artHigh)}.`
+      ? `Art is the primary variable cost driver: ${formatNumber(artPieces)} pieces (${artBaseline.regionalMaps} regional map, ${artBaseline.encounterMaps} encounter maps, ${artBaseline.interiorIllustrations} illustrations, ${artBaseline.spotArt} spot art), with a working budget band of ${formatCurrency(artLow)}–${formatCurrency(artHigh)}.`
       : "Art budget scaffolding is present, but page count/asset density need to be confirmed.",
   ];
 
@@ -149,18 +161,39 @@ ${laborTable}
 
 > Note: Industry studio cost is derived from the market-per-word assumptions in the Efficiency model. Adjust those sliders there; this dossier will inherit the updated numbers.
 
-### 2. Art Budget Scaffolding
+### 2. Art Budget Scaffolding (A1 Manuscript Reality)
 
 - Estimated pages: **${estimatedPages || "TODO"}**
-- Art density assumption: **1 piece / 3 pages**
-- Total pieces (est.): **${artPieces || "TODO"}**
+- Total pieces (audited): **${artPieces}** (corrected from previous 38-piece assumption)
 
-Art budget bands:
-- Low band (lean illustrations): **${artLow ? formatCurrency(artLow) : "TODO"}**
-- Mid band (balanced mix): **${artMid ? formatCurrency(artMid) : "TODO"}**
+**Art Asset Breakdown:**
+| Category | Count | Classification | Est. Cost |
+|----------|-------|----------------|----------|
+| Regional Maps | ${artBaseline.regionalMaps} | REQUIRED | ${formatCurrency(artBaseline.regionalMaps * REGIONAL_MAP_DEFAULT)} |
+| Encounter Maps | ${artBaseline.encounterMaps} | REQUIRED | ${formatCurrency(artBaseline.encounterMaps * ENCOUNTER_MAP_DEFAULT)} |
+| Interior Illustrations | ${artBaseline.interiorIllustrations} | REQUIRED/ENHANCING | ${formatCurrency(artBaseline.interiorIllustrations * INTERIOR_FULL_DEFAULT)} |
+| Spot Art/Chapter Openers | ${artBaseline.spotArt} | COSMETIC | ${formatCurrency(artBaseline.spotArt * INTERIOR_SPOT_DEFAULT)} |
+| NPC Portraits | ${artBaseline.npcPortraits} | N/A | ${formatCurrency(artBaseline.npcPortraits * 250)} |
+| Cover Art | ${artBaseline.covers} | REQUIRED | ${formatCurrency(artBaseline.covers * COVER_ART_RATE_DEFAULT)} |
+
+**Art budget bands:**
+- Low band (lean execution): **${artLow ? formatCurrency(artLow) : "TODO"}**
+- Mid band (baseline): **${artMid ? formatCurrency(artMid) : "TODO"}**
 - High band (flagship treatment): **${artHigh ? formatCurrency(artHigh) : "TODO"}**
 
-> TODO: Confirm cover commission tier, interior mix (spots/half/full), and whether maps are bundled or separate.
+> Note: Previous plan assumed 8 NPC portraits and 12 interior illustrations where A1 text requires 0 portraits and 7 illustrations. Budget reallocated to maps and protected structural assets.
+
+### 2b. Market Comparison Analysis
+
+How does your art budget compare to industry standards?
+
+| Market Tier | Total Pieces | Est. Cost | Words/Piece | Notes |
+|-------------|--------------|-----------|-------------|-------|
+| **OSR/Indie (Current)** | ${estimateProjectArt(totalWords || 97000, "Large Adventure", "osr").totalPieces} | ${formatCurrency(estimateProjectArt(totalWords || 97000, "Large Adventure", "osr").totalCost)} | ~4,200 | ${ART_DENSITY_PRESETS.osr.description} |
+| **5E Standard** | ${estimateProjectArt(totalWords || 97000, "Large Adventure", "5e").totalPieces} | ${formatCurrency(estimateProjectArt(totalWords || 97000, "Large Adventure", "5e").totalCost)} | ~3,000 | ${ART_DENSITY_PRESETS["5e"].description} |
+| **Pathfinder Premium** | ${estimateProjectArt(totalWords || 97000, "Large Adventure", "pathfinder").totalPieces} | ${formatCurrency(estimateProjectArt(totalWords || 97000, "Large Adventure", "pathfinder").totalCost)} | ~1,600 | ${ART_DENSITY_PRESETS.pathfinder.description} |
+
+> Your current model aligns with **OSR/Indie** standards. To match 5E expectations, budget ~50% more. For Pathfinder-level presentation, budget ~150% more.
 
 ### 3. Timeline Validation
 

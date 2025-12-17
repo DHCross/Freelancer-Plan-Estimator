@@ -4,7 +4,8 @@ import React, { useState, useMemo } from "react";
 import { FileText, Download, Copy, Check, FileDown, Printer } from "lucide-react";
 import { DisplayProject, Metrics, TeamMember } from "@/lib/types";
 import { generateProductionPlanMarkdown, generateProductionPlanHTML, ReportConfig } from "@/lib/report-generator";
-import { COVER_ART_RATE_DEFAULT, CARTOGRAPHY_DEFAULT, INTERIOR_SPOT_DEFAULT } from "@/lib/constants";
+import { COVER_ART_RATE_DEFAULT, INTERIOR_SPOT_DEFAULT, INTERIOR_FULL_DEFAULT, REGIONAL_MAP_DEFAULT, ENCOUNTER_MAP_DEFAULT, A1_ART_BASELINE, ART_DENSITY_PRESETS, ArtDensityPreset } from "@/lib/constants";
+import { estimateProjectArt } from "@/lib/calculations";
 
 interface ReportExportProps {
   projects: DisplayProject[];
@@ -17,10 +18,13 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
   const [copied, setCopied] = useState(false);
   const [reportTitle, setReportTitle] = useState("2026 A-Series Integrated Production Plan");
   const [reportSubtitle, setReportSubtitle] = useState("Based on the A-Series Project Dossier, the following roadmap outlines the publishing strategy, sequencing, and production execution for fiscal year 2026. A1 remains the anchor deliverable and sets the production cadence for all supporting modules.");
-  const [interiorPieces, setInteriorPieces] = useState(38);
-  const [interiorCostPerPiece, setInteriorCostPerPiece] = useState(INTERIOR_SPOT_DEFAULT);
-  const [cartographyCost, setCartographyCost] = useState(CARTOGRAPHY_DEFAULT);
-  const [coverCost, setCoverCost] = useState(COVER_ART_RATE_DEFAULT);
+  // A1 Manuscript Reality Baseline (audited from A1: Problem of Possibility 4.1.25)
+  const [regionalMaps, setRegionalMaps] = useState(A1_ART_BASELINE.regionalMaps);
+  const [encounterMaps, setEncounterMaps] = useState(A1_ART_BASELINE.encounterMaps);
+  const [interiorIllustrations, setInteriorIllustrations] = useState(A1_ART_BASELINE.interiorIllustrations);
+  const [spotArt, setSpotArt] = useState(A1_ART_BASELINE.spotArt);
+  const [npcPortraits, setNpcPortraits] = useState(A1_ART_BASELINE.npcPortraits);
+  const [covers, setCovers] = useState(A1_ART_BASELINE.covers);
   const [investmentLow, setInvestmentLow] = useState(8500);
   const [investmentHigh, setInvestmentHigh] = useState(12000);
   const [generatedMarkdown, setGeneratedMarkdown] = useState("");
@@ -33,6 +37,8 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
   const [finalEditor, setFinalEditor] = useState("Dan");
   const [assetCoordinator, setAssetCoordinator] = useState("TBD");
   const [projectManagerRole, setProjectManagerRole] = useState("Dan");
+  const [marketPreset, setMarketPreset] = useState<ArtDensityPreset>("osr");
+  const [showMarketComparison, setShowMarketComparison] = useState(true);
 
   const reportConfig: ReportConfig = useMemo(() => ({
     title: reportTitle,
@@ -41,10 +47,19 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
     metrics,
     teamRoster,
     artBudget: {
-      interiorPieces,
-      interiorCost: interiorPieces * interiorCostPerPiece,
-      cartographyCost,
-      coverCost,
+      regionalMaps,
+      encounterMaps,
+      interiorIllustrations,
+      spotArt,
+      npcPortraits,
+      covers,
+      regionalMapCost: regionalMaps * REGIONAL_MAP_DEFAULT,
+      encounterMapCost: encounterMaps * ENCOUNTER_MAP_DEFAULT,
+      interiorCost: interiorIllustrations * INTERIOR_FULL_DEFAULT,
+      spotCost: spotArt * INTERIOR_SPOT_DEFAULT,
+      portraitCost: npcPortraits * 250,
+      coverCost: covers * COVER_ART_RATE_DEFAULT,
+      totalPieces: regionalMaps + encounterMaps + interiorIllustrations + spotArt + npcPortraits + covers,
     },
     investmentRange: {
       low: investmentLow,
@@ -63,16 +78,20 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
       assetCoordinator,
       projectManager: projectManagerRole,
     },
+    marketPreset,
+    showMarketComparison,
   }), [
     reportTitle,
     reportSubtitle,
     projects,
     metrics,
     teamRoster,
-    interiorPieces,
-    interiorCostPerPiece,
-    cartographyCost,
-    coverCost,
+    regionalMaps,
+    encounterMaps,
+    interiorIllustrations,
+    spotArt,
+    npcPortraits,
+    covers,
     investmentLow,
     investmentHigh,
     danWeeklyHours,
@@ -84,7 +103,19 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
     finalEditor,
     assetCoordinator,
     projectManagerRole,
+    marketPreset,
+    showMarketComparison,
   ]);
+
+  // Calculate market comparison estimates for A1 (97k words)
+  const marketComparison = useMemo(() => {
+    const a1Words = 97000;
+    return {
+      osr: estimateProjectArt(a1Words, "Large Adventure", "osr"),
+      "5e": estimateProjectArt(a1Words, "Large Adventure", "5e"),
+      pathfinder: estimateProjectArt(a1Words, "Large Adventure", "pathfinder"),
+    };
+  }, []);
 
   const capacitySnapshot = useMemo(() => {
     const combinedWeekly = danWeeklyHours + martinWeeklyHours;
@@ -96,8 +127,17 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
   }, [danWeeklyHours, martinWeeklyHours, workingWeeksPerYear]);
 
   const totalArtBudget = useMemo(() => {
-    return (interiorPieces * interiorCostPerPiece) + cartographyCost + coverCost;
-  }, [interiorPieces, interiorCostPerPiece, cartographyCost, coverCost]);
+    return (regionalMaps * REGIONAL_MAP_DEFAULT) + 
+           (encounterMaps * ENCOUNTER_MAP_DEFAULT) + 
+           (interiorIllustrations * INTERIOR_FULL_DEFAULT) + 
+           (spotArt * INTERIOR_SPOT_DEFAULT) + 
+           (npcPortraits * 250) + 
+           (covers * COVER_ART_RATE_DEFAULT);
+  }, [regionalMaps, encounterMaps, interiorIllustrations, spotArt, npcPortraits, covers]);
+
+  const totalPieces = useMemo(() => {
+    return regionalMaps + encounterMaps + interiorIllustrations + spotArt + npcPortraits + covers;
+  }, [regionalMaps, encounterMaps, interiorIllustrations, spotArt, npcPortraits, covers]);
 
   const handleGenerate = () => {
     const markdown = generateProductionPlanMarkdown(reportConfig);
@@ -325,54 +365,133 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
           </div>
 
           <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-4">
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Art Budget Configuration</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Art Budget (A1 Manuscript Reality)</p>
+            <p className="text-xs text-slate-500">Audited from A1: Problem of Possibility 4.1.25 — corrected from previous 38-piece assumption</p>
             
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <label className="block">
-                <span className="text-xs font-medium text-slate-600">Interior Pieces</span>
+                <span className="text-xs font-medium text-slate-600">Regional Maps</span>
                 <input
                   type="number"
-                  value={interiorPieces}
-                  onChange={(e) => setInteriorPieces(Number(e.target.value))}
+                  value={regionalMaps}
+                  onChange={(e) => setRegionalMaps(Number(e.target.value))}
                   className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
                 />
+                <span className="text-xs text-slate-400">${REGIONAL_MAP_DEFAULT}/ea</span>
               </label>
               <label className="block">
-                <span className="text-xs font-medium text-slate-600">Cost per Piece ($)</span>
+                <span className="text-xs font-medium text-slate-600">Encounter Maps</span>
                 <input
                   type="number"
-                  value={interiorCostPerPiece}
-                  onChange={(e) => setInteriorCostPerPiece(Number(e.target.value))}
+                  value={encounterMaps}
+                  onChange={(e) => setEncounterMaps(Number(e.target.value))}
                   className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
                 />
-              </label>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <label className="block">
-                <span className="text-xs font-medium text-slate-600">Cartography ($)</span>
-                <input
-                  type="number"
-                  value={cartographyCost}
-                  onChange={(e) => setCartographyCost(Number(e.target.value))}
-                  className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
-                />
+                <span className="text-xs text-slate-400">${ENCOUNTER_MAP_DEFAULT}/ea</span>
               </label>
               <label className="block">
-                <span className="text-xs font-medium text-slate-600">Cover Art ($)</span>
+                <span className="text-xs font-medium text-slate-600">Interior Illustrations</span>
                 <input
                   type="number"
-                  value={coverCost}
-                  onChange={(e) => setCoverCost(Number(e.target.value))}
+                  value={interiorIllustrations}
+                  onChange={(e) => setInteriorIllustrations(Number(e.target.value))}
                   className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
                 />
+                <span className="text-xs text-slate-400">${INTERIOR_FULL_DEFAULT}/ea</span>
               </label>
             </div>
 
-            <div className="bg-slate-50 rounded-lg p-3">
+            <div className="grid grid-cols-3 gap-3">
+              <label className="block">
+                <span className="text-xs font-medium text-slate-600">Spot Art/Openers</span>
+                <input
+                  type="number"
+                  value={spotArt}
+                  onChange={(e) => setSpotArt(Number(e.target.value))}
+                  className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                />
+                <span className="text-xs text-slate-400">${INTERIOR_SPOT_DEFAULT}/ea</span>
+              </label>
+              <label className="block">
+                <span className="text-xs font-medium text-slate-600">NPC Portraits</span>
+                <input
+                  type="number"
+                  value={npcPortraits}
+                  onChange={(e) => setNpcPortraits(Number(e.target.value))}
+                  className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                />
+                <span className="text-xs text-slate-400">$250/ea</span>
+              </label>
+              <label className="block">
+                <span className="text-xs font-medium text-slate-600">Covers</span>
+                <input
+                  type="number"
+                  value={covers}
+                  onChange={(e) => setCovers(Number(e.target.value))}
+                  className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+                />
+                <span className="text-xs text-slate-400">${COVER_ART_RATE_DEFAULT}/ea</span>
+              </label>
+            </div>
+
+            <div className="bg-slate-50 rounded-lg p-3 space-y-1">
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-600">Total Pieces:</span>
+                <span className="font-bold text-slate-900">{totalPieces}</span>
+              </div>
               <div className="flex justify-between text-sm">
                 <span className="text-slate-600">Total Art Budget:</span>
                 <span className="font-bold text-slate-900">${totalArtBudget.toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-4">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Market Comparison</p>
+            <p className="text-xs text-slate-500">Compare your art budget against industry standards</p>
+            
+            <label className="block">
+              <span className="text-xs font-medium text-slate-600">Target Market Aesthetic</span>
+              <select
+                value={marketPreset}
+                onChange={(e) => setMarketPreset(e.target.value as ArtDensityPreset)}
+                className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm bg-white"
+              >
+                <option value="osr">{ART_DENSITY_PRESETS.osr.label}</option>
+                <option value="5e">{ART_DENSITY_PRESETS["5e"].label}</option>
+                <option value="pathfinder">{ART_DENSITY_PRESETS.pathfinder.label}</option>
+              </select>
+              <p className="text-xs text-slate-400 mt-1">{ART_DENSITY_PRESETS[marketPreset].description}</p>
+            </label>
+
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={showMarketComparison}
+                onChange={(e) => setShowMarketComparison(e.target.checked)}
+                className="rounded border-slate-300"
+              />
+              <span className="text-sm text-slate-600">Include market comparison in report</span>
+            </label>
+
+            <div className="bg-gradient-to-r from-slate-50 to-indigo-50 rounded-lg p-3 space-y-2">
+              <p className="text-xs font-medium text-slate-700">Quick Comparison (A1: 97k words)</p>
+              <div className="grid grid-cols-3 gap-2 text-xs">
+                <div className={`p-2 rounded ${marketPreset === 'osr' ? 'bg-indigo-100 border border-indigo-300' : 'bg-white'}`}>
+                  <p className="font-medium">OSR/Indie</p>
+                  <p className="text-slate-600">{marketComparison.osr.totalPieces} pieces</p>
+                  <p className="text-slate-600">${marketComparison.osr.totalCost.toLocaleString()}</p>
+                </div>
+                <div className={`p-2 rounded ${marketPreset === '5e' ? 'bg-indigo-100 border border-indigo-300' : 'bg-white'}`}>
+                  <p className="font-medium">5E Standard</p>
+                  <p className="text-slate-600">{marketComparison["5e"].totalPieces} pieces</p>
+                  <p className="text-slate-600">${marketComparison["5e"].totalCost.toLocaleString()}</p>
+                </div>
+                <div className={`p-2 rounded ${marketPreset === 'pathfinder' ? 'bg-indigo-100 border border-indigo-300' : 'bg-white'}`}>
+                  <p className="font-medium">Pathfinder</p>
+                  <p className="text-slate-600">{marketComparison.pathfinder.totalPieces} pieces</p>
+                  <p className="text-slate-600">${marketComparison.pathfinder.totalCost.toLocaleString()}</p>
+                </div>
               </div>
             </div>
           </div>
