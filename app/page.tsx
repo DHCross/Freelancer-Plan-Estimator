@@ -57,6 +57,9 @@ import { EstimatorBuckets } from "@/components/dashboard/EstimatorBuckets";
 import { FinancialModel } from "@/components/dashboard/FinancialModel";
 import { ReportExport } from "@/components/dashboard/ReportExport";
 import { EmployeeEstimateReport } from "@/components/dashboard/EmployeeEstimateReport";
+import { ResourceValidationHub } from "@/components/dashboard/ResourceValidationHub";
+import { IntegratedScenarioEngine } from "@/components/dashboard/IntegratedScenarioEngine";
+import { IntegratedFinancialModel } from "@/components/dashboard/IntegratedFinancialModel";
 
 const INTERNAL_TAB_STYLES = {
   methodology: "text-indigo-700 bg-indigo-50 border-indigo-600",
@@ -71,6 +74,7 @@ const INTERNAL_TAB_STYLES = {
   financials: "text-emerald-900 bg-emerald-100 border-emerald-600",
   report: "text-violet-700 bg-violet-50 border-violet-600",
   estimate: "text-teal-700 bg-teal-50 border-teal-600",
+  integrated: "text-blue-700 bg-blue-50 border-blue-600",
 };
 
 const CLIENT_TAB_STYLES = {
@@ -383,6 +387,7 @@ export default function DashboardPage() {
         { id: "financials", label: "Financial Model", icon: DollarSign },
         { id: "estimate", label: "My Estimate", icon: User },
         { id: "report", label: "Export Report", icon: FileText },
+        { id: "integrated", label: "Integrated Planning", icon: Timer },
       ]
       : []),
   ];
@@ -807,6 +812,20 @@ export default function DashboardPage() {
                   teamRoster={teamRoster}
                   clientMode={isClientMode}
                 />
+              )}
+
+              {!isClientMode && activeTab === "integrated" && (
+                <div className="space-y-8">
+                  <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-xl">
+                    <h2 className="text-2xl font-bold mb-2">Integrated Project Planning</h2>
+                    <p className="text-blue-100">
+                      Unified data flow: Team Builder → Resource Validation → Scenario Engine → Financial Model
+                    </p>
+                  </div>
+                  <ResourceValidationHub clientMode={isClientMode} />
+                  <IntegratedScenarioEngine clientMode={isClientMode} />
+                  <IntegratedFinancialModel clientMode={isClientMode} />
+                </div>
               )}
             </div>
           </div>
