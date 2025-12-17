@@ -10,3 +10,4 @@ export * from "./TeamPlanner";
 export * from "./FinancialModel";
 export * from "./DossierView";
 export * from "./ReportExport";
+export * from "./EmployeeEstimateReport";
