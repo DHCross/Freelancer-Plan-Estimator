@@ -504,7 +504,7 @@ export const PORTRAIT_DEFAULT = 250;
 export const REGIONAL_MAP_DEFAULT = 800;
 export const ENCOUNTER_MAP_DEFAULT = 400;
 
-// A1 Manuscript Reality Baseline (audited from A1: Problem of Possibility 4.1.25)
+// A1 Manuscript Reality Baseline (audited from A1: Problem of Possibilities 4.1.25)
 // Total: 23 pieces (not 38 as previously assumed)
 export const A1_ART_BASELINE = {
   regionalMaps: 1,        // REQUIRED - Essential for campaign orientation

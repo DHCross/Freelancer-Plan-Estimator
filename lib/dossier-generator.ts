@@ -41,7 +41,7 @@ export function generateDossierMarkdown(ctx: DossierContext, tone: DossierTone =
   const pages = totalWords > 0 ? totalWords / metrics.wordsPerPage : 0;
   const estimatedPages = Math.round(pages || 0);
 
-  // A1 Manuscript Reality Baseline (audited from A1: Problem of Possibility 4.1.25)
+  // A1 Manuscript Reality Baseline (audited from A1: Problem of Possibilities 4.1.25)
   // Total: 23 pieces - NOT the old 1 piece per 3 pages formula which overstated needs
   const artBaseline = A1_ART_BASELINE;
   const artPieces = artBaseline.totalPieces;

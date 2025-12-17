@@ -18,7 +18,7 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
   const [copied, setCopied] = useState(false);
   const [reportTitle, setReportTitle] = useState("2026 A-Series Integrated Production Plan");
   const [reportSubtitle, setReportSubtitle] = useState("Based on the A-Series Project Dossier, the following roadmap outlines the publishing strategy, sequencing, and production execution for fiscal year 2026. A1 remains the anchor deliverable and sets the production cadence for all supporting modules.");
-  // A1 Manuscript Reality Baseline (audited from A1: Problem of Possibility 4.1.25)
+  // A1 Manuscript Reality Baseline (audited from A1: Problem of Possibilities 4.1.25)
   const [regionalMaps, setRegionalMaps] = useState(A1_ART_BASELINE.regionalMaps);
   const [encounterMaps, setEncounterMaps] = useState(A1_ART_BASELINE.encounterMaps);
   const [interiorIllustrations, setInteriorIllustrations] = useState(A1_ART_BASELINE.interiorIllustrations);
@@ -366,7 +366,7 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
 
           <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-4">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Art Budget (A1 Manuscript Reality)</p>
-            <p className="text-xs text-slate-500">Audited from A1: Problem of Possibility 4.1.25 — corrected from previous 38-piece assumption</p>
+            <p className="text-xs text-slate-500">Audited from A1: Problem of Possibilities 4.1.25 — corrected from previous 38-piece assumption</p>
             
             <div className="grid grid-cols-3 gap-3">
               <label className="block">

@@ -346,7 +346,7 @@ ${subtitle || ""}
 The A-Series Adventure Path (A0–A4) represents the core publishing initiative for the year.
 
 ### Release Window
-The target for A1: The Problem of Possibility is late Q2 (May–June print and distribution window).
+The target for A1: The Problem of Possibilities is late Q2 (May–June print and distribution window).
 
 ### Operational Continuity
 Layout and asset integration will remain centralized to ensure consistency in styling, pacing, formatting, and data reliability.
@@ -444,6 +444,7 @@ Primary print strategy will use domestic offset printing (runs in 1k–2k units)
 | Spot Art/Chapter Openers | ${calculatedArtBudget.spotArt} | COSMETIC | ~${formatCurrency(calculatedArtBudget.spotCost)} |
 | NPC Portraits | ${calculatedArtBudget.npcPortraits} | N/A | ~${formatCurrency(calculatedArtBudget.portraitCost)} |
 | Cover Art | ${calculatedArtBudget.covers} | REQUIRED | ~${formatCurrency(calculatedArtBudget.coverCost)} |
+| **A1 Art Subtotal** | **${calculatedArtBudget.totalPieces}** | **TOTAL** | **~${formatCurrency(calculatedArtBudget.regionalMapCost + calculatedArtBudget.encounterMapCost + calculatedArtBudget.interiorCost + calculatedArtBudget.spotCost + calculatedArtBudget.portraitCost + calculatedArtBudget.coverCost)}** |
 
 This tier prioritizes consistent execution at predictable schedules and quality.
 
