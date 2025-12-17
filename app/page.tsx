@@ -9,6 +9,7 @@ import {
   Cpu,
   DollarSign,
   Download,
+  FileText,
   Ghost,
   Timer,
   Upload,
@@ -53,6 +54,7 @@ import { TeamManagement } from "@/components/dashboard/TeamManagement";
 import { QuickEstimator } from "@/components/dashboard/QuickEstimator";
 import { EstimatorBuckets } from "@/components/dashboard/EstimatorBuckets";
 import { FinancialModel } from "@/components/dashboard/FinancialModel";
+import { ReportExport } from "@/components/dashboard/ReportExport";
 
 const INTERNAL_TAB_STYLES = {
   methodology: "text-indigo-700 bg-indigo-50 border-indigo-600",
@@ -65,6 +67,7 @@ const INTERNAL_TAB_STYLES = {
   failures: "text-amber-700 bg-amber-50 border-amber-600",
   teamworkspace: "text-cyan-700 bg-cyan-50 border-cyan-600",
   financials: "text-emerald-900 bg-emerald-100 border-emerald-600",
+  report: "text-violet-700 bg-violet-50 border-violet-600",
 };
 
 const CLIENT_TAB_STYLES = {
@@ -375,6 +378,7 @@ export default function DashboardPage() {
         { id: "teamworkspace", label: "Estimator Tools", icon: Users },
         { id: "dossier", label: "Dossier", icon: ClipboardList },
         { id: "financials", label: "Financial Model", icon: DollarSign },
+        { id: "report", label: "Export Report", icon: FileText },
       ]
       : []),
   ];
@@ -780,6 +784,15 @@ export default function DashboardPage() {
 
               {!isClientMode && activeTab === "financials" && (
                 <FinancialModel defaultDevCost={20000} />
+              )}
+
+              {!isClientMode && activeTab === "report" && (
+                <ReportExport
+                  projects={analysisWithDisplay}
+                  metrics={metrics}
+                  teamRoster={teamRoster}
+                  clientMode={isClientMode}
+                />
               )}
             </div>
           </div>
