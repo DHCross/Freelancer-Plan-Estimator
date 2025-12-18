@@ -4,6 +4,7 @@ import { Lock, AlertTriangle, TrendingUp, Users, ArrowRight } from "lucide-react
 import { formatNumber } from "@/lib/utils";
 import { UnifiedProjectModel, ResourceValidation } from "@/lib/unified-project-model";
 import { useState, useEffect } from "react";
+import { getCapacityColor, getTimelineColor, actionColors } from "@/lib/colors";
 
 interface ResourceValidationHubProps {
   clientMode?: boolean;
@@ -49,7 +50,7 @@ export function ResourceValidationHub({ clientMode = false }: ResourceValidation
             <h3 className="text-lg font-bold text-blue-900">Who Does What: Resource Validation Hub</h3>
           </div>
           {bottleneck?.isOverloaded && (
-            <div className="flex items-center gap-2 bg-red-100 text-red-700 px-3 py-2 rounded-lg">
+            <div className={`flex items-center gap-2 ${getCapacityColor(bottleneck.loadPercentage).bg} ${getCapacityColor(bottleneck.loadPercentage).border} ${getCapacityColor(bottleneck.loadPercentage).text} px-3 py-2 rounded-lg`}>
               <AlertTriangle className="w-4 h-4" />
               <span className="font-semibold">Bottleneck Detected</span>
             </div>
@@ -61,20 +62,57 @@ export function ResourceValidationHub({ clientMode = false }: ResourceValidation
         </p>
       </div>
 
-      {/* Bottleneck Alert */}
+      {/* Enhanced Bottleneck Alert with Action Buttons */}
       {bottleneck?.isOverloaded && (
-        <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5" />
-            <div>
-              <h4 className="font-bold text-red-800">Critical Resource Constraint</h4>
-              <p className="text-sm text-red-700 mt-1">
-                <span className="font-semibold">{bottleneck.teamMemberName}</span> is operating at{" "}
-                <span className="font-bold">{Math.round(bottleneck.loadPercentage)}%</span> capacity.
-                This extends the overall project timeline.
+        <div className={`bg-gradient-to-r from-${getCapacityColor(bottleneck?.loadPercentage || 0).text.split('-')[1]}-50 to-rose-50 border-2 ${getCapacityColor(bottleneck?.loadPercentage || 0).border} rounded-xl p-5`}>
+          <div className="flex items-start gap-4">
+            <div className={`bg-${getCapacityColor(bottleneck?.loadPercentage || 0).text.split('-')[1]}-100 rounded-full p-2`}>
+              <AlertTriangle className={`w-6 h-6 ${getCapacityColor(bottleneck?.loadPercentage || 0).text}`} />
+            </div>
+            <div className="flex-1">
+              <h4 className={`font-bold ${getCapacityColor(bottleneck?.loadPercentage || 0).textDark} text-lg`}>Critical Resource Constraint Detected</h4>
+              <p className={`text-sm ${getCapacityColor(bottleneck?.loadPercentage || 0).text} mt-2`}>
+                <span className="font-semibold text-lg">{bottleneck.teamMemberName}</span> is operating at{" "}
+                <span className={`font-bold text-2xl ${getCapacityColor(bottleneck?.loadPercentage || 0).textDark}`}>{Math.round(bottleneck.loadPercentage)}%</span> capacity.
+                This extends the overall project timeline by <span className="font-semibold">{scenario.validatedTimeline - scenario.targetTimeline} months</span>.
               </p>
-              <div className="mt-2 text-xs text-red-600">
-                Projects: {bottleneck.assignedProjects.map(p => p.projectName).join(", ")}
+              
+              {/* Quick Actions */}
+              <div className="mt-4 space-y-3">
+                <div className={`text-sm font-medium ${getCapacityColor(bottleneck?.loadPercentage || 0).textDark}`}>Quick Resolution Options:</div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <button className={`${actionColors.primary.bg} ${actionColors.primary.bgHover} ${actionColors.primary.text} px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:shadow-lg hover:scale-[1.05] flex items-center justify-center gap-2`}>
+                    <Users className="w-4 h-4" />
+                    Reassign Projects
+                  </button>
+                  <button className={`${actionColors.success.bg} ${actionColors.success.bgHover} ${actionColors.success.text} px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:shadow-lg hover:scale-[1.05] flex items-center justify-center gap-2`}>
+                    <TrendingUp className="w-4 h-4" />
+                    Hire Contractor
+                  </button>
+                  <button className={`bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:shadow-lg hover:scale-[1.05] flex items-center justify-center gap-2`}>
+                    <ArrowRight className="w-4 h-4" />
+                    Extend Timeline
+                  </button>
+                </div>
+                
+                {/* Impact Preview */}
+                <div className={`${getCapacityColor(bottleneck?.loadPercentage || 0).bg} ${getCapacityColor(bottleneck?.loadPercentage || 0).border} rounded-lg p-3 mt-3`}>
+                  <div className={`text-xs ${getCapacityColor(bottleneck?.loadPercentage || 0).text}`}>
+                    <span className="font-semibold">Impact Preview:</span> Reassigning 2 projects to available team members would reduce {bottleneck.teamMemberName}'s load to ~180% capacity.
+                  </div>
+                </div>
+              </div>
+              
+              {/* Affected Projects */}
+              <div className={`mt-4 p-3 bg-white ${getCapacityColor(bottleneck?.loadPercentage || 0).border} rounded-lg`}>
+                <div className={`text-xs font-semibold ${getCapacityColor(bottleneck?.loadPercentage || 0).text} mb-2`}>Affected Projects ({bottleneck.assignedProjects.length}):</div>
+                <div className="flex flex-wrap gap-2">
+                  {bottleneck.assignedProjects.map((project, i) => (
+                    <span key={i} className={`text-xs ${getCapacityColor(bottleneck?.loadPercentage || 0).bg} ${getCapacityColor(bottleneck?.loadPercentage || 0).text} px-2 py-1 rounded border ${getCapacityColor(bottleneck?.loadPercentage || 0).border}`}>
+                      {project.projectName} ({Math.round(project.hours)}h)
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -91,7 +129,7 @@ export function ResourceValidationHub({ clientMode = false }: ResourceValidation
           return (
             <div
               key={validation.teamMemberId}
-              className={`bg-white p-6 rounded-xl shadow-sm border-t-4 ${statusClass} relative`}
+              className={`bg-white p-6 rounded-xl shadow-sm border-t-4 ${statusClass} relative transition-all duration-200 hover:shadow-md hover:scale-[1.02] cursor-pointer`}
             >
               {isOver && (
                 <div className="absolute top-0 right-0 text-[10px] font-bold px-2 py-1 uppercase bg-red-100 text-red-600">
@@ -105,7 +143,7 @@ export function ResourceValidationHub({ clientMode = false }: ResourceValidation
                     {validation.assignedProjects.length} projects
                   </p>
                 </div>
-                <div className={`text-xl font-bold ${isOver ? "text-red-600" : "text-slate-700"}`}>
+                <div className={`text-3xl font-bold tabular-nums ${isOver ? "text-red-600" : "text-slate-700"}`}>
                   {Math.round(validation.loadPercentage)}%
                 </div>
               </div>
@@ -144,31 +182,93 @@ export function ResourceValidationHub({ clientMode = false }: ResourceValidation
         })}
       </div>
 
-      {/* Timeline Impact Analysis */}
+      {/* Enhanced Timeline Impact Analysis with Visual Bars */}
       <div className="bg-white border border-slate-200 rounded-xl p-6">
         <h4 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-indigo-600" />
           Timeline Impact Analysis
         </h4>
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-slate-50 p-4 rounded-lg">
-            <div className="text-sm text-slate-600 mb-2">Target Timeline (from Team Builder)</div>
-            <div className="text-2xl font-bold text-slate-900">
+        
+        {/* Visual Timeline Comparison */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between text-sm text-slate-600 mb-2">
+            <span>Target Timeline</span>
+            <span>Validated Timeline</span>
+          </div>
+          <div className="relative h-16 bg-slate-100 rounded-lg overflow-hidden">
+            {/* Target Timeline Bar */}
+            <div 
+              className="absolute left-0 top-0 h-full bg-emerald-500 flex items-center justify-center text-white font-semibold text-sm"
+              style={{ width: `${(scenario.targetTimeline / scenario.validatedTimeline) * 100}%` }}
+            >
               {scenario.targetTimeline} months
             </div>
+            {/* Extension Indicator */}
+            {bottleneck?.isOverloaded && (
+              <div 
+                className="absolute top-0 h-full bg-red-500 flex items-center justify-center text-white font-semibold text-sm"
+                style={{ 
+                  left: `${(scenario.targetTimeline / scenario.validatedTimeline) * 100}%`,
+                  width: `${((scenario.validatedTimeline - scenario.targetTimeline) / scenario.validatedTimeline) * 100}%`
+                }}
+              >
+                +{scenario.validatedTimeline - scenario.targetTimeline} months
+              </div>
+            )}
           </div>
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <div className="text-sm text-blue-600 mb-2">Validated Timeline (with bottlenecks)</div>
-            <div className={`text-2xl font-bold ${bottleneck?.isOverloaded ? "text-red-600" : "text-emerald-600"}`}>
-              {scenario.validatedTimeline} months
+          
+          {/* Timeline Labels */}
+          <div className="flex items-center justify-between mt-2 text-xs">
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 bg-emerald-500 rounded"></div>
+              <span className="text-slate-600">Original Plan</span>
             </div>
             {bottleneck?.isOverloaded && (
-              <div className="text-xs text-red-600 mt-1">
-                +{scenario.validatedTimeline - scenario.targetTimeline} months due to constraints
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-red-500 rounded"></div>
+                <span className="text-red-600 font-medium">Extension Due to Constraints</span>
               </div>
             )}
           </div>
         </div>
+        
+        {/* Detailed Metrics */}
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+            <div className="text-sm text-slate-600 mb-2">Target Timeline (from Team Builder)</div>
+            <div className="text-3xl font-bold text-slate-900 tabular-nums">
+              {scenario.targetTimeline} months
+            </div>
+            <div className="text-xs text-slate-500 mt-1">
+              Planned duration without resource constraints
+            </div>
+          </div>
+          <div className={`p-4 rounded-lg border ${bottleneck?.isOverloaded ? 'bg-red-50 border-red-200' : 'bg-emerald-50 border-emerald-200'}`}>
+            <div className="text-sm text-slate-600 mb-2">Validated Timeline (with bottlenecks)</div>
+            <div className={`text-3xl font-bold tabular-nums ${bottleneck?.isOverloaded ? "text-red-600" : "text-emerald-600"}`}>
+              {scenario.validatedTimeline} months
+            </div>
+            {bottleneck?.isOverloaded ? (
+              <div className="text-xs text-red-600 mt-1 font-medium">
+                ⚠️ +{scenario.validatedTimeline - scenario.targetTimeline} months due to {bottleneck.teamMemberName}'s overload
+              </div>
+            ) : (
+              <div className="text-xs text-emerald-600 mt-1">
+                ✅ Timeline achievable with current team
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Industry Comparison */}
+        {bottleneck?.isOverloaded && (
+          <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="text-xs text-amber-700">
+              <span className="font-semibold">Industry Context:</span> Industry average for {scenario?.targetBudget ? Math.round(scenario.targetBudget / 1000) + 'k' : '50k'} word projects is 8-10 months. 
+              Your validated timeline exceeds this by {Math.round((scenario.validatedTimeline - 10) / 10 * 100)}%.
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Explanation */}

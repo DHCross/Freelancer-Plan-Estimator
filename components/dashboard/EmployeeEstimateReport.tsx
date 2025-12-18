@@ -234,17 +234,43 @@ export function EmployeeEstimateReport({ projects, metrics, teamRoster, clientMo
             
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Quick Fill from Team</label>
-              <select
-                onChange={(e) => handleTeamMemberSelect(e.target.value)}
-                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
-              >
-                <option value="">Select team member...</option>
-                {teamRoster.map((member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.name} ({member.role})
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  onChange={(e) => handleTeamMemberSelect(e.target.value)}
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm appearance-none cursor-pointer transition-all duration-200 hover:border-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                >
+                  <option value="">Select team member...</option>
+                  {teamRoster.map((member) => (
+                    <option key={member.id} value={member.id}>
+                      {member.name} ({member.role})
+                    </option>
+                  ))}
+                </select>
+                {teamRoster.find(m => m.id === employeeName) && (
+                  <div className="absolute right-2 top-2.5 text-xs text-emerald-600 font-medium">
+                    ✓ Auto-filled
+                  </div>
+                )}
+              </div>
+              
+              {/* Validation indicators */}
+              {teamRoster.find(m => m.id === employeeName) && (
+                <div className="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded-lg">
+                  <div className="text-xs text-emerald-700">
+                    <span className="font-semibold">Auto-populated from Team Builder:</span> {employeeName}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 mt-1 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-emerald-600">Rate:</span>
+                      <span className="font-medium text-emerald-800">${teamRoster.find(m => m.id === employeeName)?.hourlyRate}/hr</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-emerald-600">Hours:</span>
+                      <span className="font-medium text-emerald-800">{teamRoster.find(m => m.id === employeeName)?.weeklyCapacity}hrs/wk</span>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-3">
@@ -338,12 +364,27 @@ export function EmployeeEstimateReport({ projects, metrics, teamRoster, clientMo
             <div className="grid grid-cols-2 gap-3">
               <label className="block">
                 <span className="text-xs font-medium text-slate-600">Draft Speed (w/hr)</span>
-                <input
-                  type="number"
-                  value={draftSpeed}
-                  onChange={(e) => setDraftSpeed(Number(e.target.value))}
-                  className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
-                />
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={draftSpeed}
+                    onChange={(e) => setDraftSpeed(Number(e.target.value))}
+                    className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm transition-all duration-200 hover:border-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                    min="50"
+                    max="500"
+                  />
+                  {teamRoster.find(m => m.id === employeeName) && draftSpeed !== (teamRoster.find(m => m.id === employeeName)?.draftSpeed || 200) && (
+                    <div className="absolute right-2 top-2 text-xs text-amber-600 font-medium">
+                      Custom
+                    </div>
+                  )}
+                </div>
+                <div className="text-xs text-slate-500 mt-1">
+                  {teamRoster.find(m => m.id === employeeName) && draftSpeed !== (teamRoster.find(m => m.id === employeeName)?.draftSpeed || 200) 
+                    ? `Using custom rate (Team Builder: ${teamRoster.find(m => m.id === employeeName)?.draftSpeed || 200} w/hr)`
+                    : 'Typical range: 100-300 w/hr (industry: 150-200)'
+                  }
+                </div>
               </label>
               <label className="block">
                 <span className="text-xs font-medium text-slate-600">Compile Speed (w/hr)</span>
@@ -360,12 +401,27 @@ export function EmployeeEstimateReport({ projects, metrics, teamRoster, clientMo
             <div className="grid grid-cols-2 gap-3">
               <label className="block">
                 <span className="text-xs font-medium text-slate-600">Daily Hours</span>
-                <input
-                  type="number"
-                  value={dailyHours}
-                  onChange={(e) => setDailyHours(Number(e.target.value))}
-                  className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
-                />
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={dailyHours}
+                    onChange={(e) => setDailyHours(Number(e.target.value))}
+                    className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm transition-all duration-200 hover:border-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                    min="1"
+                    max="16"
+                  />
+                  {teamRoster.find(m => m.id === employeeName) && dailyHours !== ((teamRoster.find(m => m.id === employeeName)?.weeklyCapacity || 40) / 5) && (
+                    <div className="absolute right-2 top-2 text-xs text-amber-600 font-medium">
+                      Custom
+                    </div>
+                  )}
+                </div>
+                <div className="text-xs text-slate-500 mt-1">
+                  {teamRoster.find(m => m.id === employeeName) && dailyHours !== ((teamRoster.find(m => m.id === employeeName)?.weeklyCapacity || 40) / 5) 
+                    ? `Using custom hours (Team Builder: ${Math.round(((teamRoster.find(m => m.id === employeeName)?.weeklyCapacity) || 20) / 5)} hrs/day)`
+                    : 'Recommended: 4-8 hrs/day for sustainable pace'
+                  }
+                </div>
               </label>
               <label className="block">
                 <span className="text-xs font-medium text-slate-600">Chaos Buffer (%)</span>
@@ -427,13 +483,12 @@ export function EmployeeEstimateReport({ projects, metrics, teamRoster, clientMo
             </label>
           </div>
 
-          {/* Export Options */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3">
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-4">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Export Options</p>
             
             <button
               onClick={handleDownloadMarkdown}
-              disabled={!generatedMarkdown}
+              disabled={!selectedProject}
               className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Download className="w-4 h-4" />

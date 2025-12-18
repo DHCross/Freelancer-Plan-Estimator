@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { FileText, Download, Copy, Check, FileDown, Printer } from "lucide-react";
+import { FileText, Download, Copy, Check, FileDown, Printer, Eye, FileImage, FileSpreadsheet } from "lucide-react";
 import { DisplayProject, Metrics, TeamMember } from "@/lib/types";
 import { generateProductionPlanMarkdown, generateProductionPlanHTML, ReportConfig } from "@/lib/report-generator";
 import { COVER_ART_RATE_DEFAULT, INTERIOR_SPOT_DEFAULT, INTERIOR_FULL_DEFAULT, REGIONAL_MAP_DEFAULT, ENCOUNTER_MAP_DEFAULT, A1_ART_BASELINE, ART_DENSITY_PRESETS, ArtDensityPreset } from "@/lib/constants";
 import { estimateProjectArt } from "@/lib/calculations";
+import { actionColors } from "@/lib/colors";
 
 interface ReportExportProps {
   projects: DisplayProject[];
@@ -17,6 +18,7 @@ interface ReportExportProps {
 export function ReportExport({ projects, metrics, teamRoster, clientMode = false }: ReportExportProps) {
   const [copied, setCopied] = useState(false);
   const [reportTitle, setReportTitle] = useState("2026 A-Series Integrated Production Plan");
+  const [generatedHTML, setGeneratedHTML] = useState("");
   const [reportSubtitle, setReportSubtitle] = useState("Based on the A-Series Project Dossier, the following roadmap outlines the publishing strategy, sequencing, and production execution for fiscal year 2026. A1 remains the anchor deliverable and sets the production cadence for all supporting modules.");
   // A1 Manuscript Reality Baseline (audited from A1: Problem of Possibilities 4.1.25)
   const [regionalMaps, setRegionalMaps] = useState(A1_ART_BASELINE.regionalMaps);
@@ -28,6 +30,8 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
   const [investmentLow, setInvestmentLow] = useState(8500);
   const [investmentHigh, setInvestmentHigh] = useState(12000);
   const [generatedMarkdown, setGeneratedMarkdown] = useState("");
+  const [selectedFormat, setSelectedFormat] = useState<'markdown' | 'html' | 'pdf'>('markdown');
+  const [showPreview, setShowPreview] = useState(false);
   const [danWeeklyHours, setDanWeeklyHours] = useState(18);
   const [martinWeeklyHours, setMartinWeeklyHours] = useState(30);
   const [workingWeeksPerYear, setWorkingWeeksPerYear] = useState(48);
@@ -139,9 +143,29 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
     return regionalMaps + encounterMaps + interiorIllustrations + spotArt + npcPortraits + covers;
   }, [regionalMaps, encounterMaps, interiorIllustrations, spotArt, npcPortraits, covers]);
 
+  const reportEstimate = useMemo(() => {
+    const estimatedWords = reportTitle.length + reportSubtitle.length + 2000; // Base content estimate
+    const estimatedPages = Math.ceil(estimatedWords / 250); // ~250 words per page
+    const estimatedSize = Math.ceil(estimatedWords * 0.001); // Rough KB estimate
+    
+    return {
+      pages: estimatedPages,
+      sizeKB: estimatedSize,
+      generationTime: '2 seconds',
+      sections: [
+        'Strategic Priorities',
+        'Release Calendar', 
+        'Quarterly Execution Path',
+        'Budget & Resourcing',
+        'Action Items'
+      ]
+    };
+  }, [reportTitle, reportSubtitle]);
+
   const handleGenerate = () => {
     const markdown = generateProductionPlanMarkdown(reportConfig);
     setGeneratedMarkdown(markdown);
+    setShowPreview(true);
   };
 
   const handleCopyMarkdown = async () => {
@@ -157,11 +181,11 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
 
   const handleDownloadMarkdown = () => {
     if (!generatedMarkdown) return;
-    const blob = new Blob([generatedMarkdown], { type: "text/markdown" });
+    const blob = new Blob([generatedMarkdown], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
-    a.download = `${reportTitle.replace(/\s+/g, "_")}.md`;
+    a.download = `${reportTitle.replace(/\s+/g, '-').toLowerCase()}.md`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -169,12 +193,12 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
   };
 
   const handleDownloadHTML = () => {
-    const html = generateProductionPlanHTML(reportConfig);
-    const blob = new Blob([html], { type: "text/html" });
+    if (!generatedHTML) return;
+    const blob = new Blob([generatedHTML], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
-    a.download = `${reportTitle.replace(/\s+/g, "_")}.html`;
+    a.download = `${reportTitle.replace(/\s+/g, '-').toLowerCase()}.html`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -182,14 +206,28 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
   };
 
   const handlePrintPDF = () => {
-    const html = generateProductionPlanHTML(reportConfig);
-    const printWindow = window.open("", "_blank");
+    if (!generatedHTML) return;
+    const printWindow = window.open('', '_blank');
     if (printWindow) {
-      printWindow.document.write(html);
+      printWindow.document.write(generatedHTML);
       printWindow.document.close();
-      printWindow.onload = () => {
-        printWindow.print();
-      };
+      printWindow.print();
+    }
+  };
+
+  const handleDownload = () => {
+    if (!generatedMarkdown) return;
+    
+    switch (selectedFormat) {
+      case 'markdown':
+        handleDownloadMarkdown();
+        break;
+      case 'html':
+        handleDownloadHTML();
+        break;
+      case 'pdf':
+        handlePrintPDF();
+        break;
     }
   };
 
@@ -533,66 +571,202 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
             </div>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3">
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-4">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Export Options</p>
             
-            <button
-              onClick={handleDownloadMarkdown}
-              disabled={!generatedMarkdown}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Download className="w-4 h-4" />
-              Download Markdown (.md)
-            </button>
+            {/* Format Selection */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700">Export Format</label>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  onClick={() => setSelectedFormat('markdown')}
+                  className={`p-3 rounded-lg border-2 transition-all duration-200 flex flex-col items-center gap-1 ${
+                    selectedFormat === 'markdown' 
+                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700' 
+                      : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                  }`}
+                >
+                  <FileText className="w-5 h-5" />
+                  <span className="text-xs font-medium">Markdown</span>
+                  <span className="text-xs text-slate-500">.md</span>
+                </button>
+                <button
+                  onClick={() => setSelectedFormat('html')}
+                  className={`p-3 rounded-lg border-2 transition-all duration-200 flex flex-col items-center gap-1 ${
+                    selectedFormat === 'html' 
+                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700' 
+                      : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                  }`}
+                >
+                  <FileImage className="w-5 h-5" />
+                  <span className="text-xs font-medium">HTML</span>
+                  <span className="text-xs text-slate-500">.html</span>
+                </button>
+                <button
+                  onClick={() => setSelectedFormat('pdf')}
+                  className={`p-3 rounded-lg border-2 transition-all duration-200 flex flex-col items-center gap-1 ${
+                    selectedFormat === 'pdf' 
+                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700' 
+                      : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                  }`}
+                >
+                  <FileSpreadsheet className="w-5 h-5" />
+                  <span className="text-xs font-medium">PDF</span>
+                  <span className="text-xs text-slate-500">Print</span>
+                </button>
+              </div>
+            </div>
 
-            <button
-              onClick={handleDownloadHTML}
-              disabled={!generatedMarkdown}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <FileDown className="w-4 h-4" />
-              Download HTML
-            </button>
+            {/* Report Estimate */}
+            <div className="bg-slate-50 rounded-lg p-3 space-y-2">
+              <div className="text-sm font-medium text-slate-700">Report Details</div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Estimated Pages:</span>
+                  <span className="font-medium text-slate-900">{reportEstimate.pages}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">File Size:</span>
+                  <span className="font-medium text-slate-900">~{reportEstimate.sizeKB}KB</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Generation:</span>
+                  <span className="font-medium text-slate-900">{reportEstimate.generationTime}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Sections:</span>
+                  <span className="font-medium text-slate-900">{reportEstimate.sections.length}</span>
+                </div>
+              </div>
+            </div>
 
+            {/* Live Preview Toggle */}
             <button
-              onClick={handlePrintPDF}
-              disabled={!generatedMarkdown}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={() => setShowPreview(!showPreview)}
+              className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 ${
+                showPreview 
+                  ? `${actionColors.primary.bg} ${actionColors.primary.text}` 
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
             >
-              <Printer className="w-4 h-4" />
-              Print / Save as PDF
+              <Eye className="w-4 h-4" />
+              {showPreview ? 'Hide Preview' : 'Show Live Preview'}
+            </button>
+            
+            {/* Download Button */}
+            <button
+              onClick={handleDownload}
+              disabled={!generatedMarkdown}
+              className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg font-medium transition-all duration-200 ${
+                generatedMarkdown
+                  ? `${actionColors.success.bg} ${actionColors.success.bgHover} ${actionColors.success.text} hover:shadow-lg`
+                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+              }`}
+            >
+              {selectedFormat === 'markdown' && <Download className="w-4 h-4" />}
+              {selectedFormat === 'html' && <FileDown className="w-4 h-4" />}
+              {selectedFormat === 'pdf' && <Printer className="w-4 h-4" />}
+              Download {selectedFormat === 'pdf' ? 'Print to PDF' : selectedFormat.charAt(0).toUpperCase() + selectedFormat.slice(1)}
             </button>
           </div>
         </div>
 
         <div className="lg:col-span-2">
+          {/* Live Preview Section */}
+          {showPreview && (
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 mb-4">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Live Preview</p>
+                  <p className="text-sm text-slate-600">Report structure and content outline</p>
+                </div>
+                <div className="text-xs text-slate-500">
+                  {generatedMarkdown ? 'Generated' : 'Preview Mode'}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Report Structure */}
+                <div className="space-y-2">
+                  <div className="text-sm font-medium text-slate-700">Report Structure</div>
+                  <div className="space-y-1">
+                    {reportEstimate.sections.map((section, i) => (
+                      <div key={i} className="flex items-center gap-2 text-xs p-2 bg-slate-50 rounded">
+                        <div className="w-6 h-6 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-xs font-medium">
+                          {i + 1}
+                        </div>
+                        <span className="text-slate-700">{section}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Content Summary */}
+                <div className="space-y-2">
+                  <div className="text-sm font-medium text-slate-700">Content Summary</div>
+                  <div className="space-y-1 text-xs">
+                    <div className="flex justify-between p-2 bg-slate-50 rounded">
+                      <span className="text-slate-600">Team Members:</span>
+                      <span className="font-medium text-slate-900">{teamRoster.length}</span>
+                    </div>
+                    <div className="flex justify-between p-2 bg-slate-50 rounded">
+                      <span className="text-slate-600">Active Projects:</span>
+                      <span className="font-medium text-slate-900">{projects.filter(p => p.internalStatus === 'In Progress' || p.clientStatus === 'Active').length}</span>
+                    </div>
+                    <div className="flex justify-between p-2 bg-slate-50 rounded">
+                      <span className="text-slate-600">Art Budget:</span>
+                      <span className="font-medium text-slate-900">${totalArtBudget.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between p-2 bg-slate-50 rounded">
+                      <span className="text-slate-600">Investment Range:</span>
+                      <span className="font-medium text-slate-900">${investmentLow.toLocaleString()} - ${investmentHigh.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Editor Section */}
           <div className="bg-slate-950 text-slate-50 rounded-2xl border border-slate-800 flex flex-col h-full min-h-[600px]">
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
               <div>
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Report Preview</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                  {showPreview ? 'Report Editor' : 'Report Preview'}
+                </p>
                 <p className="text-xs text-slate-400 mt-1">
-                  {generatedMarkdown ? "Edit the markdown below or copy/download" : "Click 'Generate Report' to create your production plan"}
+                  {generatedMarkdown ? "Edit markdown below or export" : "Click 'Generate Report' to create your production plan"}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={handleCopyMarkdown}
-                disabled={!generatedMarkdown}
-                className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs rounded-full border transition ${
-                  generatedMarkdown
-                    ? "border-emerald-400 text-emerald-200 hover:bg-emerald-500/10"
-                    : "border-slate-700 text-slate-500 cursor-not-allowed"
-                }`}
-              >
-                {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                {copied ? "Copied!" : "Copy"}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleCopyMarkdown}
+                  disabled={!generatedMarkdown}
+                  className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs rounded-full border transition ${
+                    generatedMarkdown
+                      ? "border-emerald-400 text-emerald-200 hover:bg-emerald-500/10"
+                      : "border-slate-700 text-slate-500 cursor-not-allowed"
+                  }`}
+                >
+                  {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                  {copied ? "Copied!" : "Copy"}
+                </button>
+                {!generatedMarkdown && (
+                  <button
+                    onClick={handleGenerate}
+                    className={`${actionColors.primary.bg} ${actionColors.primary.bgHover} ${actionColors.primary.text} px-3 py-1.5 text-xs rounded-full font-medium transition-all duration-200 hover:shadow-lg`}
+                  >
+                    Generate Report
+                  </button>
+                )}
+              </div>
             </div>
             <textarea
               className="flex-1 w-full bg-transparent text-xs font-mono px-4 py-3 resize-none outline-none"
               value={generatedMarkdown}
               onChange={(e) => setGeneratedMarkdown(e.target.value)}
-              placeholder="Click 'Generate Report' to produce your 2026 A-Series Integrated Production Plan..."
+              placeholder={showPreview ? "Click 'Generate Report' to produce your 2026 A-Series Integrated Production Plan..." : "Generate the report first to see the content here..."}
             />
           </div>
         </div>

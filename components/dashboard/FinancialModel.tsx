@@ -6,6 +6,9 @@ import {
     Truck,
     Scale,
     AlertCircle,
+    BarChart3,
+    Target,
+    Activity,
 } from "lucide-react";
 import {
     DistributionChannel,
@@ -15,6 +18,7 @@ import {
     DistributionChannelType,
 } from "@/lib/types";
 import { calculateRoi } from "@/lib/calculations";
+import { getBudgetColor } from "@/lib/colors";
 
 // Default Channels based on user data
 const DEFAULT_CHANNELS: DistributionChannel[] = [
@@ -55,6 +59,7 @@ interface FinancialModelProps {
 export function FinancialModel({ defaultDevCost = 20000 }: FinancialModelProps) {
     const [devCost, setDevCost] = useState(defaultDevCost);
     const [msrp, setMsrp] = useState(40);
+    const [breakEvenUnits, setBreakEvenUnits] = useState(0); // For interactive slider
 
     const [printRun, setPrintRun] = useState<PrintRunConfig>({
         quantity: 1000,
@@ -75,6 +80,27 @@ export function FinancialModel({ defaultDevCost = 20000 }: FinancialModelProps) 
         () => calculateRoi(devCost, printRun, { msrp }, selectedChannel),
         [devCost, printRun, msrp, selectedChannel]
     );
+
+    // Update break-even slider when ROI changes
+    useMemo(() => {
+        setBreakEvenUnits(roi.breakEvenUnits);
+    }, [roi.breakEvenUnits]);
+
+    // Calculate break-even scenarios for different quantities
+    const breakEvenScenarios = useMemo(() => {
+        const scenarios = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+        return scenarios.map(multiplier => {
+            const quantity = Math.round(roi.breakEvenUnits * multiplier);
+            const scenarioRoi = calculateRoi(devCost, { ...printRun, quantity }, { msrp }, selectedChannel);
+            return {
+                quantity,
+                multiplier,
+                profit: scenarioRoi.netProfit,
+                profitPerUnit: scenarioRoi.netRevenuePerUnit,
+                margin: (scenarioRoi.netRevenuePerUnit / msrp) * 100
+            };
+        });
+    }, [devCost, printRun, msrp, selectedChannel, roi.breakEvenUnits]);
 
     const formatCurrency = (val: number) =>
         new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(val);
@@ -270,11 +296,16 @@ export function FinancialModel({ defaultDevCost = 20000 }: FinancialModelProps) 
 
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center">
-                                    <span className="text-slate-600">Break-Even Units</span>
-                                    <span className={`font-mono font-bold text-lg ${roi.breakEvenUnits > printRun.quantity ? "text-rose-600" : "text-slate-800"
-                                        }`}>
-                                        {formatNumber(roi.breakEvenUnits)} / {formatNumber(printRun.quantity)}
-                                    </span>
+                                    <span className="text-slate-600 font-medium">Break-Even Units</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className={`font-mono font-bold text-lg ${roi.breakEvenUnits > printRun.quantity ? "text-rose-600" : "text-slate-800"
+                                            }`}>
+                                            {formatNumber(roi.breakEvenUnits)} / {formatNumber(printRun.quantity)}
+                                        </span>
+                                        {roi.breakEvenUnits > printRun.quantity && (
+                                            <Target className="w-4 h-4 text-rose-500" />
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
@@ -282,6 +313,56 @@ export function FinancialModel({ defaultDevCost = 20000 }: FinancialModelProps) 
                                         className={`h-full rounded-full ${roi.breakEvenUnits > printRun.quantity ? "bg-rose-500" : "bg-emerald-500"}`}
                                         style={{ width: `${Math.min(100, (printRun.quantity / roi.breakEvenUnits) * 100)}%` }}
                                     />
+                                </div>
+
+                                {/* Interactive Break-Even Slider */}
+                                <div className="mt-4 p-3 bg-slate-50 rounded-lg">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-sm font-medium text-slate-700">Interactive Break-Even Analysis</span>
+                                        <Activity className="w-4 h-4 text-slate-500" />
+                                    </div>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <label className="text-xs text-slate-600">Units Sold: {formatNumber(breakEvenUnits)}</label>
+                                            <input
+                                                type="range"
+                                                min={Math.floor(roi.breakEvenUnits * 0.5)}
+                                                max={Math.ceil(roi.breakEvenUnits * 2)}
+                                                value={breakEvenUnits}
+                                                onChange={(e) => setBreakEvenUnits(Number(e.target.value))}
+                                                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                                                style={{
+                                                    background: `linear-gradient(to right, #10b981 0%, #10b981 ${((breakEvenUnits - (roi.breakEvenUnits * 0.5)) / (roi.breakEvenUnits * 1.5)) * 100}%, #e2e8f0 ${((breakEvenUnits - (roi.breakEvenUnits * 0.5)) / (roi.breakEvenUnits * 1.5)) * 100}%, #e2e8f0 100%)`
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2 text-xs">
+                                            <div className="flex justify-between">
+                                                <span className="text-slate-600">Profit:</span>
+                                                <span className={`font-medium ${(() => {
+                                                    const scenarioRoi = calculateRoi(devCost, { ...printRun, quantity: breakEvenUnits }, { msrp }, selectedChannel);
+                                                    return scenarioRoi.netProfit >= 0 ? "text-emerald-600" : "text-rose-600";
+                                                })()}`}>
+                                                    {(() => {
+                                                    const scenarioRoi = calculateRoi(devCost, { ...printRun, quantity: breakEvenUnits }, { msrp }, selectedChannel);
+                                                    return formatCurrency(scenarioRoi.netProfit);
+                                                })()}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                                <span className="text-slate-600">Margin:</span>
+                                                <span className={`font-medium ${(() => {
+                                                    const scenarioRoi = calculateRoi(devCost, { ...printRun, quantity: breakEvenUnits }, { msrp }, selectedChannel);
+                                                    return scenarioRoi.netRevenuePerUnit >= 0 ? "text-emerald-600" : "text-rose-600";
+                                                })()}`}>
+                                                    {(() => {
+                                                    const scenarioRoi = calculateRoi(devCost, { ...printRun, quantity: breakEvenUnits }, { msrp }, selectedChannel);
+                                                    return `${Math.round((scenarioRoi.netRevenuePerUnit / msrp) * 100)}%`;
+                                                })()}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div className="pt-2 flex justify-between items-end border-t border-slate-200/50">
@@ -301,6 +382,57 @@ export function FinancialModel({ defaultDevCost = 20000 }: FinancialModelProps) 
                                         </p>
                                     </div>
                                 )}
+
+                                {/* Break-Even Scenarios Chart */}
+                                <div className="mt-4 p-3 bg-slate-50 rounded-lg">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <span className="text-sm font-medium text-slate-700">Profit Scenarios</span>
+                                        <BarChart3 className="w-4 h-4 text-slate-500" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        {breakEvenScenarios.map((scenario, index) => {
+                                            const isCurrentRun = scenario.quantity === printRun.quantity;
+                                            const isBreakEven = scenario.quantity === Math.round(roi.breakEvenUnits);
+                                            
+                                            return (
+                                                <div key={index} className={`flex items-center justify-between p-2 rounded-lg border ${
+                                                    isCurrentRun ? 'border-indigo-300 bg-indigo-50' : 
+                                                    isBreakEven ? 'border-emerald-300 bg-emerald-50' : 
+                                                    'border-slate-200 bg-white'
+                                                }`}>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-xs font-medium text-slate-600">
+                                                            {scenario.multiplier}x
+                                                        </span>
+                                                        <span className="text-sm">
+                                                            {formatNumber(scenario.quantity)} units
+                                                        </span>
+                                                        {isBreakEven && (
+                                                            <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-medium">
+                                                                Break-Even
+                                                            </span>
+                                                        )}
+                                                        {isCurrentRun && (
+                                                            <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-medium">
+                                                                Current
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <div className={`font-mono text-sm font-medium ${
+                                                            scenario.profit >= 0 ? 'text-emerald-600' : 'text-rose-600'
+                                                        }`}>
+                                                            {formatCurrency(scenario.profit)}
+                                                        </div>
+                                                        <div className="text-xs text-slate-500">
+                                                            {formatCurrency(scenario.profitPerUnit)}/unit
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
