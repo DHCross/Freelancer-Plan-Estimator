@@ -1,6 +1,6 @@
 "use client";
 
-import { Lock } from "lucide-react";
+import { Lock, AlertTriangle, Info } from "lucide-react";
 import { WriterLoad } from "@/lib/types";
 import { formatNumber } from "@/lib/utils";
 
@@ -10,8 +10,38 @@ interface TeamPlannerProps {
 }
 
 export function TeamPlanner({ writers, clientMode = false }: TeamPlannerProps) {
+  // Find the highest overloaded person for the warning banner
+  const mostOverloaded = writers.reduce((max, writer) => {
+    const percent = writer.annualCapacity ? (writer.totalHours / writer.annualCapacity) * 100 : 0;
+    const maxPercent = max.annualCapacity ? (max.totalHours / max.annualCapacity) * 100 : 0;
+    return percent > maxPercent ? writer : max;
+  }, writers[0]);
+  
+  const mostOverloadedPercent = mostOverloaded?.annualCapacity 
+    ? Math.round((mostOverloaded.totalHours / mostOverloaded.annualCapacity) * 100) 
+    : 0;
+  const hasBottleneck = mostOverloadedPercent > 100;
+
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Bottleneck Warning Banner */}
+      {hasBottleneck && !clientMode && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+          <div>
+            <h4 className="font-bold text-red-800">Resource Bottleneck Detected</h4>
+            <p className="text-sm text-red-700 mt-1">
+              <strong>{mostOverloaded.name}</strong> is at <strong>{mostOverloadedPercent}%</strong> capacity 
+              ({formatNumber(mostOverloaded.totalHours)}h assigned vs {formatNumber(mostOverloaded.annualCapacity)}h available annually).
+            </p>
+            <p className="text-xs text-red-600 mt-2">
+              <strong>Impact:</strong> Projects will take {Math.round(mostOverloadedPercent / 100)}x longer than planned, 
+              or require redistributing {formatNumber(mostOverloaded.totalHours - mostOverloaded.annualCapacity)}h to other team members.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="grid md:grid-cols-3 gap-6">
         {writers.map((writer) => {
           const percent = writer.annualCapacity

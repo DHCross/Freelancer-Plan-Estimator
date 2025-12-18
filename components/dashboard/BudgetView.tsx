@@ -431,8 +431,8 @@ export function BudgetView({ analysis, quarters, clientMode, onProjectUpdate }: 
                     {q} 2026
                   </h4>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-slate-500 bg-slate-200 px-2 py-1 rounded-full">
-                      {quarterItems.length} items
+                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${quarterItems.length > 0 ? "text-slate-500 bg-slate-200" : "text-slate-400 bg-slate-100"}`}>
+                      {quarterItems.length > 0 ? `${quarterItems.length} items` : "Available"}
                     </span>
                     {!clientMode && (
                       <button
@@ -449,6 +449,20 @@ export function BudgetView({ analysis, quarters, clientMode, onProjectUpdate }: 
               
               {/* Quarter Content */}
               <div className={`p-4 ${isMobile ? 'space-y-3' : 'space-y-3'} min-h-[200px]`}>
+                {quarterItems.length === 0 && (
+                  <div className="flex flex-col items-center justify-center h-full min-h-[160px] text-center">
+                    <div className="text-slate-300 text-4xl mb-2">📋</div>
+                    <p className="text-sm text-slate-400">No projects scheduled</p>
+                    {!clientMode && (
+                      <button
+                        onClick={() => addProject(undefined, q)}
+                        className="mt-3 text-xs text-indigo-600 hover:text-indigo-800 underline"
+                      >
+                        + Add first project
+                      </button>
+                    )}
+                  </div>
+                )}
                 {quarterItems.map(item => {
                   const cost = item.estCost ?? 0;
                   const isEditing = editStates[item.id];

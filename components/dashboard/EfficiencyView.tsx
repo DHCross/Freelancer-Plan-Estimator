@@ -89,9 +89,14 @@ export function EfficiencyView({
               <p className="text-xs uppercase text-slate-500">Internal cost / word</p>
               <p className="text-2xl font-bold text-slate-900">{defense.myCostPerWord.toFixed(3)}$</p>
             </div>
-            <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
-              <p className="text-xs uppercase text-emerald-700">Savings vs market</p>
-              <p className="text-2xl font-bold text-emerald-700">{Math.round(defense.savingsPercent)}%</p>
+            <div className={`rounded-xl p-4 border ${defense.savingsPercent > 0 ? "bg-emerald-50 border-emerald-100" : "bg-slate-50 border-slate-200"}`}>
+              <p className={`text-xs uppercase ${defense.savingsPercent > 0 ? "text-emerald-700" : "text-slate-500"}`}>Savings vs market</p>
+              <p className={`text-2xl font-bold ${defense.savingsPercent > 0 ? "text-emerald-700" : "text-slate-600"}`}>
+                {defense.savingsPercent > 0 ? `${Math.round(defense.savingsPercent)}%` : "—"}
+              </p>
+              {defense.savingsPercent <= 0 && (
+                <p className="text-xs text-slate-500 mt-1">Adjust rate or speed above</p>
+              )}
             </div>
           </div>
         </div>

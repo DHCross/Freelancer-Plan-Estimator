@@ -160,6 +160,25 @@ export default function DashboardPage() {
   const passcode = process.env.NEXT_PUBLIC_DASHBOARD_PASSWORD ?? "hoskbrew";
   const [isClientMode, setIsClientMode] = useState(false);
   const [activeTab, setActiveTab] = useState("methodology");
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // Client-safe tabs that exist in both modes
+  const CLIENT_SAFE_TABS = ["methodology", "team", "products", "budget", "efficiency", "resourcing"];
+
+  // Reset to valid tab when switching to Client mode
+  const handleModeToggle = () => {
+    setIsTransitioning(true);
+    setIsClientMode((prev) => {
+      const newMode = !prev;
+      // If switching to client mode and current tab is internal-only, reset to methodology
+      if (newMode && !CLIENT_SAFE_TABS.includes(activeTab)) {
+        setActiveTab("methodology");
+      }
+      return newMode;
+    });
+    // Brief transition state for visual feedback
+    setTimeout(() => setIsTransitioning(false), 300);
+  };
   const [teamWorkspaceView, setTeamWorkspaceView] = useState<TeamWorkspaceView>("quick");
 
   // Load saved data from localStorage on mount
@@ -365,6 +384,7 @@ export default function DashboardPage() {
   }));
 
   const tabs = [
+    // Core views (available in both modes)
     { id: "methodology", label: "How We Build", icon: Cpu },
     { id: "team", label: "Who Does What", icon: Users },
     { id: "products", label: "Product Listing", icon: Briefcase },
@@ -375,19 +395,25 @@ export default function DashboardPage() {
       label: "Team Health",
       icon: isClientMode ? AlertTriangle : Ghost,
     },
-    // Internal-only deep-dive tabs
+    // Internal-only tools - grouped by function
     ...(!isClientMode
       ? [
-        { id: "status", label: "Task Board", icon: ClipboardList },
+        // Divider: Planning Tools
+        { id: "divider-planning", label: "— Planning —", icon: null, isDivider: true },
+        { id: "integrated", label: "Integrated Planning", icon: Timer },
         { id: "scenarios", label: "What-If Lab", icon: Calculator },
-        { id: "failures", label: "Lessons Learned", icon: AlertTriangle },
+        { id: "status", label: "Task Board", icon: ClipboardList },
+        // Divider: Team Tools
+        { id: "divider-team", label: "— Team —", icon: null, isDivider: true },
         { id: "teambuilder", label: "Team Builder", icon: Users },
         { id: "teamworkspace", label: "Estimator Tools", icon: Users },
-        { id: "dossier", label: "Dossier", icon: ClipboardList },
-        { id: "financials", label: "Financial Model", icon: DollarSign },
         { id: "estimate", label: "My Estimate", icon: User },
+        // Divider: Reports
+        { id: "divider-reports", label: "— Reports —", icon: null, isDivider: true },
+        { id: "financials", label: "Financial Model", icon: DollarSign },
+        { id: "dossier", label: "Dossier", icon: ClipboardList },
         { id: "report", label: "Export Report", icon: FileText },
-        { id: "integrated", label: "Integrated Planning", icon: Timer },
+        { id: "failures", label: "Lessons Learned", icon: AlertTriangle },
       ]
       : []),
   ];
@@ -544,7 +570,7 @@ export default function DashboardPage() {
                 Internal
               </span>
               <button
-                onClick={() => setIsClientMode((prev) => !prev)}
+                onClick={handleModeToggle}
                 className={`relative w-14 h-7 rounded-full transition-all duration-300 ${isClientMode ? "bg-emerald-500" : "bg-slate-300"
                   }`}
                 aria-label="Toggle client mode"
@@ -598,7 +624,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-full px-4 py-2 shadow-sm">
               <span className={`text-xs font-semibold ${!isClientMode ? "text-slate-900" : "text-slate-400"}`}>Internal</span>
               <button
-                onClick={() => setIsClientMode((prev) => !prev)}
+                onClick={handleModeToggle}
                 className={`relative w-14 h-7 rounded-full transition-all duration-300 ${isClientMode ? "bg-emerald-500" : "bg-slate-300"}`}
                 aria-label="Toggle client mode"
               >
@@ -649,7 +675,7 @@ export default function DashboardPage() {
               />
             </div>
 
-            <div className="flex-1 p-6 md:p-8 bg-slate-50/50 min-h-[500px] space-y-6">
+            <div className={`flex-1 p-6 md:p-8 bg-slate-50/50 min-h-[500px] space-y-6 transition-opacity duration-300 ${isTransitioning ? "opacity-50" : "opacity-100"}`}>
               {activeTab === "methodology" && (
                 <MethodologyView
                   phases={PRODUCTION_PHASES}
