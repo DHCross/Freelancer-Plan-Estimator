@@ -6,15 +6,15 @@ import { Project } from "./types";
 export interface PendingChange {
   projectId: number;
   field: keyof Project;
-  oldValue: any;
-  newValue: any;
+  oldValue: unknown;
+  newValue: unknown;
 }
 
 interface ProductContextType {
   products: Project[];
   pendingChanges: Map<number, Partial<Project>>;
   setProducts: (products: Project[]) => void;
-  updateProductField: (projectId: number, field: keyof Project, value: any) => void;
+  updateProductField: (projectId: number, field: keyof Project, value: unknown) => void;
   saveProductChanges: (projectId: number) => Promise<void>;
   discardProductChanges: (projectId: number) => void;
   getPendingChangesForProject: (projectId: number) => Partial<Project> | null;
@@ -23,12 +23,12 @@ interface ProductContextType {
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
-export function ProductProvider({ children, initialProducts = [] }: { children: ReactNode; initialProducts?: Project[] }) {
+export function ProductProvider({ children, initialProducts = [], onProductsChange }: { children: ReactNode; initialProducts?: Project[]; onProductsChange?: (products: Project[]) => void }) {
   const [products, setProducts] = useState<Project[]>(initialProducts);
   const [pendingChanges, setPendingChanges] = useState<Map<number, Partial<Project>>>(new Map());
 
   const updateProductField = useCallback(
-    (projectId: number, field: keyof Project, value: any) => {
+    (projectId: number, field: keyof Project, value: unknown) => {
       setPendingChanges((prev) => {
         const newMap = new Map(prev);
         const current = newMap.get(projectId) || {};
@@ -43,9 +43,12 @@ export function ProductProvider({ children, initialProducts = [] }: { children: 
     const changes = pendingChanges.get(projectId);
     if (!changes) return;
 
-    setProducts((prev) =>
-      prev.map((p) => (p.id === projectId ? { ...p, ...changes } : p))
-    );
+    let updatedProducts: Project[] = [];
+    setProducts((prev) => {
+      const next = prev.map((p) => (p.id === projectId ? { ...p, ...changes } : p));
+      updatedProducts = next;
+      return next;
+    });
 
     // Persist to localStorage for now
     if (typeof window !== "undefined") {
@@ -57,12 +60,17 @@ export function ProductProvider({ children, initialProducts = [] }: { children: 
       localStorage.setItem("hoskbrew_products", JSON.stringify(updated));
     }
 
+    // Propagate to parent if provided
+    if (onProductsChange && updatedProducts.length) {
+      onProductsChange(updatedProducts);
+    }
+
     setPendingChanges((prev) => {
       const newMap = new Map(prev);
       newMap.delete(projectId);
       return newMap;
     });
-  }, [pendingChanges]);
+  }, [pendingChanges, onProductsChange]);
 
   const discardProductChanges = useCallback((projectId: number) => {
     setPendingChanges((prev) => {

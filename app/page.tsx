@@ -705,8 +705,8 @@ export default function DashboardPage() {
               {activeTab === "team" && <TeamPlanner writers={writerLoad} clientMode={isClientMode} />}
 
               {activeTab === "products" && productSubmenuView === "products-main" && (
-                <ProductProvider initialProducts={projects}>
-                  <ProductListingView products={projects} teamRoster={teamRoster} />
+                <ProductProvider initialProducts={projects} onProductsChange={(p)=> setProjects(p)}>
+                  <ProductListingView teamRoster={teamRoster} />
                 </ProductProvider>
               )}
 

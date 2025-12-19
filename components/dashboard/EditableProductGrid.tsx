@@ -16,7 +16,6 @@ const STATUSES = [
 const QUARTERS = ["Q1 2026", "Q2 2026", "Q3 2026", "Q4 2026", "Q1 2027", "Q2 2027"];
 
 interface EditableProductGridProps {
-  products: Project[];
   teamRoster: TeamMember[];
 }
 
@@ -31,8 +30,8 @@ interface EditableProductGridProps {
  * - If a project is "Completed", this is shown clearly in the Status dropdown
  * - Strikethrough styling is NOT used to avoid confusion
  */
-export function EditableProductGrid({ products, teamRoster }: EditableProductGridProps) {
-  const { updateProductField, saveProductChanges, discardProductChanges, getPendingChangesForProject, hasUnsavedChanges } =
+export function EditableProductGrid({ teamRoster }: EditableProductGridProps) {
+  const { products, updateProductField, saveProductChanges, discardProductChanges, getPendingChangesForProject, hasUnsavedChanges } =
     useProducts();
   const [editingId, setEditingId] = useState<number | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
