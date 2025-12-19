@@ -18,3 +18,6 @@ export * from "./ResourceValidationHub";
 export * from "./IntegratedScenarioEngine";
 export * from "./IntegratedFinancialModel";
 export * from "./DataFlowIndicator";
+export * from "./EditableProductGrid";
+export * from "./ProductListingView";
+export * from "./EnhancedEstimatorTools";

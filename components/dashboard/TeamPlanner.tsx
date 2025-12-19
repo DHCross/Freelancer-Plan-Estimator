@@ -2,6 +2,7 @@
 
 import { Lock, AlertTriangle, Info } from "lucide-react";
 import { WriterLoad } from "@/lib/types";
+import { useTeamLoad } from "@/lib/TeamLoadContext";
 import { formatNumber } from "@/lib/utils";
 
 interface TeamPlannerProps {
@@ -10,9 +11,11 @@ interface TeamPlannerProps {
 }
 
 export function TeamPlanner({ writers, clientMode = false }: TeamPlannerProps) {
+  const { getTeamTotalHours } = useTeamLoad();
   // Find the highest overloaded person for the warning banner
   const mostOverloaded = writers.reduce((max, writer) => {
-    const percent = writer.annualCapacity ? (writer.totalHours / writer.annualCapacity) * 100 : 0;
+    const injected = getTeamTotalHours(writer.id);
+    const percent = writer.annualCapacity ? ((writer.totalHours + injected) / writer.annualCapacity) * 100 : 0;
     const maxPercent = max.annualCapacity ? (max.totalHours / max.annualCapacity) * 100 : 0;
     return percent > maxPercent ? writer : max;
   }, writers[0]);
@@ -44,8 +47,9 @@ export function TeamPlanner({ writers, clientMode = false }: TeamPlannerProps) {
 
       <div className="grid md:grid-cols-3 gap-6">
         {writers.map((writer) => {
+          const injected = getTeamTotalHours(writer.id);
           const percent = writer.annualCapacity
-            ? Math.round((writer.totalHours / writer.annualCapacity) * 100)
+            ? Math.round(((writer.totalHours + injected) / writer.annualCapacity) * 100)
             : 0;
           const isOver = writer.totalHours > writer.annualCapacity;
           const statusClass = isOver
@@ -109,8 +113,14 @@ export function TeamPlanner({ writers, clientMode = false }: TeamPlannerProps) {
                       )}
                     </div>
                     <div className="text-xs text-slate-400">
-                      {formatNumber(Math.round(project.calculatedHours))}h • {project.launchWindow}
+                          {formatNumber(Math.round(project.calculatedHours))}h • {project.launchWindow}
                     </div>
+                    {/* Injected hours from Product Builder */}
+                    {injected > 0 && (
+                      <div className="text-xs text-indigo-600 mt-1">
+                        +{formatNumber(injected)}h injected via Product Builder
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

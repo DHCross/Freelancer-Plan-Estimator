@@ -40,8 +40,6 @@ import {
   BudgetView,
   CapacityGapView,
   EfficiencyView,
-  EstimatorView,
-  MandateView,
   MethodologyView,
   ProjectStatusView,
   PurgeView,
@@ -60,6 +58,10 @@ import { EmployeeEstimateReport } from "@/components/dashboard/EmployeeEstimateR
 import { ResourceValidationHub } from "@/components/dashboard/ResourceValidationHub";
 import { IntegratedScenarioEngine } from "@/components/dashboard/IntegratedScenarioEngine";
 import { IntegratedFinancialModel } from "@/components/dashboard/IntegratedFinancialModel";
+import { ProductProvider } from "@/lib/ProductContext";
+import { ProductListingView } from "@/components/dashboard/ProductListingView";
+import { EnhancedEstimatorTools } from "@/components/dashboard/EnhancedEstimatorTools";
+import { TeamLoadProvider } from "@/lib/TeamLoadContext";
 
 const INTERNAL_TAB_STYLES = {
   methodology: "text-indigo-700 bg-indigo-50 border-indigo-600",
@@ -161,6 +163,7 @@ export default function DashboardPage() {
   const [isClientMode, setIsClientMode] = useState(false);
   const [activeTab, setActiveTab] = useState("methodology");
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [productSubmenuView, setProductSubmenuView] = useState<"products-main" | "scenarios">("products-main");
 
   // Client-safe tabs that exist in both modes
   const CLIENT_SAFE_TABS = ["methodology", "team", "products", "budget", "efficiency", "resourcing"];
@@ -189,7 +192,12 @@ export default function DashboardPage() {
     }
     return INITIAL_PROJECTS;
   });
-
+  // Save projects to localStorage whenever they change
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("hoskbrew_products", JSON.stringify(projects));
+    }
+  }, [projects]);
   const [metrics, setMetrics] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("hoskbrew_metrics");
@@ -387,7 +395,7 @@ export default function DashboardPage() {
     // Core views (available in both modes)
     { id: "methodology", label: "How We Build", icon: Cpu },
     { id: "team", label: "Who Does What", icon: Users },
-    { id: "products", label: "Product Listing", icon: Briefcase },
+    { id: "products", label: "Product Listing", icon: Briefcase, hasSubmenu: true },
     { id: "budget", label: "Budget & Plan", icon: DollarSign },
     { id: "efficiency", label: "Cost Savings", icon: Calculator },
     {
@@ -401,7 +409,6 @@ export default function DashboardPage() {
         // Divider: Planning Tools
         { id: "divider-planning", label: "— Planning —", icon: null, isDivider: true },
         { id: "integrated", label: "Integrated Planning", icon: Timer },
-        { id: "scenarios", label: "What-If Lab", icon: Calculator },
         { id: "status", label: "Task Board", icon: ClipboardList },
         // Divider: Team Tools
         { id: "divider-team", label: "— Team —", icon: null, isDivider: true },
@@ -417,6 +424,12 @@ export default function DashboardPage() {
       ]
       : []),
   ];
+
+  // Submenu for Product Listing when internal
+  const productSubmenu = !isClientMode ? [
+    { id: "products-main", label: "Product List", description: "View and edit products" },
+    { id: "scenarios", label: "What-If Lab", description: "Draft and test scenarios" },
+  ] : [];
 
   const teamWorkspaceNav: { id: TeamWorkspaceView; label: string; description: string }[] = [
     {
@@ -478,7 +491,7 @@ export default function DashboardPage() {
     setTeamRoster(updatedTeamMembers);
   };
 
-  const handleProjectUpdate = (projectId: number, field: keyof Project, value: any) => {
+  const handleProjectUpdate = (projectId: number, field: keyof Project, value: string | number) => {
     setProjects((prev: Project[]) => prev.map((project: Project) =>
       project.id === projectId ? { ...project, [field]: value } : project
     ));
@@ -608,7 +621,8 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 p-4 md:p-8 font-sans text-slate-800">
+    <TeamLoadProvider>
+      <div className="min-h-screen bg-slate-100 p-4 md:p-8 font-sans text-slate-800">
       <div className="max-w-7xl mx-auto space-y-6">
         <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
@@ -672,6 +686,9 @@ export default function DashboardPage() {
                 activeTab={activeTab}
                 onChange={setActiveTab}
                 orientation="vertical"
+                submenu={activeTab === "products" ? productSubmenu : undefined}
+                activeSubmenu={activeTab === "products" ? productSubmenuView : undefined}
+                onSubmenuChange={activeTab === "products" ? ((id: string) => setProductSubmenuView(id as "products-main" | "scenarios")) : undefined}
               />
             </div>
 
@@ -687,8 +704,14 @@ export default function DashboardPage() {
 
               {activeTab === "team" && <TeamPlanner writers={writerLoad} clientMode={isClientMode} />}
 
-              {activeTab === "products" && (
-                <MandateView projects={analysisWithDisplay} clientMode={isClientMode} />
+              {activeTab === "products" && productSubmenuView === "products-main" && (
+                <ProductProvider initialProducts={projects}>
+                  <ProductListingView products={projects} teamRoster={teamRoster} />
+                </ProductProvider>
+              )}
+
+              {activeTab === "products" && productSubmenuView === "scenarios" && (
+                <ScenarioEngine />
               )}
 
               {activeTab === "budget" && (
@@ -784,13 +807,13 @@ export default function DashboardPage() {
                     {teamWorkspaceView === "quick" && <QuickEstimator teamRoster={teamRoster} />}
                     {teamWorkspaceView === "advanced" && (
                       <div className="space-y-6">
-                        <EstimatorView
-                          inputs={estimatorInputs}
-                          onChange={handleEstimatorChange}
-                          onEstimate={handleEstimate}
-                          result={estimatorResult}
-                          clientMode={isClientMode}
+                        <EnhancedEstimatorTools
+                          projects={projects}
                           teamRoster={teamRoster}
+                          estimatorInputs={estimatorInputs}
+                          estimatorResult={estimatorResult}
+                          onInputChange={handleEstimatorChange}
+                          onEstimate={handleEstimate}
                         />
                         <EstimatorBuckets
                           entries={estimationBuckets}
@@ -859,5 +882,6 @@ export default function DashboardPage() {
       </div>
 
     </div>
+    </TeamLoadProvider>
   );
 }
