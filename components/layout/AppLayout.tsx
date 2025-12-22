@@ -107,7 +107,7 @@ export function AppLayout({
                   title="Open Command Palette (Cmd+K)"
                 >
                   <Search className="w-4 h-4" />
-                  <span className="hidden lg:inline">Search...</span>
+                  <span className="hidden lg:inline text-slate-400">Search projects, people, or reports…</span>
                   <kbd className="hidden md:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-medium text-slate-500 bg-white border border-slate-200 rounded ml-1">
                     <Command className="w-3 h-3" />K
                   </kbd>

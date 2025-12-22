@@ -44,6 +44,7 @@ export function CommandPalette({
       icon: LayoutDashboard,
       action: () => onNavigate("dashboard"),
       category: "Navigation",
+      keywords: ["home", "overview", "health"],
     },
     {
       id: "nav-planning",
@@ -51,6 +52,7 @@ export function CommandPalette({
       icon: Calendar,
       action: () => onNavigate("planning"),
       category: "Navigation",
+      keywords: ["products", "timeline", "budget", "schedule"],
     },
     {
       id: "nav-team",
@@ -58,6 +60,7 @@ export function CommandPalette({
       icon: Users,
       action: () => onNavigate("team"),
       category: "Navigation",
+      keywords: ["people", "members", "capacity", "who"],
     },
     {
       id: "nav-finance",
@@ -65,6 +68,7 @@ export function CommandPalette({
       icon: DollarSign,
       action: () => onNavigate("finance"),
       category: "Navigation",
+      keywords: ["money", "budget", "roi", "cost", "profit"],
     },
     {
       id: "nav-reports",
@@ -72,6 +76,7 @@ export function CommandPalette({
       icon: FileText,
       action: () => onNavigate("reports"),
       category: "Navigation",
+      keywords: ["dossier", "export", "document"],
     },
     {
       id: "toggle-mode",
@@ -79,6 +84,7 @@ export function CommandPalette({
       icon: isClientMode ? EyeOff : Eye,
       action: onToggleMode,
       category: "Actions",
+      keywords: ["view", "client", "internal", "visibility"],
     },
     {
       id: "toggle-presentation",
@@ -86,12 +92,17 @@ export function CommandPalette({
       icon: isPresentationMode ? Minimize : Maximize,
       action: onTogglePresentation,
       category: "Actions",
+      keywords: ["present", "fullscreen", "demo"],
     },
   ];
 
-  const filteredCommands = commands.filter((cmd) =>
-    cmd.label.toLowerCase().includes(query.toLowerCase())
-  );
+  const filteredCommands = commands.filter((cmd) => {
+    const searchTerms = query.toLowerCase();
+    return (
+      cmd.label.toLowerCase().includes(searchTerms) ||
+      cmd.keywords.some(kw => kw.includes(searchTerms))
+    );
+  });
 
   // Handle keyboard navigation within the palette
   useEffect(() => {
@@ -134,7 +145,7 @@ export function CommandPalette({
           <Search className="w-5 h-5 text-slate-400 mr-3" />
           <input
             type="text"
-            placeholder="Type a command..."
+            placeholder="Search projects, people, or reports…"
             className="flex-1 bg-transparent border-none outline-none text-slate-900 placeholder:text-slate-400 text-lg"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -149,8 +160,9 @@ export function CommandPalette({
 
         <div className="max-h-[60vh] overflow-y-auto py-2">
           {filteredCommands.length === 0 ? (
-            <div className="px-4 py-8 text-center text-slate-500">
-              No commands found.
+            <div className="px-4 py-8 text-center">
+              <p className="text-slate-500">No commands found for &ldquo;{query}&rdquo;</p>
+              <p className="text-xs text-slate-400 mt-1">Try dashboard, finance, team, or reports</p>
             </div>
           ) : (
             <div className="space-y-1 px-2">
@@ -173,7 +185,10 @@ export function CommandPalette({
                     <div className={`p-2 rounded-md ${isSelected ? "bg-blue-100 text-blue-600" : "bg-slate-100 text-slate-500"}`}>
                       <Icon className="w-5 h-5" />
                     </div>
-                    <span className="font-medium flex-1">{cmd.label}</span>
+                    <div className="flex-1">
+                      <span className="font-medium">{cmd.label}</span>
+                      <span className="text-xs text-slate-400 ml-2">{cmd.category}</span>
+                    </div>
                     {isSelected && (
                       <span className="text-xs text-blue-500 font-medium">Enter</span>
                     )}
@@ -186,10 +201,13 @@ export function CommandPalette({
         
         <div className="px-4 py-2 bg-slate-50 border-t border-slate-100 text-xs text-slate-500 flex justify-between">
           <span>
-            <strong className="font-medium text-slate-700">↑↓</strong> to navigate
+            <strong className="font-medium text-slate-700">↑↓</strong> navigate
           </span>
           <span>
-            <strong className="font-medium text-slate-700">↵</strong> to select
+            <strong className="font-medium text-slate-700">↵</strong> select
+          </span>
+          <span>
+            <strong className="font-medium text-slate-700">⌘K</strong> toggle
           </span>
         </div>
       </div>

@@ -33,13 +33,15 @@ export function CollapsibleTeamCard({
   const getStatusConfig = () => {
     if (isOver) {
       return clientMode
-        ? { border: "border-amber-500", bar: "bg-amber-500", badge: "bg-amber-100 text-amber-700", label: "High Load" }
+        ? { border: "border-amber-500", bar: "bg-amber-500", badge: "bg-amber-100 text-amber-700", label: "Timeline Extended" }
         : { border: "border-red-600", bar: "bg-red-600", badge: "bg-red-100 text-red-700", label: "Bottleneck" };
     }
     if (percent > 80) {
-      return { border: "border-amber-400", bar: "bg-amber-500", badge: "bg-amber-100 text-amber-700", label: "Near Capacity" };
+      return clientMode
+        ? { border: "border-amber-400", bar: "bg-amber-500", badge: "bg-amber-100 text-amber-700", label: "Busy" }
+        : { border: "border-amber-400", bar: "bg-amber-500", badge: "bg-amber-100 text-amber-700", label: "Near Capacity" };
     }
-    return { border: "border-emerald-500", bar: "bg-emerald-500", badge: "bg-emerald-100 text-emerald-700", label: "Healthy" };
+    return { border: "border-emerald-500", bar: "bg-emerald-500", badge: "bg-emerald-100 text-emerald-700", label: clientMode ? "On Track" : "Healthy" };
   };
 
   const status = getStatusConfig();
@@ -62,12 +64,21 @@ export function CollapsibleTeamCard({
                 </span>
               )}
             </div>
-            <p className="text-xs text-slate-500 truncate mt-0.5">{member.role}</p>
+            <Tooltip content={member.role}>
+              <p className="text-xs text-slate-500 truncate mt-0.5 cursor-help">{member.role}</p>
+            </Tooltip>
           </div>
           <div className="flex items-center gap-2">
-            <div className={`text-2xl font-bold ${isOver ? "text-red-600" : "text-slate-700"}`}>
-              {percent}%
-            </div>
+            {/* In client mode, hide raw percentage for overloaded members */}
+            {clientMode && isOver ? (
+              <div className="text-sm text-amber-700 max-w-[100px] text-right">
+                Adjusted
+              </div>
+            ) : (
+              <div className={`text-2xl font-bold ${isOver ? "text-red-600" : "text-slate-700"}`}>
+                {percent}%
+              </div>
+            )}
             {!clientMode && (
               <Tooltip content="Load = assigned hours ÷ annual capacity (weekly hours × 48 weeks)">
                 <button className="p-1 hover:bg-slate-100 rounded-full">
@@ -89,8 +100,7 @@ export function CollapsibleTeamCard({
         {/* Quick Stats */}
         <div className="flex items-center gap-4 mt-3 text-xs text-slate-500">
           <span>{member.projects.length} projects</span>
-          <span>{formatNumber(totalHours)}h assigned</span>
-          <span>{formatNumber(member.annualCapacity)}h capacity</span>
+          <span className="font-medium">{formatNumber(totalHours)}h / {formatNumber(member.annualCapacity)}h planned</span>
         </div>
       </div>
 

@@ -146,8 +146,8 @@ export function DashboardView({
           value={`${teamMetrics.overallLoad}%`}
           subtitle={
             teamMetrics.bottleneckCount > 0
-              ? `${teamMetrics.bottleneckCount} ${teamMetrics.bottleneckCount === 1 ? "bottleneck" : "bottlenecks"}`
-              : "All members healthy"
+              ? `${teamMetrics.bottleneckCount} ${teamMetrics.bottleneckCount === 1 ? "bottleneck" : "bottlenecks"} · View full team load →`
+              : "All members healthy · View full team load →"
           }
           icon={Users}
           status={capacityStatus}
@@ -163,7 +163,11 @@ export function DashboardView({
                 : `${Math.ceil(nearestDeadline.daysUntil / 7)}w`
               : "—"
           }
-          subtitle={nearestDeadline?.project.name || "No scheduled deadlines"}
+          subtitle={
+            nearestDeadline
+              ? `${nearestDeadline.project.name} · View timeline →`
+              : "No scheduled deadlines"
+          }
           icon={Calendar}
           status={
             nearestDeadline?.daysUntil && nearestDeadline.daysUntil <= 14
@@ -176,7 +180,7 @@ export function DashboardView({
         <MetricCard
           title="Total Exposure"
           value={totalBudgetExposure > 0 ? `$${formatNumber(totalBudgetExposure)}` : "—"}
-          subtitle="Committed budget across projects"
+          subtitle={totalBudgetExposure > 0 ? "Committed budget · Open financial model →" : "No committed budget"}
           icon={DollarSign}
           status={totalBudgetExposure > 50000 ? "warning" : "healthy"}
           onClick={() => onNavigate?.("finance", "financial-model")}
@@ -188,7 +192,7 @@ export function DashboardView({
           subtitle={
             clientMode
               ? "Based on current team allocation"
-              : `${analysis.filter(p => p.internalStatus?.toLowerCase().includes("draft")).length} in production`
+              : `${analysis.filter(p => p.internalStatus?.toLowerCase().includes("draft")).length} in production · View all products →`
           }
           icon={Target}
           status="healthy"
@@ -209,9 +213,9 @@ export function DashboardView({
           </div>
           <button
             onClick={() => onNavigate?.("team", "team-overview")}
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            className="text-sm text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors"
           >
-            View Details →
+            Open Full Team View →
           </button>
         </div>
         
@@ -224,32 +228,35 @@ export function DashboardView({
 
       {/* Quick Timeline Preview (optional, for visual context) */}
       {!clientMode && analysis.length > 0 && (
-        <div className="bg-white border border-slate-200 rounded-xl p-4">
-          <div className="flex items-center justify-between mb-3">
+        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+          <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50">
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-slate-400" />
-              <h4 className="font-medium text-slate-900">Upcoming Milestones</h4>
+              <div className="bg-blue-100 p-1.5 rounded-lg">
+                <Clock className="w-4 h-4 text-blue-600" />
+              </div>
+              <h4 className="font-semibold text-slate-900">Upcoming Milestones</h4>
             </div>
             <button
               onClick={() => onNavigate?.("planning", "budget")}
-              className="text-xs text-blue-600 hover:text-blue-700"
+              className="text-xs text-blue-600 hover:text-blue-700 font-medium hover:underline"
             >
-              View full timeline
+              View full timeline →
             </button>
           </div>
-          <div className="space-y-2">
+          <div className="divide-y divide-slate-100">
             {analysis
               .filter((p) => p.targetDate)
               .sort((a, b) => new Date(a.targetDate!).getTime() - new Date(b.targetDate!).getTime())
               .slice(0, 3)
               .map((project) => (
-                <div
+                <button
                   key={project.id}
-                  className="flex items-center justify-between py-2 px-3 bg-slate-50 rounded-lg"
+                  onClick={() => onNavigate?.("planning", "products")}
+                  className="w-full flex items-center justify-between py-3 px-4 hover:bg-slate-50 transition-colors text-left group"
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-2 h-2 rounded-full ${
+                      className={`w-2 h-2 rounded-full flex-shrink-0 ${
                         project.internalStatus?.toLowerCase().includes("critical")
                           ? "bg-red-500"
                           : project.internalStatus?.toLowerCase().includes("draft")
@@ -257,14 +264,14 @@ export function DashboardView({
                           : "bg-slate-300"
                       }`}
                     />
-                    <span className="text-sm font-medium text-slate-700">
+                    <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">
                       {project.name}
                     </span>
                   </div>
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs text-slate-500 group-hover:text-slate-700">
                     {project.displayDate || project.launchWindow}
                   </span>
-                </div>
+                </button>
               ))}
           </div>
         </div>

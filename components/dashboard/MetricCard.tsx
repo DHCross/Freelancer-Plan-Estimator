@@ -55,8 +55,8 @@ export function MetricCard({
 
   const content = (
     <div
-      className={`relative ${styles.bg} border ${styles.border} rounded-xl p-4 transition-all ${
-        onClick ? "cursor-pointer hover:shadow-md hover:scale-[1.02]" : ""
+      className={`relative ${styles.bg} border ${styles.border} rounded-xl p-4 transition-all duration-200 ${
+        onClick ? "cursor-pointer hover:shadow-lg hover:-translate-y-0.5 active:scale-[0.98]" : ""
       } ${className}`}
     >
       <div className="flex items-start justify-between gap-3">

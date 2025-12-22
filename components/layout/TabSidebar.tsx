@@ -117,14 +117,14 @@ export function TabSidebar({ sections, activeItem, onItemChange, footer }: TabSi
 }
 
 // Helper component for "How This Works" link
-export function HelpLink({ onClick }: { onClick?: () => void }) {
+export function HelpLink({ onClick, tabName }: { onClick?: () => void; tabName?: string }) {
   return (
     <button
       onClick={onClick}
       className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"
     >
       <HelpCircle className="w-4 h-4" />
-      <span>How This Works</span>
+      <span>{tabName ? `${tabName} Help` : "How This Works"}</span>
     </button>
   );
 }

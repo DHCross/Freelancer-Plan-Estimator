@@ -147,7 +147,7 @@ export function BottleneckAlert({
     : `Resource Bottleneck: ${memberName} at ${Math.round(loadPercentage)}%`;
   
   const description = clientMode
-    ? `Current workload requires timeline adjustments. ${timelineExtension ? `Projected extension: ${timelineExtension} months.` : ""}`
+    ? `Additional capacity has been assigned to ensure quality delivery. ${timelineExtension ? `Updated timeline includes a ${timelineExtension}-month adjustment to accommodate current scope.` : ""} No action required from you.`
     : `${memberName} is significantly over capacity. ${
         timelineExtension 
           ? `This extends the overall timeline by ${timelineExtension} months.` 

@@ -27,7 +27,47 @@ export function ResourceValidationHub({ clientMode = false }: ResourceValidation
       )
     : null;
 
-  if (clientMode) return null;
+  // Client mode: show a simplified, reassuring view
+  if (clientMode) {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        {/* Client-Facing Timeline Summary */}
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="bg-emerald-100 p-2 rounded-lg">
+              <TrendingUp className="w-6 h-6 text-emerald-600" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-emerald-900">Validated Timeline: {scenario.validatedTimeline} months</h3>
+              <p className="text-sm text-emerald-700">Updated timeline reflects staffing and capacity constraints; no action required from you.</p>
+            </div>
+          </div>
+          
+          {bottleneck?.isOverloaded && (
+            <div className="bg-white/50 border border-emerald-100 rounded-lg p-4 mt-4">
+              <p className="text-sm text-emerald-800">
+                This timeline includes a <span className="font-semibold">+{scenario.validatedTimeline - scenario.targetTimeline} month adjustment</span> to ensure quality delivery across all projects.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Simple Visual Timeline */}
+        <div className="bg-white border border-slate-200 rounded-xl p-6">
+          <h4 className="font-semibold text-slate-900 mb-4">Project Timeline</h4>
+          <div className="relative h-12 bg-slate-100 rounded-lg overflow-hidden">
+            <div 
+              className="absolute left-0 top-0 h-full bg-emerald-500 flex items-center justify-center text-white font-semibold text-sm"
+              style={{ width: `100%` }}
+            >
+              {scenario.validatedTimeline} months total
+            </div>
+          </div>
+          <p className="text-xs text-slate-500 mt-2">Delivery timeline has been validated against team availability.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -184,10 +224,18 @@ export function ResourceValidationHub({ clientMode = false }: ResourceValidation
 
       {/* Enhanced Timeline Impact Analysis with Visual Bars */}
       <div className="bg-white border border-slate-200 rounded-xl p-6">
-        <h4 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-indigo-600" />
-          Timeline Impact Analysis
-        </h4>
+        <div className="mb-4">
+          <h4 className="font-bold text-slate-900 flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-indigo-600" />
+            Timeline Impact Analysis
+          </h4>
+          {bottleneck?.isOverloaded && (
+            <p className="text-sm text-slate-600 mt-1">
+              <span className="font-semibold text-lg text-slate-900">{scenario.validatedTimeline} months total</span>
+              {" "}(includes +{scenario.validatedTimeline - scenario.targetTimeline} months from {bottleneck.teamMemberName}'s workload)
+            </p>
+          )}
+        </div>
         
         {/* Visual Timeline Comparison */}
         <div className="mb-6">
