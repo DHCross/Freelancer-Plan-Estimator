@@ -1,9 +1,10 @@
 "use client";
 
-import { Lock, AlertTriangle, Info } from "lucide-react";
+import { Lock, AlertTriangle, HelpCircle } from "lucide-react";
 import { WriterLoad } from "@/lib/types";
 import { useTeamLoad } from "@/lib/TeamLoadContext";
 import { formatNumber } from "@/lib/utils";
+import { Tooltip } from "./Tooltip";
 
 interface TeamPlannerProps {
   writers: WriterLoad[];
@@ -27,6 +28,29 @@ export function TeamPlanner({ writers, clientMode = false }: TeamPlannerProps) {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Section Header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900">Who Does What</h2>
+          <p className="text-slate-600 mt-1">
+            {clientMode 
+              ? "Team allocation and workload distribution across contributors."
+              : "Monitor workload and bottlenecks across all contributors."}
+          </p>
+        </div>
+        {!clientMode && (
+          <Tooltip 
+            content="Load = assigned hours ÷ annual capacity (weekly hours × 48 weeks). Bars turn red when assigned hours exceed capacity."
+            position="left"
+          >
+            <button className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-lg transition-colors">
+              <HelpCircle className="w-3.5 h-3.5" />
+              <span>How load % works</span>
+            </button>
+          </Tooltip>
+        )}
+      </div>
+
       {/* Bottleneck Warning Banner */}
       {hasBottleneck && !clientMode && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
@@ -127,16 +151,6 @@ export function TeamPlanner({ writers, clientMode = false }: TeamPlannerProps) {
             </div>
           );
         })}
-      </div>
-
-      <div className="bg-white border border-slate-200 rounded-xl p-4 text-sm text-slate-600">
-        <h4 className="font-semibold text-slate-900 mb-1">How load % is calculated</h4>
-        <p>
-          Each card compares the hours currently assigned to a person to their annual capacity
-          (weekly capacity × 48 working weeks). For example, someone with 40 hrs/week capacity has
-          <strong> 1,920 hrs</strong> available per year. If projects add up to 805 hrs, their card shows
-          <strong> 42%</strong> load (805 ÷ 1,920). Bars turn red only when assigned hours exceed that capacity.
-        </p>
       </div>
     </div>
   );

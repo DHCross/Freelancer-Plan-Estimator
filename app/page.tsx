@@ -1,20 +1,21 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import {
   AlertTriangle,
   Briefcase,
   Calculator,
+  Calendar,
   ClipboardList,
-  Cpu,
   DollarSign,
-  Download,
   FileText,
   Ghost,
-  Timer,
-  Upload,
-  User,
   Users,
+  Gauge,
+  BarChart3,
+  BookOpen,
+  Lightbulb,
+  Wrench,
 } from "lucide-react";
 
 import {
@@ -35,10 +36,16 @@ import {
   runEstimator,
 } from "@/lib/calculations";
 import type { DisplayProject, EstimatorResult, ProjectWithDisplay, Project, Metrics, TeamMember, EstimationBucketEntry } from "@/lib/types";
-import { MainNav } from "@/components/MainNav";
+
+// Layout Components
+import { AppLayout, PrimaryTab } from "@/components/layout";
+import { TabSidebar, HelpLink } from "@/components/layout/TabSidebar";
+
+// Dashboard Components
 import {
   BudgetView,
   CapacityGapView,
+  DashboardView,
   EfficiencyView,
   MethodologyView,
   ProjectStatusView,
@@ -61,30 +68,158 @@ import { IntegratedFinancialModel } from "@/components/dashboard/IntegratedFinan
 import { ProductProvider } from "@/lib/ProductContext";
 import { ProductListingView } from "@/components/dashboard/ProductListingView";
 import { EnhancedEstimatorTools } from "@/components/dashboard/EnhancedEstimatorTools";
-import { TeamLoadProvider } from "@/lib/TeamLoadContext";
+import { TeamLoadProvider, useTeamLoad } from "@/lib/TeamLoadContext";
 
-const INTERNAL_TAB_STYLES = {
-  methodology: "text-indigo-700 bg-indigo-50 border-indigo-600",
-  team: "text-blue-700 bg-blue-50 border-blue-600",
-  products: "text-teal-700 bg-teal-50 border-teal-600",
-  efficiency: "text-purple-700 bg-purple-50 border-purple-600",
-  status: "text-rose-700 bg-rose-50 border-rose-600",
-  resourcing: "text-red-700 bg-red-50 border-red-600",
-  scenarios: "text-emerald-700 bg-emerald-50 border-emerald-600",
-  failures: "text-amber-700 bg-amber-50 border-amber-600",
-  teamworkspace: "text-cyan-700 bg-cyan-50 border-cyan-600",
-  financials: "text-emerald-900 bg-emerald-100 border-emerald-600",
-  report: "text-violet-700 bg-violet-50 border-violet-600",
-  estimate: "text-teal-700 bg-teal-50 border-teal-600",
-  integrated: "text-blue-700 bg-blue-50 border-blue-600",
+// ============================================================================
+// SIDEBAR CONFIGURATION BY TAB
+// ============================================================================
+
+const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottleneckCount: number) => {
+  switch (primaryTab) {
+    case "dashboard":
+      return null; // No sidebar for dashboard
+
+    case "planning":
+      return {
+        sections: [
+          {
+            id: "planning-tools",
+            label: "Planning Tools",
+            description: "Resource allocation and scheduling",
+            items: [
+              { id: "integrated", label: "Resource Validation", icon: Gauge, description: "Team capacity & conflicts" },
+              { id: "scenarios", label: "Scenario Engine", icon: Lightbulb, description: "What-if analysis" },
+              { id: "status", label: "Task Board", icon: ClipboardList, description: "Execution Kanban" },
+            ],
+            defaultExpanded: true,
+          },
+          {
+            id: "projects",
+            label: "Projects",
+            description: "Product catalog and budgets",
+            items: [
+              { id: "products", label: "Product Listing", icon: Briefcase },
+              { id: "budget", label: "Budget & Timeline", icon: Calendar },
+            ],
+            defaultExpanded: true,
+          },
+        ],
+      };
+
+    case "team":
+      return {
+        sections: [
+          {
+            id: "team-overview",
+            label: "Team Overview",
+            items: [
+              { 
+                id: "team-overview", 
+                label: "Who Does What", 
+                icon: Users,
+                badge: bottleneckCount > 0 ? bottleneckCount.toString() : undefined,
+                badgeColor: "red" as const,
+              },
+              { id: "teambuilder", label: "Team Builder", icon: Wrench },
+              { 
+                id: "team-health", 
+                label: "Team Health", 
+                icon: isClientMode ? AlertTriangle : Ghost,
+              },
+            ],
+            defaultExpanded: true,
+          },
+          ...(!isClientMode ? [{
+            id: "estimation",
+            label: "Estimation Tools",
+            items: [
+              { id: "estimator-tools", label: "Estimator Tools", icon: Calculator },
+              { id: "my-estimate", label: "My Estimate", icon: BarChart3 },
+            ],
+            defaultExpanded: true,
+          }] : []),
+        ],
+      };
+
+    case "finance":
+      return {
+        sections: [
+          {
+            id: "financial",
+            label: "Financial Analysis",
+            items: [
+              { id: "financial-model", label: "Financial Model", icon: DollarSign },
+              { id: "cost-savings", label: "Cost Savings", icon: Calculator },
+            ],
+            defaultExpanded: true,
+          },
+        ],
+      };
+
+    case "reports":
+      return {
+        sections: [
+          {
+            id: "outputs",
+            label: "Reports & Exports",
+            description: "Client-ready outputs and retrospectives",
+            items: [
+              { id: "dossier", label: "Dossier", icon: BookOpen },
+              { id: "export-report", label: "Export Report", icon: FileText },
+              { id: "lessons-learned", label: "Lessons Learned", icon: Lightbulb },
+            ],
+            defaultExpanded: true,
+          },
+        ],
+      };
+
+    default:
+      return null;
+  }
 };
 
-const CLIENT_TAB_STYLES = {
-  ...INTERNAL_TAB_STYLES,
-  resourcing: "text-amber-700 bg-amber-50 border-amber-600",
+// ============================================================================
+// DEFAULT SUB-VIEWS PER TAB
+// ============================================================================
+
+const DEFAULT_SUBVIEWS: Record<PrimaryTab, string> = {
+  dashboard: "dashboard",
+  planning: "integrated",
+  team: "team-overview",
+  finance: "financial-model",
+  reports: "dossier",
 };
 
-type TeamWorkspaceView = "quick" | "advanced";
+// ============================================================================
+// ESTIMATOR DEFAULTS
+// ============================================================================
+
+const DEFAULT_ESTIMATION_BUCKETS: EstimationBucketEntry[] = [
+  {
+    id: "example-a1-martin-writing",
+    projectName: "A1: Narrative Finish",
+    activity: "Draft new scenes (Martin)",
+    roleLabel: "Writing",
+    teamMemberId: "martin",
+    teamMemberName: "Martin",
+    hours: 120,
+    days: 30,
+  },
+  {
+    id: "example-a1-dan-editing",
+    projectName: "A1: Narrative Finish",
+    activity: "Development edit pass (Dan)",
+    roleLabel: "Editing",
+    teamMemberId: "dan",
+    teamMemberName: "Dan",
+    hours: 40,
+    days: 10,
+  },
+];
+
+// ============================================================================
+// STATUS COLUMN CONFIG
+// ============================================================================
 
 type StatusColumnConfig = {
   id: string;
@@ -125,66 +260,29 @@ const STATUS_COLUMN_CONFIG: StatusColumnConfig[] = [
   },
 ];
 
-const DEFAULT_ESTIMATION_BUCKETS: EstimationBucketEntry[] = [
-  {
-    id: "example-a1-martin-writing",
-    projectName: "A1: Narrative Finish",
-    activity: "Draft new scenes (Martin)",
-    roleLabel: "Writing",
-    teamMemberId: "martin",
-    teamMemberName: "Martin",
-    hours: 120,
-    days: 30,
-  },
-  {
-    id: "example-a1-dan-editing",
-    projectName: "A1: Narrative Finish",
-    activity: "Development edit pass (Dan)",
-    roleLabel: "Editing",
-    teamMemberId: "dan",
-    teamMemberName: "Dan",
-    hours: 40,
-    days: 10,
-  },
-  {
-    id: "example-gmguide-dan-writing",
-    projectName: "Core System GM Guide",
-    activity: "Draft GM tools chapter (Dan)",
-    roleLabel: "Writing",
-    teamMemberId: "dan",
-    teamMemberName: "Dan",
-    hours: 80,
-    days: 20,
-  },
-];
+// ============================================================================
+// MAIN COMPONENT
+// ============================================================================
 
-export default function DashboardPage() {
+function DashboardPageContent() {
+  // ========== AUTH STATE ==========
   const passcode = process.env.NEXT_PUBLIC_DASHBOARD_PASSWORD ?? "hoskbrew";
+  const [isAuthed, setIsAuthed] = useState(() => {
+    if (process.env.NODE_ENV === "development") return true;
+    if (typeof window === "undefined") return false;
+    return window.localStorage.getItem("hoskbrew_authed") === "true";
+  });
+  const [password, setPassword] = useState("");
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  // ========== MODE & NAVIGATION STATE ==========
   const [isClientMode, setIsClientMode] = useState(false);
-  const [activeTab, setActiveTab] = useState("methodology");
+  const [primaryTab, setPrimaryTab] = useState<PrimaryTab>("dashboard");
+  const [subView, setSubView] = useState("dashboard");
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [productSubmenuView, setProductSubmenuView] = useState<"products-main" | "scenarios">("products-main");
+  const [isPresentationMode, setIsPresentationMode] = useState(false);
 
-  // Client-safe tabs that exist in both modes
-  const CLIENT_SAFE_TABS = ["methodology", "team", "products", "budget", "efficiency", "resourcing"];
-
-  // Reset to valid tab when switching to Client mode
-  const handleModeToggle = () => {
-    setIsTransitioning(true);
-    setIsClientMode((prev) => {
-      const newMode = !prev;
-      // If switching to client mode and current tab is internal-only, reset to methodology
-      if (newMode && !CLIENT_SAFE_TABS.includes(activeTab)) {
-        setActiveTab("methodology");
-      }
-      return newMode;
-    });
-    // Brief transition state for visual feedback
-    setTimeout(() => setIsTransitioning(false), 300);
-  };
-  const [teamWorkspaceView, setTeamWorkspaceView] = useState<TeamWorkspaceView>("quick");
-
-  // Load saved data from localStorage on mount
+  // ========== DATA STATE ==========
   const [projects, setProjects] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("hoskbrew_projects");
@@ -192,12 +290,7 @@ export default function DashboardPage() {
     }
     return INITIAL_PROJECTS;
   });
-  // Save projects to localStorage whenever they change
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("hoskbrew_products", JSON.stringify(projects));
-    }
-  }, [projects]);
+
   const [metrics, setMetrics] = useState(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("hoskbrew_metrics");
@@ -205,30 +298,7 @@ export default function DashboardPage() {
     }
     return DEFAULT_METRICS;
   });
-  const [isAuthed, setIsAuthed] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.localStorage.getItem("hoskbrew_authed") === "true";
-  });
-  const [password, setPassword] = useState("");
-  const [authError, setAuthError] = useState<string | null>(null);
 
-  const [defendHourlyRate, setDefendHourlyRate] = useState(20);
-  const [defendWPH, setDefendWPH] = useState(250);
-  const [marketPerWord, setMarketPerWord] = useState(0.08);
-
-  const [estimatorInputs, setEstimatorInputs] = useState({
-    activity: "A1: Draft new section",
-    totalWords: 20000,
-    draftSpeed: 400,
-    bufferPercent: 30,
-    dailyHours: 4,
-    teamMemberId: "martin",
-    projectName: "A1: Narrative Finish",
-    roleLabel: "Writing",
-  });
-  const [estimatorResult, setEstimatorResult] = useState<EstimatorResult | null>(null);
-
-  // Dynamic team roster state
   const [teamRoster, setTeamRoster] = useState<TeamMember[]>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("hoskbrew_team_roster");
@@ -245,19 +315,30 @@ export default function DashboardPage() {
     return DEFAULT_ESTIMATION_BUCKETS;
   });
 
-  const handleAuth = (event: React.FormEvent) => {
-    event.preventDefault();
-    if (password.trim() === passcode) {
-      setIsAuthed(true);
-      setAuthError(null);
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem("hoskbrew_authed", "true");
-      }
-    } else {
-      setAuthError("Incorrect password.");
-    }
-  };
+  // ========== ESTIMATOR STATE ==========
+  const [defendHourlyRate, setDefendHourlyRate] = useState(20);
+  const [defendWPH, setDefendWPH] = useState(250);
+  const [marketPerWord, setMarketPerWord] = useState(0.08);
 
+  const [estimatorInputs, setEstimatorInputs] = useState({
+    activity: "A1: Draft new section",
+    totalWords: 20000,
+    draftSpeed: 400,
+    bufferPercent: 30,
+    dailyHours: 4,
+    teamMemberId: "martin",
+    projectName: "A1: Narrative Finish",
+    roleLabel: "Writing",
+  });
+  const [estimatorResult, setEstimatorResult] = useState<EstimatorResult | null>(null);
+
+  // Team workspace view state
+  const [teamWorkspaceView, setTeamWorkspaceView] = useState<"quick" | "advanced">("quick");
+
+  // ========== TEAM LOAD CONTEXT ==========
+  const { getTeamTotalHours } = useTeamLoad();
+
+  // ========== COMPUTED VALUES ==========
   const projectsWithDisplay = useMemo<ProjectWithDisplay[]>(
     () =>
       projects.map((project: Project) => ({
@@ -268,7 +349,10 @@ export default function DashboardPage() {
     [projects, isClientMode]
   );
 
-  const writerLoad = useMemo(() => calculateAnnualLoad(projectsWithDisplay, teamRoster), [projectsWithDisplay, teamRoster]);
+  const writerLoad = useMemo(
+    () => calculateAnnualLoad(projectsWithDisplay, teamRoster),
+    [projectsWithDisplay, teamRoster]
+  );
 
   const analysis = useMemo(
     () => calculateProjectAnalysis(projectsWithDisplay, metrics),
@@ -298,71 +382,6 @@ export default function DashboardPage() {
     return formatted;
   }, [analysis, isClientMode]);
 
-  // Aggregate total execution hours across all active projects (assembly load)
-  const totalAssemblyHours = useMemo(
-    () => writerLoad.reduce((sum, writer) => sum + writer.totalHours, 0),
-    [writerLoad]
-  );
-
-  // Current team weekly capacity (used for converting hours into weeks/months)
-  const teamWeeklyCapacity = useMemo(
-    () => teamRoster.reduce((sum, member) => sum + (member.weeklyCapacity || 0), 0),
-    [teamRoster]
-  );
-
-  // Baseline scenario configuration for Scenario Engine, derived from current plan
-  const baselineScenarioConfig = useMemo(() => {
-    // Aggregate total words across active projects
-    const totalWords = projects.reduce((sum: number, project: Project) => sum + (project.targetWords || 0), 0);
-
-    // Sum estimated cost from analysis (already includes contingency + blended rate)
-    const totalEstCost = analysis.reduce((sum, project) => sum + (project.estCost || 0), 0);
-    const baselineBudget = Math.round(totalEstCost);
-
-    // Derive timeline from total hours vs team weekly capacity
-    const totalHours = writerLoad.reduce((sum, writer) => sum + writer.totalHours, 0);
-    const totalWeeklyCapacity = writerLoad.reduce((sum, writer) => sum + (writer.weeklyCapacity || 0), 0);
-
-    let timelineMonths = 6;
-    if (totalWeeklyCapacity > 0 && totalHours > 0) {
-      const weeksNeeded = totalHours / totalWeeklyCapacity;
-      timelineMonths = Math.max(1, Math.ceil(weeksNeeded / 4));
-    }
-
-    // Team size = active contributors with non-zero weekly capacity
-    const teamSize = teamRoster.filter((member) => member.weeklyCapacity > 0).length || 1;
-
-    // Snap word count to the buckets used by ScenarioEngine's selector
-    const wordBuckets = [
-      { value: 15000, max: 30000 },
-      { value: 50000, max: 75000 },
-      { value: 100000, max: 130000 },
-      { value: 150000, max: Infinity },
-    ];
-
-    const snappedWordCount = (() => {
-      if (!totalWords) return 50000;
-      const bucket = wordBuckets.find((b) => totalWords <= b.max);
-      return bucket?.value ?? 150000;
-    })();
-
-    // Complexity heuristic based on total scope
-    const complexity: "simple" | "standard" | "complex" =
-      totalWords <= 30000 ? "simple" : totalWords <= 100000 ? "standard" : "complex";
-
-    // Default to professional quality as baseline from your compensation docs
-    const quality: "basic" | "professional" | "premium" = "professional";
-
-    return {
-      teamSize,
-      budget: baselineBudget || 25000,
-      timeline: timelineMonths,
-      wordCount: snappedWordCount,
-      complexity,
-      quality,
-    };
-  }, [projects, analysis, writerLoad, teamRoster]);
-
   const defenseAnalysis = useMemo(
     () => calculateDefenseAnalysis(defendHourlyRate, defendWPH, marketPerWord),
     [defendHourlyRate, defendWPH, marketPerWord]
@@ -391,60 +410,102 @@ export default function DashboardPage() {
     description: column.description,
   }));
 
-  const tabs = [
-    // Core views (available in both modes)
-    { id: "methodology", label: "How We Build", icon: Cpu },
-    { id: "team", label: "Who Does What", icon: Users },
-    { id: "products", label: "Product Listing", icon: Briefcase, hasSubmenu: true },
-    { id: "budget", label: "Budget & Plan", icon: DollarSign },
-    { id: "efficiency", label: "Cost Savings", icon: Calculator },
-    {
-      id: "resourcing",
-      label: "Team Health",
-      icon: isClientMode ? AlertTriangle : Ghost,
-    },
-    // Internal-only tools - grouped by function
-    ...(!isClientMode
-      ? [
-        // Divider: Planning Tools
-        { id: "divider-planning", label: "— Planning —", icon: null, isDivider: true },
-        { id: "integrated", label: "Integrated Planning", icon: Timer },
-        { id: "status", label: "Task Board", icon: ClipboardList },
-        // Divider: Team Tools
-        { id: "divider-team", label: "— Team —", icon: null, isDivider: true },
-        { id: "teambuilder", label: "Team Builder", icon: Users },
-        { id: "teamworkspace", label: "Estimator Tools", icon: Users },
-        { id: "estimate", label: "My Estimate", icon: User },
-        // Divider: Reports
-        { id: "divider-reports", label: "— Reports —", icon: null, isDivider: true },
-        { id: "financials", label: "Financial Model", icon: DollarSign },
-        { id: "dossier", label: "Dossier", icon: ClipboardList },
-        { id: "report", label: "Export Report", icon: FileText },
-        { id: "failures", label: "Lessons Learned", icon: AlertTriangle },
-      ]
-      : []),
-  ];
+  const teamWeeklyCapacity = useMemo(
+    () => teamRoster.reduce((sum, member) => sum + (member.weeklyCapacity || 0), 0),
+    [teamRoster]
+  );
 
-  // Submenu for Product Listing when internal
-  const productSubmenu = !isClientMode ? [
-    { id: "products-main", label: "Product List", description: "View and edit products" },
-    { id: "scenarios", label: "What-If Lab", description: "Draft and test scenarios" },
-  ] : [];
+  const totalAssemblyHours = useMemo(
+    () => writerLoad.reduce((sum, writer) => sum + writer.totalHours, 0),
+    [writerLoad]
+  );
 
-  const teamWorkspaceNav: { id: TeamWorkspaceView; label: string; description: string }[] = [
-    {
-      id: "quick",
-      label: "Quick Estimate",
-      description: "Push button • Get timeline",
-    },
-    {
-      id: "advanced",
-      label: "Advanced Estimate",
-      description: "Dial in scope, roles, and exports",
-    },
-  ];
+  // Calculate bottleneck count for sidebar badges
+  const bottleneckCount = useMemo(() => {
+    return writerLoad.filter((member) => {
+      const injected = getTeamTotalHours(member.id);
+      const percent = member.annualCapacity
+        ? ((member.totalHours + injected) / member.annualCapacity) * 100
+        : 0;
+      return percent > 100;
+    }).length;
+  }, [writerLoad, getTeamTotalHours]);
 
-  const tabStyles = isClientMode ? CLIENT_TAB_STYLES : INTERNAL_TAB_STYLES;
+  // ========== HANDLERS ==========
+  const handleAuth = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (password.trim() === passcode) {
+      setIsAuthed(true);
+      setAuthError(null);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("hoskbrew_authed", "true");
+      }
+    } else {
+      setAuthError("Incorrect password.");
+    }
+  };
+
+  const handleModeToggle = () => {
+    setIsTransitioning(true);
+    setIsClientMode((prev) => !prev);
+    setTimeout(() => setIsTransitioning(false), 300);
+  };
+
+  const handleTabChange = (tab: PrimaryTab) => {
+    setPrimaryTab(tab);
+    setSubView(DEFAULT_SUBVIEWS[tab]);
+  };
+
+  const handleNavigate = useCallback((tab: string, subTab?: string) => {
+    const validTab = tab as PrimaryTab;
+    if (["dashboard", "planning", "team", "finance", "reports"].includes(tab)) {
+      setPrimaryTab(validTab);
+      if (subTab) {
+        setSubView(subTab);
+      } else {
+        setSubView(DEFAULT_SUBVIEWS[validTab]);
+      }
+    }
+  }, []);
+
+  const handleExportData = () => {
+    const data = {
+      projects,
+      metrics,
+      defendHourlyRate,
+      defendWPH,
+      marketPerWord,
+      exportDate: new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `hoskbrew-dashboard-${new Date().toISOString().split("T")[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportData = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target?.result as string);
+        if (data.projects) setProjects(data.projects);
+        if (data.metrics) setMetrics(data.metrics);
+        if (data.defendHourlyRate !== undefined) setDefendHourlyRate(data.defendHourlyRate);
+        if (data.defendWPH !== undefined) setDefendWPH(data.defendWPH);
+        if (data.marketPerWord !== undefined) setMarketPerWord(data.marketPerWord);
+      } catch (error) {
+        console.error("Failed to import data:", error);
+        alert("Invalid file format. Please export a valid dashboard file first.");
+      }
+    };
+    reader.readAsText(file);
+  };
 
   const handleEstimatorChange = (field: keyof typeof estimatorInputs, value: string | number) => {
     setEstimatorInputs((prev) => ({ ...prev, [field]: value }));
@@ -492,55 +553,18 @@ export default function DashboardPage() {
   };
 
   const handleProjectUpdate = (projectId: number, field: keyof Project, value: string | number) => {
-    setProjects((prev: Project[]) => prev.map((project: Project) =>
-      project.id === projectId ? { ...project, [field]: value } : project
-    ));
+    setProjects((prev: Project[]) =>
+      prev.map((project: Project) =>
+        project.id === projectId ? { ...project, [field]: value } : project
+      )
+    );
   };
 
   const handleMetricsUpdate = (field: keyof Metrics, value: number) => {
     setMetrics((prev: Metrics) => ({ ...prev, [field]: value }));
   };
 
-  const handleExportData = () => {
-    const data = {
-      projects,
-      metrics,
-      defendHourlyRate,
-      defendWPH,
-      marketPerWord,
-      exportDate: new Date().toISOString(),
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `hoskbrew-dashboard-${new Date().toISOString().split("T")[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleImportData = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = JSON.parse(e.target?.result as string);
-        if (data.projects) setProjects(data.projects);
-        if (data.metrics) setMetrics(data.metrics);
-        if (data.defendHourlyRate !== undefined) setDefendHourlyRate(data.defendHourlyRate);
-        if (data.defendWPH !== undefined) setDefendWPH(data.defendWPH);
-        if (data.marketPerWord !== undefined) setMarketPerWord(data.marketPerWord);
-      } catch (error) {
-        console.error("Failed to import data:", error);
-        alert("Invalid file format. Please export a valid dashboard file first.");
-      }
-    };
-    reader.readAsText(file);
-  };
-
-  // Save data to localStorage whenever it changes
+  // ========== PERSISTENCE ==========
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem("hoskbrew_projects", JSON.stringify(projects));
@@ -565,6 +589,25 @@ export default function DashboardPage() {
     }
   }, [estimationBuckets]);
 
+  // ========== SIDEBAR CONFIGURATION ==========
+  const sidebarConfig = getSidebarConfig(primaryTab, isClientMode, bottleneckCount);
+
+  const renderSidebar = () => {
+    if (!sidebarConfig) return null;
+
+    return (
+      <TabSidebar
+        sections={sidebarConfig.sections}
+        activeItem={subView}
+        onItemChange={setSubView}
+        footer={
+          <HelpLink onClick={() => handleNavigate("planning", "methodology")} />
+        }
+      />
+    );
+  };
+
+  // ========== AUTH SCREEN ==========
   if (!isAuthed) {
     return (
       <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center px-4">
@@ -576,27 +619,8 @@ export default function DashboardPage() {
             <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Hoskbrew Access</p>
             <h1 className="text-2xl font-bold mt-2">Enter the production passcode</h1>
             <p className="text-sm text-slate-400 mt-1">
-              This dashboard contains sensitive staffing and budget data. Share the passphrase only with cleared partners.
+              This dashboard contains sensitive staffing and budget data.
             </p>
-            <div className="mt-4 flex items-center gap-3 bg-white border border-slate-200 rounded-full px-3 py-2 w-max">
-              <span className={`text-xs font-semibold ${!isClientMode ? "text-slate-900" : "text-slate-400"}`}>
-                Internal
-              </span>
-              <button
-                onClick={handleModeToggle}
-                className={`relative w-14 h-7 rounded-full transition-all duration-300 ${isClientMode ? "bg-emerald-500" : "bg-slate-300"
-                  }`}
-                aria-label="Toggle client mode"
-              >
-                <span
-                  className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow transition-all duration-300 ${isClientMode ? "translate-x-7" : "translate-x-0"
-                    }`}
-                />
-              </button>
-              <span className={`text-xs font-semibold ${isClientMode ? "text-slate-900" : "text-slate-400"}`}>
-                Client
-              </span>
-            </div>
           </div>
           <label className="block text-sm font-medium text-slate-200">
             Passcode
@@ -620,268 +644,300 @@ export default function DashboardPage() {
     );
   }
 
+  // ========== MAIN CONTENT RENDER ==========
+  const renderContent = () => {
+    const contentClass = `transition-opacity duration-300 ${isTransitioning ? "opacity-50" : "opacity-100"}`;
+
+    // Dashboard Tab
+    if (primaryTab === "dashboard") {
+      return (
+        <div className={contentClass}>
+          <DashboardView
+            writers={writerLoad}
+            analysis={analysisWithDisplay}
+            clientMode={isClientMode}
+            getInjectedHours={getTeamTotalHours}
+            onNavigate={handleNavigate}
+            totalBudgetExposure={analysis.reduce((sum, p) => sum + (p.estCost || 0), 0)}
+          />
+        </div>
+      );
+    }
+
+    // Planning Tab
+    if (primaryTab === "planning") {
+      return (
+        <div className={contentClass}>
+          {/* Breadcrumb */}
+          <div className="text-sm text-slate-500 mb-4">
+            <span>Planning</span>
+            <span className="mx-2">›</span>
+            <span className="text-slate-900 font-medium">
+              {subView === "integrated" && "Resource Validation"}
+              {subView === "scenarios" && "Scenario Engine"}
+              {subView === "status" && "Task Board"}
+              {subView === "products" && "Product Listing"}
+              {subView === "budget" && "Budget & Timeline"}
+              {subView === "methodology" && "How We Build"}
+            </span>
+          </div>
+
+          {subView === "methodology" && (
+            <MethodologyView
+              phases={PRODUCTION_PHASES}
+              clientMode={isClientMode}
+              portfolioAssemblyHours={totalAssemblyHours}
+              teamWeeklyCapacity={teamWeeklyCapacity}
+            />
+          )}
+
+          {subView === "integrated" && (
+            <div className="space-y-8">
+              <ResourceValidationHub clientMode={isClientMode} />
+              <IntegratedScenarioEngine clientMode={isClientMode} />
+              <IntegratedFinancialModel clientMode={isClientMode} />
+            </div>
+          )}
+
+          {subView === "scenarios" && <ScenarioEngine clientMode={isClientMode} />}
+
+          {subView === "status" && (
+            <ProjectStatusView
+              columns={statusColumns}
+              statusBuckets={statusBuckets}
+              orphanedAssets={ORPHANED_ASSETS}
+            />
+          )}
+
+          {subView === "products" && (
+            <ProductProvider initialProducts={projects} onProductsChange={(p) => setProjects(p)}>
+              <ProductListingView teamRoster={teamRoster} />
+            </ProductProvider>
+          )}
+
+          {subView === "budget" && (
+            <BudgetView
+              analysis={analysisWithDisplay}
+              quarters={quarterBuckets}
+              clientMode={isClientMode}
+              onProjectUpdate={handleProjectUpdate}
+            />
+          )}
+        </div>
+      );
+    }
+
+    // Team Tab
+    if (primaryTab === "team") {
+      return (
+        <div className={contentClass}>
+          {/* Breadcrumb */}
+          <div className="text-sm text-slate-500 mb-4">
+            <span>Team</span>
+            <span className="mx-2">›</span>
+            <span className="text-slate-900 font-medium">
+              {subView === "team-overview" && "Who Does What"}
+              {subView === "teambuilder" && "Team Builder"}
+              {subView === "team-health" && "Team Health"}
+              {subView === "estimator-tools" && "Estimator Tools"}
+              {subView === "my-estimate" && "My Estimate"}
+            </span>
+          </div>
+
+          {subView === "team-overview" && (
+            <TeamPlanner writers={writerLoad} clientMode={isClientMode} />
+          )}
+
+          {subView === "teambuilder" && (
+            <div className="space-y-6">
+              <TeamManagement
+                teamMembers={teamRoster}
+                onUpdateTeamMembers={handleTeamMemberUpdate}
+                clientMode={isClientMode}
+              />
+              <TeamConfiguration clientMode={isClientMode} />
+            </div>
+          )}
+
+          {subView === "team-health" && (
+            isClientMode ? (
+              <CapacityGapView {...CAPACITY_GAP_STATS} />
+            ) : (
+              <PurgeView ghostCapacity={LEGACY_GHOST_CAPACITY} />
+            )
+          )}
+
+          {subView === "estimator-tools" && !isClientMode && (
+            <div className="flex flex-col md:flex-row gap-6">
+              <div className="md:w-64 w-full">
+                <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 space-y-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Estimator</p>
+                    <h4 className="text-lg font-semibold text-slate-900 mt-1">Plan • Staff • Estimate</h4>
+                  </div>
+                  <div className="space-y-2">
+                    {[
+                      { id: "quick" as const, label: "Quick Estimate", description: "Push button • Get timeline" },
+                      { id: "advanced" as const, label: "Advanced Estimate", description: "Dial in scope, roles, and exports" },
+                    ].map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => setTeamWorkspaceView(item.id)}
+                        className={`w-full text-left p-4 rounded-xl border transition-all ${
+                          teamWorkspaceView === item.id
+                            ? "bg-indigo-50 border-indigo-200 text-indigo-900"
+                            : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
+                        }`}
+                      >
+                        <div className="font-semibold">{item.label}</div>
+                        <p className="text-sm mt-1 text-slate-500">{item.description}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 space-y-6">
+                {teamWorkspaceView === "quick" && <QuickEstimator teamRoster={teamRoster} />}
+                {teamWorkspaceView === "advanced" && (
+                  <div className="space-y-6">
+                    <EnhancedEstimatorTools
+                      projects={projects}
+                      teamRoster={teamRoster}
+                      estimatorInputs={estimatorInputs}
+                      estimatorResult={estimatorResult}
+                      onInputChange={handleEstimatorChange}
+                      onEstimate={handleEstimate}
+                    />
+                    <EstimatorBuckets
+                      entries={estimationBuckets}
+                      onRemove={(id: string) =>
+                        setEstimationBuckets((prev) => prev.filter((entry) => entry.id !== id))
+                      }
+                      onClear={() => setEstimationBuckets([])}
+                      clientMode={isClientMode}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {subView === "my-estimate" && !isClientMode && (
+            <EmployeeEstimateReport
+              projects={analysisWithDisplay}
+              metrics={metrics}
+              teamRoster={teamRoster}
+              clientMode={isClientMode}
+            />
+          )}
+        </div>
+      );
+    }
+
+    // Finance Tab
+    if (primaryTab === "finance") {
+      return (
+        <div className={contentClass}>
+          {/* Breadcrumb */}
+          <div className="text-sm text-slate-500 mb-4">
+            <span>Finance</span>
+            <span className="mx-2">›</span>
+            <span className="text-slate-900 font-medium">
+              {subView === "financial-model" && "Financial Model"}
+              {subView === "cost-savings" && "Cost Savings"}
+            </span>
+          </div>
+
+          {subView === "financial-model" && <FinancialModel defaultDevCost={20000} />}
+
+          {subView === "cost-savings" && (
+            <EfficiencyView
+              defense={defenseAnalysis}
+              defendHourlyRate={defendHourlyRate}
+              defendWPH={defendWPH}
+              marketPerWord={marketPerWord}
+              onRateChange={setDefendHourlyRate}
+              onWphChange={setDefendWPH}
+              onMarketChange={setMarketPerWord}
+              replacementRoles={REPLACEMENT_ROLES}
+              metrics={metrics}
+              onMetricsUpdate={handleMetricsUpdate}
+            />
+          )}
+        </div>
+      );
+    }
+
+    // Reports Tab
+    if (primaryTab === "reports") {
+      return (
+        <div className={contentClass}>
+          {/* Breadcrumb */}
+          <div className="text-sm text-slate-500 mb-4">
+            <span>Reports</span>
+            <span className="mx-2">›</span>
+            <span className="text-slate-900 font-medium">
+              {subView === "dossier" && "Dossier"}
+              {subView === "export-report" && "Export Report"}
+              {subView === "lessons-learned" && "Lessons Learned"}
+            </span>
+          </div>
+
+          {subView === "dossier" && (
+            <DossierView
+              analysis={analysisWithDisplay}
+              metrics={metrics}
+              defense={defenseAnalysis}
+              defendHourlyRate={defendHourlyRate}
+              defendWPH={defendWPH}
+              marketPerWord={marketPerWord}
+              teamWeeklyCapacity={teamWeeklyCapacity}
+            />
+          )}
+
+          {subView === "export-report" && (
+            <ReportExport
+              projects={analysisWithDisplay}
+              metrics={metrics}
+              teamRoster={teamRoster}
+              clientMode={isClientMode}
+            />
+          )}
+
+          {subView === "lessons-learned" && <FailureAnalysis clientMode={isClientMode} />}
+        </div>
+      );
+    }
+
+    return null;
+  };
+
+  // ========== MAIN RENDER ==========
+  return (
+    <AppLayout
+      activeTab={primaryTab}
+      onTabChange={handleTabChange}
+      isClientMode={isClientMode}
+      onModeToggle={handleModeToggle}
+      onExport={handleExportData}
+      onImport={handleImportData}
+      sidebar={renderSidebar()}
+      isPresentationMode={isPresentationMode}
+      onTogglePresentation={() => setIsPresentationMode(!isPresentationMode)}
+    >
+      {renderContent()}
+    </AppLayout>
+  );
+}
+
+// ============================================================================
+// WRAPPER WITH PROVIDERS
+// ============================================================================
+
+export default function DashboardPage() {
   return (
     <TeamLoadProvider>
-      <div className="min-h-screen bg-slate-100 p-4 md:p-8 font-sans text-slate-800">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-400">Hoskbrew Strategic Board</p>
-            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-              Production Engine Dashboard
-            </h1>
-            <p className="text-slate-500 mt-1">
-              Toggle between War Room status and Client-ready narrative before walking into the budget meeting.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-full px-4 py-2 shadow-sm">
-              <span className={`text-xs font-semibold ${!isClientMode ? "text-slate-900" : "text-slate-400"}`}>Internal</span>
-              <button
-                onClick={handleModeToggle}
-                className={`relative w-14 h-7 rounded-full transition-all duration-300 ${isClientMode ? "bg-emerald-500" : "bg-slate-300"}`}
-                aria-label="Toggle client mode"
-              >
-                <span
-                  className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow transition-all duration-300 ${isClientMode ? "translate-x-7" : "translate-x-0"}`}
-                />
-              </button>
-              <span className={`text-xs font-semibold ${isClientMode ? "text-slate-900" : "text-slate-400"}`}>Client</span>
-            </div>
-
-            {!isClientMode && (
-              <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2 shadow-sm">
-                <button
-                  onClick={handleExportData}
-                  className="flex items-center gap-1 px-2 py-1 text-xs bg-indigo-50 text-indigo-600 rounded hover:bg-indigo-100 transition-colors"
-                  title="Export dashboard data"
-                >
-                  <Download className="w-3 h-3" />
-                  Export
-                </button>
-
-                <label className="flex items-center gap-1 px-2 py-1 text-xs bg-emerald-50 text-emerald-600 rounded hover:bg-emerald-100 transition-colors cursor-pointer" title="Import dashboard data">
-                  <Upload className="w-3 h-3" />
-                  Import
-                  <input
-                    type="file"
-                    accept=".json"
-                    onChange={handleImportData}
-                    className="hidden"
-                  />
-                </label>
-              </div>
-            )}
-          </div>
-        </header>
-
-        <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
-          <div className="flex flex-col md:flex-row">
-            <div className="md:w-64 border-b md:border-b-0 md:border-r border-slate-200 bg-slate-50/50 p-4">
-              <MainNav
-                tabs={tabs.map((tab) => ({
-                  ...tab,
-                  accentClass: tabStyles[tab.id as keyof typeof tabStyles],
-                }))}
-                activeTab={activeTab}
-                onChange={setActiveTab}
-                orientation="vertical"
-                submenu={activeTab === "products" ? productSubmenu : undefined}
-                activeSubmenu={activeTab === "products" ? productSubmenuView : undefined}
-                onSubmenuChange={activeTab === "products" ? ((id: string) => setProductSubmenuView(id as "products-main" | "scenarios")) : undefined}
-              />
-            </div>
-
-            <div className={`flex-1 p-6 md:p-8 bg-slate-50/50 min-h-[500px] space-y-6 transition-opacity duration-300 ${isTransitioning ? "opacity-50" : "opacity-100"}`}>
-              {activeTab === "methodology" && (
-                <MethodologyView
-                  phases={PRODUCTION_PHASES}
-                  clientMode={isClientMode}
-                  portfolioAssemblyHours={totalAssemblyHours}
-                  teamWeeklyCapacity={teamWeeklyCapacity}
-                />
-              )}
-
-              {activeTab === "team" && <TeamPlanner writers={writerLoad} clientMode={isClientMode} />}
-
-              {activeTab === "products" && productSubmenuView === "products-main" && (
-                <ProductProvider initialProducts={projects} onProductsChange={(p)=> setProjects(p)}>
-                  <ProductListingView teamRoster={teamRoster} />
-                </ProductProvider>
-              )}
-
-              {activeTab === "products" && productSubmenuView === "scenarios" && (
-                <ScenarioEngine />
-              )}
-
-              {activeTab === "budget" && (
-                <BudgetView
-                  analysis={analysisWithDisplay}
-                  quarters={quarterBuckets}
-                  clientMode={isClientMode}
-                  onProjectUpdate={handleProjectUpdate}
-                />
-              )}
-
-              {activeTab === "efficiency" && (
-                <EfficiencyView
-                  defense={defenseAnalysis}
-                  defendHourlyRate={defendHourlyRate}
-                  defendWPH={defendWPH}
-                  marketPerWord={marketPerWord}
-                  onRateChange={setDefendHourlyRate}
-                  onWphChange={setDefendWPH}
-                  onMarketChange={setMarketPerWord}
-                  replacementRoles={REPLACEMENT_ROLES}
-                  metrics={metrics}
-                  onMetricsUpdate={handleMetricsUpdate}
-                />
-              )}
-
-              {/* Only show Reality Tracker/Execution Kanban in Internal mode */}
-              {!isClientMode && activeTab === "status" && (
-                <ProjectStatusView
-                  columns={statusColumns}
-                  statusBuckets={statusBuckets}
-                  orphanedAssets={ORPHANED_ASSETS}
-                />
-              )}
-
-              {activeTab === "resourcing" && (
-                isClientMode ? (
-                  <CapacityGapView {...CAPACITY_GAP_STATS} />
-                ) : (
-                  <PurgeView ghostCapacity={LEGACY_GHOST_CAPACITY} />
-                )
-              )}
-
-              {/* New analysis tabs - internal only */}
-              {!isClientMode && activeTab === "scenarios" && (
-                <ScenarioEngine clientMode={isClientMode} initialConfig={baselineScenarioConfig} />
-              )}
-
-              {!isClientMode && activeTab === "failures" && (
-                <FailureAnalysis clientMode={isClientMode} />
-              )}
-
-              {!isClientMode && activeTab === "teambuilder" && (
-                <div className="space-y-6">
-                  <TeamManagement
-                    teamMembers={teamRoster}
-                    onUpdateTeamMembers={handleTeamMemberUpdate}
-                    clientMode={isClientMode}
-                  />
-                  <TeamConfiguration clientMode={isClientMode} />
-                </div>
-              )}
-
-              {!isClientMode && activeTab === "teamworkspace" && (
-                <div className="flex flex-col md:flex-row gap-6">
-                  <div className="md:w-64 w-full">
-                    <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-4 space-y-3">
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Team Workspace</p>
-                        <h4 className="text-lg font-semibold text-slate-900 mt-1">Plan • Staff • Estimate</h4>
-                      </div>
-                      <div className="space-y-2">
-                        {teamWorkspaceNav.map((item) => {
-                          const isActive = teamWorkspaceView === item.id;
-                          return (
-                            <button
-                              key={item.id}
-                              onClick={() => setTeamWorkspaceView(item.id)}
-                              className={`w-full text-left p-4 rounded-xl border transition-all ${isActive
-                                ? "bg-indigo-50 border-indigo-200 text-indigo-900"
-                                : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
-                                }`}
-                            >
-                              <div className="font-semibold">{item.label}</div>
-                              <p className="text-sm mt-1 text-slate-500">{item.description}</p>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex-1 space-y-6">
-                    {teamWorkspaceView === "quick" && <QuickEstimator teamRoster={teamRoster} />}
-                    {teamWorkspaceView === "advanced" && (
-                      <div className="space-y-6">
-                        <EnhancedEstimatorTools
-                          projects={projects}
-                          teamRoster={teamRoster}
-                          estimatorInputs={estimatorInputs}
-                          estimatorResult={estimatorResult}
-                          onInputChange={handleEstimatorChange}
-                          onEstimate={handleEstimate}
-                        />
-                        <EstimatorBuckets
-                          entries={estimationBuckets}
-                          onRemove={(id: string) =>
-                            setEstimationBuckets((prev) => prev.filter((entry) => entry.id !== id))
-                          }
-                          onClear={() => setEstimationBuckets([])}
-                          clientMode={isClientMode}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {!isClientMode && activeTab === "dossier" && (
-                <DossierView
-                  analysis={analysisWithDisplay}
-                  metrics={metrics}
-                  defense={defenseAnalysis}
-                  defendHourlyRate={defendHourlyRate}
-                  defendWPH={defendWPH}
-                  marketPerWord={marketPerWord}
-                  teamWeeklyCapacity={teamWeeklyCapacity}
-                />
-              )}
-
-              {!isClientMode && activeTab === "financials" && (
-                <FinancialModel defaultDevCost={20000} />
-              )}
-
-              {!isClientMode && activeTab === "report" && (
-                <ReportExport
-                  projects={analysisWithDisplay}
-                  metrics={metrics}
-                  teamRoster={teamRoster}
-                  clientMode={isClientMode}
-                />
-              )}
-
-              {!isClientMode && activeTab === "estimate" && (
-                <EmployeeEstimateReport
-                  projects={analysisWithDisplay}
-                  metrics={metrics}
-                  teamRoster={teamRoster}
-                  clientMode={isClientMode}
-                />
-              )}
-
-              {!isClientMode && activeTab === "integrated" && (
-                <div className="space-y-8">
-                  <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-6 rounded-xl">
-                    <h2 className="text-2xl font-bold mb-2">Integrated Project Planning</h2>
-                    <p className="text-blue-100">
-                      Unified data flow: Team Builder → Resource Validation → Scenario Engine → Financial Model
-                    </p>
-                  </div>
-                  <ResourceValidationHub clientMode={isClientMode} />
-                  <IntegratedScenarioEngine clientMode={isClientMode} />
-                  <IntegratedFinancialModel clientMode={isClientMode} />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
+      <DashboardPageContent />
     </TeamLoadProvider>
   );
 }
