@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { 
-  Command, 
   Search, 
   LayoutDashboard, 
   Calendar, 
@@ -93,16 +92,6 @@ export function CommandPalette({
   const filteredCommands = commands.filter((cmd) =>
     cmd.label.toLowerCase().includes(query.toLowerCase())
   );
-
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [query]);
-
-  useEffect(() => {
-    if (!isOpen) {
-      setQuery("");
-    }
-  }, [isOpen]);
 
   // Handle keyboard navigation within the palette
   useEffect(() => {

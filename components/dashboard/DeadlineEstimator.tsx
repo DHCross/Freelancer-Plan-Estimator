@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
-import { Calendar, Clock, ArrowRight, Save, AlertCircle } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import { Calendar, Clock, Save, AlertCircle } from "lucide-react";
 import { DisplayProject, TeamMember, Metrics } from "@/lib/types";
 import { calculateProjectAnalysis } from "@/lib/calculations";
 import { format, addWeeks, parseISO, isValid } from "date-fns";
@@ -36,29 +36,30 @@ export function DeadlineEstimator({
     return analysis[0];
   }, [selectedProjectId, projects, metrics]);
 
-  // Update defaults when project changes
-  useEffect(() => {
-    if (selectedProjectAnalysis) {
+  // Handle project selection to update member defaults
+  const handleProjectSelect = (projectId: number) => {
+    setSelectedProjectId(projectId);
+    setSaved(false);
+    
+    // Find the project and set defaults
+    const project = projects.find((p) => p.id === projectId);
+    if (project) {
       const assignee = teamRoster.find(
-        (m) => m.id === selectedProjectAnalysis.assignedTo || m.name === selectedProjectAnalysis.assignedTo
+        (m) => m.id === project.assignedTo || m.name === project.assignedTo
       );
       
       if (assignee) {
         setSelectedMemberId(assignee.id);
         setCustomWeeklyCapacity(assignee.weeklyCapacity);
       } else {
-        // Default to first member or generic
         const first = teamRoster[0];
         if (first) {
           setSelectedMemberId(first.id);
           setCustomWeeklyCapacity(first.weeklyCapacity);
         }
       }
-      
-      // Reset saved state
-      setSaved(false);
     }
-  }, [selectedProjectAnalysis, teamRoster]);
+  };
 
   // Handle member change to update capacity
   const handleMemberChange = (memberId: string) => {
@@ -75,12 +76,11 @@ export function DeadlineEstimator({
 
     const totalHours = selectedProjectAnalysis.total;
     const weeks = totalHours / customWeeklyCapacity;
-    const days = weeks * 7;
     
     let endDate: Date;
     try {
       endDate = addWeeks(parseISO(startDate), weeks);
-    } catch (e) {
+    } catch {
       return null;
     }
 
@@ -123,7 +123,7 @@ export function DeadlineEstimator({
             <select
               className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               value={selectedProjectId || ""}
-              onChange={(e) => setSelectedProjectId(Number(e.target.value))}
+              onChange={(e) => handleProjectSelect(Number(e.target.value))}
             >
               <option value="">Select a project...</option>
               {projects.map((p) => (
@@ -174,7 +174,7 @@ export function DeadlineEstimator({
               <span className="text-sm text-slate-500 whitespace-nowrap">hrs / week</span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              Adjusting this overrides the team member's default capacity for this calculation only.
+              Adjusting this overrides the team member&apos;s default capacity for this calculation only.
             </p>
           </div>
         </div>
