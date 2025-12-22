@@ -68,6 +68,7 @@ import { IntegratedFinancialModel } from "@/components/dashboard/IntegratedFinan
 import { ProductProvider } from "@/lib/ProductContext";
 import { ProductListingView } from "@/components/dashboard/ProductListingView";
 import { EnhancedEstimatorTools } from "@/components/dashboard/EnhancedEstimatorTools";
+import { DeadlineEstimator } from "@/components/dashboard/DeadlineEstimator";
 import { TeamLoadProvider, useTeamLoad } from "@/lib/TeamLoadContext";
 
 // ============================================================================
@@ -165,6 +166,7 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
             description: "Client-ready outputs and retrospectives",
             items: [
               { id: "dossier", label: "Dossier", icon: BookOpen },
+              { id: "deadline-estimator", label: "Deadline Estimator", icon: Calendar },
               { id: "export-report", label: "Export Report", icon: FileText },
               { id: "lessons-learned", label: "Lessons Learned", icon: Lightbulb },
             ],
@@ -878,6 +880,7 @@ function DashboardPageContent() {
             <span className="mx-2">›</span>
             <span className="text-slate-900 font-medium">
               {subView === "dossier" && "Dossier"}
+              {subView === "deadline-estimator" && "Deadline Estimator"}
               {subView === "export-report" && "Export Report"}
               {subView === "lessons-learned" && "Lessons Learned"}
             </span>
@@ -892,6 +895,15 @@ function DashboardPageContent() {
               defendWPH={defendWPH}
               marketPerWord={marketPerWord}
               teamWeeklyCapacity={teamWeeklyCapacity}
+            />
+          )}
+
+          {subView === "deadline-estimator" && (
+            <DeadlineEstimator
+              projects={analysisWithDisplay}
+              teamRoster={teamRoster}
+              metrics={metrics}
+              onUpdateProject={handleProjectUpdate}
             />
           )}
 

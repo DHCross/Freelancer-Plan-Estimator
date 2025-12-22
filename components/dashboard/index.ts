@@ -21,6 +21,7 @@ export * from "./DataFlowIndicator";
 export * from "./EditableProductGrid";
 export * from "./ProductListingView";
 export * from "./EnhancedEstimatorTools";
+export * from "./DeadlineEstimator";
 
 // New Dashboard Components
 export * from "./DashboardView";
