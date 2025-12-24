@@ -47,9 +47,22 @@ export function ProductListingView({ teamRoster }: ProductListingViewProps) {
     setInsightsApplied(true);
   };
 
-  const handleScheduleWork = () => {
+  const handleScheduleWork = async () => {
     if (!a0 || !dan) return;
+    
+    // Update team load
     updateTeamLoad(dan.id, String(a0.id), selectedLayoutHours, "Layout");
+    
+    // Update product status to show Layout work in progress
+    updateProductField(a0.id, "internalStatus", `layout`);
+    // Assign to Dan who is doing the layout work
+    updateProductField(a0.id, "assignedTo", dan.id);
+    
+    // Use setTimeout to ensure state updates are processed before saving
+    setTimeout(async () => {
+      await saveProductChanges(a0.id);
+    }, 0);
+    
     setToastMessage(`Layout work scheduled for ${dan.name.split(" ")[0]}.`);
   };
 
