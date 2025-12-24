@@ -93,9 +93,11 @@ export function EditableProductGrid({ teamRoster }: EditableProductGridProps) {
               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Project Name</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Description</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Owner</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Role</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Status</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Launch Window</th>
               <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase">Word Count</th>
+              <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase">Pages</th>
               <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase">Actions</th>
             </tr>
           </thead>
@@ -168,6 +170,24 @@ export function EditableProductGrid({ teamRoster }: EditableProductGridProps) {
                   <td className="px-4 py-3">
                     {isEditing ? (
                       <select
+                        value={displayData.primaryRole || ""}
+                        onChange={(e) => handleFieldChange(project.id, "primaryRole", e.target.value)}
+                        className="w-full px-2 py-1 border border-slate-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
+                      >
+                        <option value="">-</option>
+                        <option value="Writing">Writing</option>
+                        <option value="Editing">Editing</option>
+                        <option value="Layout">Layout</option>
+                        <option value="PM">PM</option>
+                        <option value="Art">Art</option>
+                      </select>
+                    ) : (
+                      <span className="text-xs text-slate-600">{displayData.primaryRole || "-"}</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    {isEditing ? (
+                      <select
                         value={displayData.internalStatus}
                         onChange={(e) => handleFieldChange(project.id, "internalStatus", e.target.value)}
                         className="w-full px-2 py-1 border border-slate-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
@@ -205,6 +225,15 @@ export function EditableProductGrid({ teamRoster }: EditableProductGridProps) {
                   </td>
                   <td className="px-4 py-3 text-center">
                     <span className="text-sm font-medium text-slate-900">{displayData.targetWords?.toLocaleString() || "—"}</span>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    {displayData.estimatedPages ? (
+                      <span className="inline-block px-2 py-1 text-xs font-medium bg-slate-100 text-slate-700 rounded">
+                        {displayData.estimatedPages.min}-{displayData.estimatedPages.max}
+                      </span>
+                    ) : (
+                      <span className="text-sm text-slate-400">—</span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-center">
                     {!isEditing ? (
@@ -258,13 +287,40 @@ export function EditableProductGrid({ teamRoster }: EditableProductGridProps) {
           <p className="text-sm font-medium text-blue-900">
             {selectedIds.size} product(s) selected
           </p>
-          <button
-            className="px-3 py-1 text-sm bg-red-50 text-red-700 hover:bg-red-100 rounded transition-colors flex items-center gap-2"
-            title="Delete selected products (feature coming soon)"
-          >
-            <Trash2 className="w-4 h-4" />
-            Delete Selected
-          </button>
+          <div className="flex items-center gap-2">
+            <select
+              onChange={(e) => {
+                if (!e.target.value) return;
+                selectedIds.forEach((id) => handleFieldChange(id, "internalStatus", e.target.value));
+              }}
+              className="px-2 py-1 text-sm border border-blue-300 rounded bg-white"
+              defaultValue=""
+            >
+              <option value="">Bulk Update Status...</option>
+              {STATUSES.map((status) => (
+                <option key={status.value} value={status.value}>
+                  {status.label}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => {
+                selectedIds.forEach((id) => handleSave(id));
+                setSelectedIds(new Set());
+              }}
+              className="px-3 py-1 text-sm bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded transition-colors"
+              title="Save all selected products"
+            >
+              Save All
+            </button>
+            <button
+              className="px-3 py-1 text-sm bg-red-50 text-red-700 hover:bg-red-100 rounded transition-colors flex items-center gap-2"
+              title="Delete selected products (feature coming soon)"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete
+            </button>
+          </div>
         </div>
       )}
     </div>

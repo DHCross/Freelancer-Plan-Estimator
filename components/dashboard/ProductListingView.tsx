@@ -61,17 +61,39 @@ export function ProductListingView({ teamRoster }: ProductListingViewProps) {
           </ul>
           <div className="flex items-center gap-2 flex-wrap">
             <button
-              onClick={async () => { updateProductField(a0.id, "targetWords", a0Insights.targetWords); updateProductField(a0.id, "layoutHours", selectedLayoutHours); await saveProductChanges(a0.id); }}
+              onClick={async () => { 
+                updateProductField(a0.id, "targetWords", a0Insights.targetWords); 
+                updateProductField(a0.id, "layoutHours", selectedLayoutHours); 
+                updateProductField(a0.id, "estimatedPages", a0Insights.estimatedPages);
+                updateProductField(a0.id, "benchmarkNotes", "Layout benchmark: 45-55h (InDesign + automation). Breakdown: Assembly ~30h, Gap Management ~10h, Tone & Polish ~10h. Table tool saves 6-8h vs Affinity.");
+                await saveProductChanges(a0.id); 
+              }}
               className="px-3 py-1.5 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
             >
               Apply Insights to Product
             </button>
             {dan && (
               <button
-                onClick={() => updateTeamLoad(dan.id, String(a0.id), selectedLayoutHours, "Layout")}
+                onClick={() => updateTeamLoad(dan.id, String(a0.id), selectedLayoutHours, "Layout", "Layout")}
                 className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
               >
                 Schedule Layout Work ({selectedLayoutHours}h → {dan.name.split(" ")[0]})
+              </button>
+            )}
+            {dan && (
+              <button
+                onClick={async () => {
+                  updateProductField(a0.id, "targetWords", a0Insights.targetWords); 
+                  updateProductField(a0.id, "layoutHours", selectedLayoutHours); 
+                  updateProductField(a0.id, "estimatedPages", a0Insights.estimatedPages);
+                  updateProductField(a0.id, "benchmarkNotes", "Layout benchmark: 45-55h (InDesign + automation). Breakdown: Assembly ~30h, Gap Management ~10h, Tone & Polish ~10h. Table tool saves 6-8h vs Affinity.");
+                  updateProductField(a0.id, "primaryRole", "Layout");
+                  await saveProductChanges(a0.id);
+                  updateTeamLoad(dan.id, String(a0.id), selectedLayoutHours, "Layout", "Layout");
+                }}
+                className="px-3 py-1.5 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium"
+              >
+                Apply + Schedule ({selectedLayoutHours}h)
               </button>
             )}
           </div>

@@ -82,7 +82,8 @@ export function EnhancedEstimatorTools({
       estimatorInputs.teamMemberId,
       String(selectedProject.id),
       estimatorResult.hours,
-      estimatorInputs.roleLabel
+      estimatorInputs.roleLabel,
+      selectedProject.primaryRole // Pass the product's primary role
     );
   }, [estimatorResult, selectedProject, estimatorInputs, updateTeamLoad]);
 

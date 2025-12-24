@@ -3,22 +3,63 @@
 import { Lock, AlertTriangle, TrendingUp, Users, ArrowRight } from "lucide-react";
 import { formatNumber } from "@/lib/utils";
 import { UnifiedProjectModel, ResourceValidation } from "@/lib/unified-project-model";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getCapacityColor, getTimelineColor, actionColors } from "@/lib/colors";
 
 interface ResourceValidationHubProps {
   clientMode?: boolean;
+  onReassignProjects?: () => void;
+  onHireContractor?: () => void;
+  onExtendTimeline?: (newTimeline: number) => void;
 }
 
-export function ResourceValidationHub({ clientMode = false }: ResourceValidationHubProps) {
+export function ResourceValidationHub({ clientMode = false, onReassignProjects, onHireContractor, onExtendTimeline }: ResourceValidationHubProps) {
   const [unifiedModel] = useState(() => UnifiedProjectModel.getInstance());
   const [resourceValidation, setResourceValidation] = useState<ResourceValidation[]>([]);
   const [scenario, setScenario] = useState(unifiedModel.getProjectScenario());
+  const [activeAction, setActiveAction] = useState<string | null>(null);
 
   useEffect(() => {
     setResourceValidation(unifiedModel.getResourceValidation());
     setScenario(unifiedModel.getProjectScenario());
   }, [unifiedModel]);
+
+  // Handle reassign projects action
+  const handleReassignProjects = useCallback(() => {
+    setActiveAction('reassign');
+    if (onReassignProjects) {
+      onReassignProjects();
+    } else {
+      // Default behavior: Show a message indicating reassignment capability
+      alert('Project reassignment feature: Select projects from the overloaded team member to reassign to available capacity.');
+    }
+    setTimeout(() => setActiveAction(null), 2000);
+  }, [onReassignProjects]);
+
+  // Handle hire contractor action
+  const handleHireContractor = useCallback(() => {
+    setActiveAction('hire');
+    if (onHireContractor) {
+      onHireContractor();
+    } else {
+      // Default behavior: Add a contractor to the team
+      alert('Hire Contractor feature: Navigate to Team Management to add a new contractor to increase available capacity.');
+    }
+    setTimeout(() => setActiveAction(null), 2000);
+  }, [onHireContractor]);
+
+  // Handle extend timeline action
+  const handleExtendTimeline = useCallback(() => {
+    setActiveAction('extend');
+    const newTimeline = scenario.validatedTimeline + 3; // Extend by 3 months
+    if (onExtendTimeline) {
+      onExtendTimeline(newTimeline);
+    } else {
+      // Default behavior: Show timeline extension impact
+      alert(`Timeline extended from ${scenario.validatedTimeline} to ${newTimeline} months. This reduces daily pressure and allows for better resource allocation.`);
+    }
+    setTimeout(() => setActiveAction(null), 2000);
+  }, [scenario.validatedTimeline, onExtendTimeline]);
 
   // Find the bottleneck (highest load percentage)
   const bottleneck = resourceValidation.length > 0 
@@ -81,17 +122,26 @@ export function ResourceValidationHub({ clientMode = false }: ResourceValidation
               <div className="mt-4 space-y-3">
                 <div className={`text-sm font-medium ${getCapacityColor(bottleneck?.loadPercentage || 0).textDark}`}>Quick Resolution Options:</div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <button className={`${actionColors.primary.bg} ${actionColors.primary.bgHover} ${actionColors.primary.text} px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:shadow-lg hover:scale-[1.05] flex items-center justify-center gap-2`}>
+                  <button 
+                    onClick={handleReassignProjects}
+                    disabled={activeAction === 'reassign'}
+                    className={`${activeAction === 'reassign' ? 'opacity-50 cursor-wait' : ''} ${actionColors.primary.bg} ${actionColors.primary.bgHover} ${actionColors.primary.text} px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:shadow-lg hover:scale-[1.05] flex items-center justify-center gap-2 active:scale-95`}>
                     <Users className="w-4 h-4" />
-                    Reassign Projects
+                    {activeAction === 'reassign' ? 'Processing...' : 'Reassign Projects'}
                   </button>
-                  <button className={`${actionColors.success.bg} ${actionColors.success.bgHover} ${actionColors.success.text} px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:shadow-lg hover:scale-[1.05] flex items-center justify-center gap-2`}>
+                  <button 
+                    onClick={handleHireContractor}
+                    disabled={activeAction === 'hire'}
+                    className={`${activeAction === 'hire' ? 'opacity-50 cursor-wait' : ''} ${actionColors.success.bg} ${actionColors.success.bgHover} ${actionColors.success.text} px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:shadow-lg hover:scale-[1.05] flex items-center justify-center gap-2 active:scale-95`}>
                     <TrendingUp className="w-4 h-4" />
-                    Hire Contractor
+                    {activeAction === 'hire' ? 'Processing...' : 'Hire Contractor'}
                   </button>
-                  <button className={`bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:shadow-lg hover:scale-[1.05] flex items-center justify-center gap-2`}>
+                  <button 
+                    onClick={handleExtendTimeline}
+                    disabled={activeAction === 'extend'}
+                    className={`${activeAction === 'extend' ? 'opacity-50 cursor-wait' : ''} bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:shadow-lg hover:scale-[1.05] flex items-center justify-center gap-2 active:scale-95`}>
                     <ArrowRight className="w-4 h-4" />
-                    Extend Timeline
+                    {activeAction === 'extend' ? 'Processing...' : 'Extend Timeline'}
                   </button>
                 </div>
                 

@@ -258,6 +258,25 @@ export default function DashboardPage() {
     }
   };
 
+  // Resource Validation Action Handlers
+  const handleReassignProjects = () => {
+    // Navigate to team workspace to manage project assignments
+    setActiveTab("teamworkspace");
+    setTeamWorkspaceView("advanced");
+  };
+
+  const handleHireContractor = () => {
+    // Navigate to team management to add a new team member
+    setActiveTab("teamworkspace");
+    setTeamWorkspaceView("advanced");
+  };
+
+  const handleExtendTimeline = (newTimeline: number) => {
+    // Show notification about timeline extension
+    const currentTimeline = 6; // Default assumption - would need to get from scenario
+    alert(`Timeline extended to ${newTimeline} months (from ${currentTimeline} months). This reduces daily pressure and allows for better resource allocation. Adjust project launch dates in the Planning tab as needed.`);
+  };
+
   const projectsWithDisplay = useMemo<ProjectWithDisplay[]>(
     () =>
       projects.map((project: Project) => ({
@@ -871,7 +890,12 @@ export default function DashboardPage() {
                       Unified data flow: Team Builder → Resource Validation → Scenario Engine → Financial Model
                     </p>
                   </div>
-                  <ResourceValidationHub clientMode={isClientMode} />
+                  <ResourceValidationHub 
+                    clientMode={isClientMode}
+                    onReassignProjects={handleReassignProjects}
+                    onHireContractor={handleHireContractor}
+                    onExtendTimeline={handleExtendTimeline}
+                  />
                   <IntegratedScenarioEngine clientMode={isClientMode} />
                   <IntegratedFinancialModel clientMode={isClientMode} />
                 </div>

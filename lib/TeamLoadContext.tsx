@@ -8,13 +8,14 @@ export interface TeamLoadUpdate {
   projectId: string;
   additionalHours: number;
   roleLabel?: string;
+  primaryRole?: string; // The product's primary role (Writing, Editing, Layout, etc.)
 }
 
 interface TeamLoadContextType {
   teamLoads: Map<string, TeamLoadUpdate[]>; // Map of teamMemberId -> array of loads
-  updateTeamLoad: (teamMemberId: string, projectId: string, hours: number, roleLabel?: string) => void;
-  getTeamTotalHours: (teamMemberId: string) => number;
-  getTeamLoadPercent: (teamMemberId: string, teamMember: TeamMember) => number;
+  updateTeamLoad: (teamMemberId: string, projectId: string, hours: number, roleLabel?: string, primaryRole?: string) => void;
+  getTeamTotalHours: (teamMemberId: string, roleFilter?: string) => number;
+  getTeamLoadPercent: (teamMemberId: string, teamMember: TeamMember, roleFilter?: string) => number;
 }
 
 const TeamLoadContext = createContext<TeamLoadContextType | undefined>(undefined);
@@ -23,7 +24,7 @@ export function TeamLoadProvider({ children }: { children: ReactNode }) {
   const [teamLoads, setTeamLoads] = useState<Map<string, TeamLoadUpdate[]>>(new Map());
 
   const updateTeamLoad = useCallback(
-    (teamMemberId: string, projectId: string, hours: number, roleLabel?: string) => {
+    (teamMemberId: string, projectId: string, hours: number, roleLabel?: string, primaryRole?: string) => {
       setTeamLoads((prev) => {
         const newMap = new Map(prev);
         const loads = newMap.get(teamMemberId) || [];
@@ -33,7 +34,7 @@ export function TeamLoadProvider({ children }: { children: ReactNode }) {
 
         // Add new load if hours > 0
         if (hours > 0) {
-          filtered.push({ teamMemberId, projectId, additionalHours: hours, roleLabel });
+          filtered.push({ teamMemberId, projectId, additionalHours: hours, roleLabel, primaryRole });
         }
 
         if (filtered.length > 0) {
@@ -61,16 +62,19 @@ export function TeamLoadProvider({ children }: { children: ReactNode }) {
   );
 
   const getTeamTotalHours = useCallback(
-    (teamMemberId: string): number => {
+    (teamMemberId: string, roleFilter?: string): number => {
       const loads = teamLoads.get(teamMemberId) || [];
-      return loads.reduce((sum, load) => sum + load.additionalHours, 0);
+      const filtered = roleFilter
+        ? loads.filter((load) => load.primaryRole === roleFilter)
+        : loads;
+      return filtered.reduce((sum, load) => sum + load.additionalHours, 0);
     },
     [teamLoads]
   );
 
   const getTeamLoadPercent = useCallback(
-    (teamMemberId: string, teamMember: TeamMember): number => {
-      const totalHours = getTeamTotalHours(teamMemberId);
+    (teamMemberId: string, teamMember: TeamMember, roleFilter?: string): number => {
+      const totalHours = getTeamTotalHours(teamMemberId, roleFilter);
       const memberWeeklyCapacity = teamMember.weeklyCapacity || 40;
       // Calculate as percentage of their personal capacity
       return Math.round((totalHours / (memberWeeklyCapacity * 4)) * 100); // 4 weeks per month

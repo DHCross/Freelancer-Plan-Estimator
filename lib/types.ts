@@ -30,6 +30,9 @@ export interface Project {
   budgetType: string;
   dependency: string | null;
   revenuePotential: string;
+  primaryRole?: string; // Primary role/lane: Writing, Editing, Layout, etc.
+  benchmarkNotes?: string; // Layout benchmark or other analysis notes
+  estimatedPages?: { min: number; max: number }; // Page range estimates
 }
 
 export interface TaskRate {

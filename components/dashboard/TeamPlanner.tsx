@@ -11,7 +11,7 @@ interface TeamPlannerProps {
 }
 
 export function TeamPlanner({ writers, clientMode = false }: TeamPlannerProps) {
-  const { getTeamTotalHours } = useTeamLoad();
+  const { getTeamTotalHours, teamLoads } = useTeamLoad();
   // Find the highest overloaded person for the warning banner
   const mostOverloaded = writers.reduce((max, writer) => {
     const injected = getTeamTotalHours(writer.id);
@@ -115,14 +115,30 @@ export function TeamPlanner({ writers, clientMode = false }: TeamPlannerProps) {
                     <div className="text-xs text-slate-400">
                           {formatNumber(Math.round(project.calculatedHours))}h • {project.launchWindow}
                     </div>
-                    {/* Injected hours from Product Builder */}
-                    {injected > 0 && (
-                      <div className="text-xs text-indigo-600 mt-1">
-                        +{formatNumber(injected)}h injected via Product Builder
-                      </div>
-                    )}
                   </div>
                 ))}
+                {/* Injected hours from Product Builder with role breakdown */}
+                {injected > 0 && (
+                  <div className="text-xs bg-indigo-50 border border-indigo-200 rounded p-2 mt-2">
+                    <div className="font-semibold text-indigo-900">
+                      +{formatNumber(injected)}h from Product Builder
+                    </div>
+                    {(() => {
+                      const loads = teamLoads.get(writer.id) || [];
+                      const roleBreakdown = loads.reduce((acc, load) => {
+                        const role = load.primaryRole || "Unassigned";
+                        acc[role] = (acc[role] || 0) + load.additionalHours;
+                        return acc;
+                      }, {} as Record<string, number>);
+                      return Object.entries(roleBreakdown).map(([role, hours]) => (
+                        <div key={role} className="text-indigo-700 flex justify-between">
+                          <span>{role}:</span>
+                          <span>{formatNumber(hours)}h</span>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                )}
               </div>
             </div>
           );
