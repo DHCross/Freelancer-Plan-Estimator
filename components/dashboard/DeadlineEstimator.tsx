@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { Calendar, Clock, Save, AlertCircle } from "lucide-react";
-import { DisplayProject, TeamMember, Metrics } from "@/lib/types";
+import { DisplayProject, TeamMember, Metrics, Project } from "@/lib/types";
 import { calculateProjectAnalysis } from "@/lib/calculations";
 import { format, addWeeks, parseISO, isValid } from "date-fns";
 
@@ -10,7 +10,7 @@ interface DeadlineEstimatorProps {
   projects: DisplayProject[];
   teamRoster: TeamMember[];
   metrics: Metrics;
-  onUpdateProject: (projectId: number, field: string, value: string) => void;
+  onUpdateProject: (projectId: number, field: keyof Project, value: string | number) => void;
 }
 
 export function DeadlineEstimator({
