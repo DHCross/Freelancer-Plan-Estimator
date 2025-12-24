@@ -46,7 +46,7 @@ import {
   TeamPlanner,
   DossierView,
 } from "@/components/dashboard";
-import { ScenarioEngine } from "@/components/dashboard/ScenarioEngine";
+import { ScenarioWorkspace } from "@/components/dashboard/scenarios/ScenarioWorkspace";
 import { FailureAnalysis } from "@/components/dashboard/FailureAnalysis";
 import { TeamConfiguration } from "@/components/dashboard/TeamConfiguration";
 import { TeamManagement } from "@/components/dashboard/TeamManagement";
@@ -711,7 +711,7 @@ export default function DashboardPage() {
               )}
 
               {activeTab === "products" && productSubmenuView === "scenarios" && (
-                <ScenarioEngine />
+                <ScenarioWorkspace clientMode={isClientMode} projects={projects} />
               )}
 
               {activeTab === "budget" && (
@@ -757,7 +757,7 @@ export default function DashboardPage() {
 
               {/* New analysis tabs - internal only */}
               {!isClientMode && activeTab === "scenarios" && (
-                <ScenarioEngine clientMode={isClientMode} initialConfig={baselineScenarioConfig} />
+                <ScenarioWorkspace clientMode={isClientMode} projects={projects} />
               )}
 
               {!isClientMode && activeTab === "failures" && (

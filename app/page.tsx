@@ -55,7 +55,7 @@ import {
   DossierView,
   CartographyPlanner,
 } from "@/components/dashboard";
-import { ScenarioEngine } from "@/components/dashboard/ScenarioEngine";
+import { ScenarioWorkspace } from "@/components/dashboard/scenarios/ScenarioWorkspace";
 import { FailureAnalysis } from "@/components/dashboard/FailureAnalysis";
 import { TeamConfiguration } from "@/components/dashboard/TeamConfiguration";
 import { TeamManagement } from "@/components/dashboard/TeamManagement";
@@ -705,7 +705,7 @@ function DashboardPageContent() {
             </div>
           )}
 
-          {subView === "scenarios" && <ScenarioEngine clientMode={isClientMode} />}
+          {subView === "scenarios" && <ScenarioWorkspace clientMode={isClientMode} projects={projects} />}
 
           {subView === "status" && (
             <ProjectStatusView
