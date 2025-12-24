@@ -17,6 +17,7 @@ interface ScenarioData {
 }
 
 const DEFAULT_CONFIG: ScenarioConfig = {
+  name: "New Scenario",
   teamSize: 2,
   budget: 25000,
   timeline: 6,
@@ -115,7 +116,7 @@ export function ScenarioWorkspace({ clientMode = false, projects = [] }: Scenari
                             <th className="p-4 border-b">Metric</th>
                             {scenarios.map((s, i) => (
                                 <th key={s.id} className="p-4 border-b min-w-[200px]">
-                                    Scenario {i + 1}
+                                    {s.config.name || `Scenario ${i + 1}`}
                                 </th>
                             ))}
                         </tr>

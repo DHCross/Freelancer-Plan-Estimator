@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { Briefcase } from "lucide-react";
+import React, { useState } from "react";
+import { Briefcase, Check } from "lucide-react";
 import { TeamMember } from "@/lib/types";
 import { EditableProductGrid } from "./EditableProductGrid";
 import { useProducts } from "@/lib/ProductContext";
@@ -12,15 +12,49 @@ interface ProductListingViewProps {
   teamRoster: TeamMember[];
 }
 
+// Simple internal toast component
+function Toast({ message, onClose }: { message: string; onClose: () => void }) {
+  React.useEffect(() => {
+    const timer = setTimeout(onClose, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div className="fixed bottom-4 right-4 bg-slate-900 text-white px-4 py-2 rounded-lg shadow-lg text-sm flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2 z-50">
+      <Check className="w-4 h-4 text-emerald-400" />
+      {message}
+    </div>
+  );
+}
+
 export function ProductListingView({ teamRoster }: ProductListingViewProps) {
   const { products, updateProductField, saveProductChanges } = useProducts();
   const { updateTeamLoad } = useTeamLoad();
+
   const a0 = products.find(p => p.name.toLowerCase().includes("caravan"));
   const a0Insights = a0 ? getInsightsForProduct(a0.name) : null;
   const dan = teamRoster.find(m => m.name.toLowerCase().startsWith("dan")) || teamRoster.find(m => m.id === "dan");
-  const [selectedLayoutHours, setSelectedLayoutHours] = React.useState<number>(a0Insights?.layoutHours.mid ?? 50);
+  const [selectedLayoutHours, setSelectedLayoutHours] = useState<number>(a0Insights?.layoutHours.mid ?? 50);
+
+  const [insightsApplied, setInsightsApplied] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const handleApplyInsights = async () => {
+    if (!a0 || !a0Insights) return;
+    updateProductField(a0.id, "targetWords", a0Insights.targetWords);
+    updateProductField(a0.id, "layoutHours", selectedLayoutHours);
+    await saveProductChanges(a0.id);
+    setInsightsApplied(true);
+  };
+
+  const handleScheduleWork = () => {
+    if (!a0 || !dan) return;
+    updateTeamLoad(dan.id, String(a0.id), selectedLayoutHours, "Layout");
+    setToastMessage(`Layout work scheduled for ${dan.name.split(" ")[0]}.`);
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex items-center justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Hoskbrew Strategic Roadmap</p>
@@ -61,15 +95,24 @@ export function ProductListingView({ teamRoster }: ProductListingViewProps) {
           </ul>
           <div className="flex items-center gap-2 flex-wrap">
             <button
-              onClick={async () => { updateProductField(a0.id, "targetWords", a0Insights.targetWords); updateProductField(a0.id, "layoutHours", selectedLayoutHours); await saveProductChanges(a0.id); }}
-              className="px-3 py-1.5 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+              onClick={handleApplyInsights}
+              disabled={insightsApplied}
+              className={`px-3 py-1.5 text-sm rounded-lg transition-colors flex items-center gap-2 ${
+                insightsApplied
+                  ? "bg-emerald-100 text-emerald-800 cursor-default"
+                  : "bg-emerald-600 text-white hover:bg-emerald-700"
+              }`}
             >
-              Apply Insights to Product
+              {insightsApplied ? (
+                <>Applied <Check className="w-3.5 h-3.5" /></>
+              ) : (
+                "Apply Insights to Product"
+              )}
             </button>
             {dan && (
               <button
-                onClick={() => updateTeamLoad(dan.id, String(a0.id), selectedLayoutHours, "Layout")}
-                className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                onClick={handleScheduleWork}
+                className="px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
               >
                 Schedule Layout Work ({selectedLayoutHours}h → {dan.name.split(" ")[0]})
               </button>
@@ -79,6 +122,7 @@ export function ProductListingView({ teamRoster }: ProductListingViewProps) {
       )}
 
       <EditableProductGrid teamRoster={teamRoster} />
+      {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage(null)} />}
     </div>
   );
 }
