@@ -1,9 +1,10 @@
 "use client";
 
-import { Calculator, AlertTriangle, Clock, DollarSign } from "lucide-react";
-import { useState } from "react";
+import { Calculator, AlertTriangle, Clock, DollarSign, Copy, Trash2, ArrowDown } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Project } from "@/lib/types";
 
-interface ScenarioConfig {
+export interface ScenarioConfig {
   teamSize: number;
   budget: number;
   timeline: number; // months
@@ -12,7 +13,7 @@ interface ScenarioConfig {
   quality: "basic" | "professional" | "premium";
 }
 
-interface ScenarioResult {
+export interface ScenarioResult {
   feasible: boolean;
   totalCost: number;
   timeline: number;
@@ -22,29 +23,29 @@ interface ScenarioResult {
   recommendations: string[];
 }
 
-interface ScenarioEngineProps {
-  clientMode?: boolean;
-  initialConfig?: Partial<ScenarioConfig>;
+interface ScenarioCardProps {
+  id: string;
+  config: ScenarioConfig;
+  result: ScenarioResult | null;
+  onUpdate: (id: string, config: ScenarioConfig, result: ScenarioResult | null) => void;
+  onDelete?: (id: string) => void;
+  onDuplicate?: (id: string) => void;
+  projects?: Project[];
+  baselineConfig?: ScenarioConfig;
 }
 
-export function ScenarioEngine({ clientMode = false, initialConfig }: ScenarioEngineProps) {
-  const defaultConfig: ScenarioConfig = {
-    teamSize: 2,
-    budget: 25000,
-    timeline: 6,
-    wordCount: 50000,
-    complexity: "standard",
-    quality: "professional",
-  };
+export function ScenarioCard({
+  id,
+  config,
+  result,
+  onUpdate,
+  onDelete,
+  onDuplicate,
+  projects = [],
+  baselineConfig
+}: ScenarioCardProps) {
 
-  const [config, setConfig] = useState<ScenarioConfig>({
-    ...defaultConfig,
-    ...initialConfig,
-  });
-
-  const [result, setResult] = useState<ScenarioResult | null>(null);
-
-  const calculateScenario = () => {
+  const calculateResult = (currentConfig: ScenarioConfig): ScenarioResult => {
     // Base productivity rates (words/hour per person)
     const complexityRates = {
       simple: 200,    // Simple rules, straightforward narrative
@@ -77,11 +78,11 @@ export function ScenarioEngine({ clientMode = false, initialConfig }: ScenarioEn
     };
 
     // Calculate base hours needed
-    const baseWordsPerHour = complexityRates[config.complexity];
-    const qualityMultiplier = qualityMultipliers[config.quality];
+    const baseWordsPerHour = complexityRates[currentConfig.complexity];
+    const qualityMultiplier = qualityMultipliers[currentConfig.quality];
     const effectiveWordsPerHour = baseWordsPerHour / qualityMultiplier;
     
-    const totalWritingHours = (config.wordCount / effectiveWordsPerHour) / config.teamSize;
+    const totalWritingHours = (currentConfig.wordCount / effectiveWordsPerHour) / currentConfig.teamSize;
     
     // Calculate hours for each role
     const roleHours = {
@@ -100,17 +101,17 @@ export function ScenarioEngine({ clientMode = false, initialConfig }: ScenarioEn
 
     // Calculate timeline (weeks)
     const weeklyHoursPerPerson = 20; // Your realistic capacity
-    const totalWeeklyHours = config.teamSize * weeklyHoursPerPerson;
+    const totalWeeklyHours = currentConfig.teamSize * weeklyHoursPerPerson;
     const totalProjectHours = Object.values(roleHours).reduce((sum, hours) => sum + hours, 0);
     const requiredWeeks = Math.ceil(totalProjectHours / totalWeeklyHours);
     const requiredMonths = Math.ceil(requiredWeeks / 4);
 
     // Identify bottlenecks
     const bottlenecks: string[] = [];
-    if (config.budget < totalCost * 0.8) bottlenecks.push("Insufficient budget for quality target");
-    if (config.timeline < requiredMonths * 0.8) bottlenecks.push("Timeline too aggressive for team size");
-    if (config.complexity === "complex" && config.teamSize < 3) bottlenecks.push("Complex project needs larger team");
-    if (config.quality === "premium" && config.budget < 30000) bottlenecks.push("Premium quality requires higher budget");
+    if (currentConfig.budget < totalCost * 0.8) bottlenecks.push("Insufficient budget for quality target");
+    if (currentConfig.timeline < requiredMonths * 0.8) bottlenecks.push("Timeline too aggressive for team size");
+    if (currentConfig.complexity === "complex" && currentConfig.teamSize < 3) bottlenecks.push("Complex project needs larger team");
+    if (currentConfig.quality === "premium" && currentConfig.budget < 30000) bottlenecks.push("Premium quality requires higher budget");
 
     // Risk assessment
     let riskLevel: "low" | "medium" | "high" = "low";
@@ -119,21 +120,35 @@ export function ScenarioEngine({ clientMode = false, initialConfig }: ScenarioEn
 
     // Generate recommendations
     const recommendations: string[] = [];
-    if (config.budget < totalCost) recommendations.push(`Increase budget to $${Math.round(totalCost).toLocaleString()} or reduce scope`);
-    if (config.timeline < requiredMonths) recommendations.push(`Extend timeline to ${requiredMonths} months or increase team size`);
-    if (config.complexity === "complex" && config.teamSize < 3) recommendations.push("Add team members or reduce complexity");
+    if (currentConfig.budget < totalCost) recommendations.push(`Increase budget to $${Math.round(totalCost).toLocaleString()} or reduce scope`);
+    if (currentConfig.timeline < requiredMonths) recommendations.push(`Extend timeline to ${requiredMonths} months or increase team size`);
+    if (currentConfig.complexity === "complex" && currentConfig.teamSize < 3) recommendations.push("Add team members or reduce complexity");
     if (riskLevel === "high") recommendations.push("Consider reducing scope or increasing both budget and timeline");
 
-    setResult({
-      feasible: config.budget >= totalCost && config.timeline >= requiredMonths,
+    return {
+      feasible: currentConfig.budget >= totalCost && currentConfig.timeline >= requiredMonths,
       totalCost,
       timeline: requiredMonths,
-      quality: config.quality,
+      quality: currentConfig.quality,
       bottlenecks,
       riskLevel,
       recommendations
-    });
+    };
   };
+
+  const handleConfigChange = (newConfig: Partial<ScenarioConfig>) => {
+    const updatedConfig = { ...config, ...newConfig };
+    const newResult = calculateResult(updatedConfig);
+    onUpdate(id, updatedConfig, newResult);
+  };
+
+  // Run initial calculation if no result exists
+  useEffect(() => {
+    if (!result) {
+      const initialResult = calculateResult(config);
+      onUpdate(id, config, initialResult);
+    }
+  }, []);
 
   const getRiskColor = (risk: string) => {
     switch(risk) {
@@ -144,13 +159,51 @@ export function ScenarioEngine({ clientMode = false, initialConfig }: ScenarioEn
     }
   };
 
-  if (clientMode) return null;
+  const loadBaseline = (projectId: string) => {
+    const project = projects.find(p => p.id.toString() === projectId);
+    if (project) {
+      // Guess configuration from project data
+      // This is an estimation since Project doesn't map 1:1 to ScenarioConfig
+      const newConfig: Partial<ScenarioConfig> = {
+        wordCount: project.targetWords || 50000,
+        // Heuristics for other fields if available in project
+        // For now we just load word count as it is the most reliable mapper
+      };
+      handleConfigChange(newConfig);
+    }
+  };
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-6">
-      <div className="flex items-center gap-2">
-        <Calculator className="w-5 h-5 text-indigo-600" />
-        <h3 className="text-lg font-semibold text-slate-900">Project Scenario Engine</h3>
+    <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-6 shadow-sm relative">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Calculator className="w-5 h-5 text-indigo-600" />
+          <h3 className="text-lg font-semibold text-slate-900">Scenario Configuration</h3>
+        </div>
+        <div className="flex items-center gap-2">
+           {projects.length > 0 && (
+            <select
+              className="text-xs border border-slate-200 rounded px-2 py-1 text-slate-600 max-w-[150px]"
+              onChange={(e) => loadBaseline(e.target.value)}
+              defaultValue=""
+            >
+              <option value="" disabled>Load Baseline...</option>
+              {projects.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          )}
+          {onDuplicate && (
+            <button onClick={() => onDuplicate(id)} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="Duplicate Scenario">
+              <Copy className="w-4 h-4" />
+            </button>
+          )}
+          {onDelete && (
+            <button onClick={() => onDelete(id)} className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors" title="Remove Scenario">
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -161,10 +214,15 @@ export function ScenarioEngine({ clientMode = false, initialConfig }: ScenarioEn
             min="1"
             max="5"
             value={config.teamSize}
-            onChange={(e) => setConfig(prev => ({ ...prev, teamSize: parseInt(e.target.value) }))}
+            onChange={(e) => handleConfigChange({ teamSize: parseInt(e.target.value) })}
             className="w-full"
           />
-          <div className="text-center text-sm text-slate-600">{config.teamSize} people</div>
+          <div className="flex justify-between text-xs text-slate-500 mt-1">
+             <span>{config.teamSize} people</span>
+             {baselineConfig && (
+               <span className="text-slate-400">Baseline: {baselineConfig.teamSize}</span>
+             )}
+          </div>
         </div>
 
         <div>
@@ -172,10 +230,14 @@ export function ScenarioEngine({ clientMode = false, initialConfig }: ScenarioEn
           <input
             type="number"
             value={config.budget}
-            onChange={(e) => setConfig(prev => ({ ...prev, budget: parseInt(e.target.value) || 0 }))}
+            onChange={(e) => handleConfigChange({ budget: parseInt(e.target.value) || 0 })}
             className="w-full px-3 py-2 border border-slate-300 rounded-lg"
           />
-          <div className="text-center text-sm text-slate-600">${config.budget.toLocaleString()}</div>
+          {baselineConfig && (
+             <div className="text-xs text-slate-400 text-right mt-1">
+               Baseline: ${baselineConfig.budget.toLocaleString()}
+             </div>
+          )}
         </div>
 
         <div>
@@ -185,16 +247,21 @@ export function ScenarioEngine({ clientMode = false, initialConfig }: ScenarioEn
             min="1"
             max="12"
             value={config.timeline}
-            onChange={(e) => setConfig(prev => ({ ...prev, timeline: parseInt(e.target.value) || 1 }))}
+            onChange={(e) => handleConfigChange({ timeline: parseInt(e.target.value) || 1 })}
             className="w-full px-3 py-2 border border-slate-300 rounded-lg"
           />
+           {baselineConfig && (
+             <div className="text-xs text-slate-400 text-right mt-1">
+               Baseline: {baselineConfig.timeline}mo
+             </div>
+          )}
         </div>
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">Word Count</label>
           <select
             value={config.wordCount}
-            onChange={(e) => setConfig(prev => ({ ...prev, wordCount: parseInt(e.target.value) }))}
+            onChange={(e) => handleConfigChange({ wordCount: parseInt(e.target.value) })}
             className="w-full px-3 py-2 border border-slate-300 rounded-lg"
           >
             <option value={15000}>Micro Module (15k)</option>
@@ -208,7 +275,7 @@ export function ScenarioEngine({ clientMode = false, initialConfig }: ScenarioEn
           <label className="block text-sm font-medium text-slate-700 mb-1">Complexity</label>
           <select
             value={config.complexity}
-            onChange={(e) => setConfig(prev => ({ ...prev, complexity: e.target.value as any }))}
+            onChange={(e) => handleConfigChange({ complexity: e.target.value as any })}
             className="w-full px-3 py-2 border border-slate-300 rounded-lg"
           >
             <option value="simple">Simple (5e style)</option>
@@ -221,7 +288,7 @@ export function ScenarioEngine({ clientMode = false, initialConfig }: ScenarioEn
           <label className="block text-sm font-medium text-slate-700 mb-1">Quality Target</label>
           <select
             value={config.quality}
-            onChange={(e) => setConfig(prev => ({ ...prev, quality: e.target.value as any }))}
+            onChange={(e) => handleConfigChange({ quality: e.target.value as any })}
             className="w-full px-3 py-2 border border-slate-300 rounded-lg"
           >
             <option value="basic">Basic (functional)</option>
@@ -231,15 +298,9 @@ export function ScenarioEngine({ clientMode = false, initialConfig }: ScenarioEn
         </div>
       </div>
 
-      <button
-        onClick={calculateScenario}
-        className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors"
-      >
-        Calculate Scenario
-      </button>
-
+      {/* Dynamic Results Section (Real-time) */}
       {result && (
-        <div className="space-y-4">
+        <div className="space-y-4 pt-4 border-t border-slate-100">
           <div className={`p-4 rounded-lg border ${result.feasible ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'}`}>
             <div className="flex items-center justify-between">
               <span className="font-semibold">{result.feasible ? '✅ Feasible' : '❌ Not Feasible'}</span>
