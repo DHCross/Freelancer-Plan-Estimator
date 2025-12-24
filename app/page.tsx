@@ -755,7 +755,11 @@ function DashboardPageContent() {
           </div>
 
           {subView === "team-overview" && (
-            <TeamPlanner writers={writerLoad} clientMode={isClientMode} />
+            <TeamPlanner 
+              writers={writerLoad} 
+              clientMode={isClientMode} 
+              onNavigateToTeamBuilder={() => setSubView("teambuilder")}
+            />
           )}
 
           {subView === "teambuilder" && (
@@ -903,6 +907,14 @@ function DashboardPageContent() {
               defendWPH={defendWPH}
               marketPerWord={marketPerWord}
               teamWeeklyCapacity={teamWeeklyCapacity}
+              onNavigateToProducts={() => {
+                setPrimaryTab("planning");
+                setSubView("products");
+              }}
+              onNavigateToTeamBuilder={() => {
+                setPrimaryTab("team");
+                setSubView("teambuilder");
+              }}
             />
           )}
 

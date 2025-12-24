@@ -215,25 +215,26 @@ $${isSeries
 - Distribution reality (break-even units, discount structures): **TODO**
 `;
 
-  const findingsInternal = `## PART IV — Consolidated Findings & Potential Impact Warning (Internal)
+  const findingsInternal = `## PART IV — Consolidated Findings & Planning Notes
 
-✅ This dossier is designed for **internal clarity and negotiation prep**. It intentionally surfaces:
-- Labor subsidies and replacement-cost gaps
-- Mis-scoping or misclassification of prior work
-- Break-even and distribution risk
+This dossier provides a comprehensive view of project scope, labor investment, and financial considerations to support informed decision-making.
 
-🚩 **Potential Impact Warning (PIW)**
+**Key areas covered:**
+- Labor estimates and resource allocation
+- Scope clarification and project classification
+- Financial planning and distribution considerations
 
-Because this document includes financial valuations, labor comparisons, and references to past planning decisions, it carries interpretation risks if forwarded without context.
+**Document Purpose:**
 
-**Interpretation risks if shared externally:**
-- Could be read as retroactive critique of earlier leadership choices
-- Could be interpreted as an implied compensation or equity ask
-- Could be framed as evidence of prior underestimation
+This analysis consolidates planning data to help align expectations across stakeholders. It's designed to:
+- Provide clear visibility into project requirements
+- Support realistic timeline and budget planning
+- Identify areas that may need further discussion
 
-**Usage guidance:**
-- Treat this as a **war-room artifact**, not a client deliverable.
-- Derive a publisher-safe summary from it instead of forwarding directly.
+**Recommended next steps:**
+- Review key figures with relevant stakeholders
+- Identify any items requiring clarification before sharing externally
+- Prepare a streamlined summary for publisher or client communications if needed
 `;
 
   const findingsExternal = `## PART IV — Consolidated Findings (External / Publisher-Safe)

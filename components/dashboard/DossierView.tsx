@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { ClipboardList, FileText, Copy } from "lucide-react";
+import { ClipboardList, FileText, Copy, Settings, Users, Briefcase, ArrowRight } from "lucide-react";
 import { DisplayProject, Metrics, DefenseAnalysisResult } from "@/lib/types";
 import { generateDossierMarkdown, DossierTone } from "@/lib/dossier-generator";
+import { formatNumber, formatCurrency } from "@/lib/utils";
 
 interface DossierViewProps {
   analysis: DisplayProject[];
@@ -13,6 +14,8 @@ interface DossierViewProps {
   defendWPH: number;
   marketPerWord: number;
   teamWeeklyCapacity: number;
+  onNavigateToProducts?: () => void;
+  onNavigateToTeamBuilder?: () => void;
 }
 
 export function DossierView({
@@ -23,6 +26,8 @@ export function DossierView({
   defendWPH,
   marketPerWord,
   teamWeeklyCapacity,
+  onNavigateToProducts,
+  onNavigateToTeamBuilder,
 }: DossierViewProps) {
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(() => {
     const a1 = analysis.find((p) => p.name.toLowerCase().includes("problem of possibil"));
@@ -84,11 +89,59 @@ export function DossierView({
 
   return (
     <div className="space-y-6">
-      {/* Reports Overview Banner */}
-      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-4">
-        <p className="text-sm text-indigo-700">
-          <span className="font-semibold">Reports Hub:</span> Generate internal and client-ready reports from current Production Engine data.
-        </p>
+      {/* Edit Assumptions Panel */}
+      <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <Settings className="w-5 h-5 text-amber-600 mt-0.5" />
+            <div>
+              <h3 className="font-semibold text-amber-900">Report Assumptions</h3>
+              <p className="text-sm text-amber-700 mt-1">
+                This report pulls from your current project and team settings. Edit them before generating.
+              </p>
+              <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                <div className="bg-white/60 rounded-lg px-3 py-2 border border-amber-200">
+                  <div className="text-amber-600 font-medium">Projects</div>
+                  <div className="text-amber-900 font-bold">{analysis.length} loaded</div>
+                </div>
+                <div className="bg-white/60 rounded-lg px-3 py-2 border border-amber-200">
+                  <div className="text-amber-600 font-medium">Hourly Rate</div>
+                  <div className="text-amber-900 font-bold">{formatCurrency(defendHourlyRate)}/hr</div>
+                </div>
+                <div className="bg-white/60 rounded-lg px-3 py-2 border border-amber-200">
+                  <div className="text-amber-600 font-medium">Words/Hour</div>
+                  <div className="text-amber-900 font-bold">{formatNumber(defendWPH)} w/hr</div>
+                </div>
+                <div className="bg-white/60 rounded-lg px-3 py-2 border border-amber-200">
+                  <div className="text-amber-600 font-medium">Team Capacity</div>
+                  <div className="text-amber-900 font-bold">{formatNumber(teamWeeklyCapacity)} hrs/wk</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            {onNavigateToProducts && (
+              <button
+                onClick={onNavigateToProducts}
+                className="flex items-center gap-2 px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md whitespace-nowrap"
+              >
+                <Briefcase className="w-4 h-4" />
+                Edit Products
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            )}
+            {onNavigateToTeamBuilder && (
+              <button
+                onClick={onNavigateToTeamBuilder}
+                className="flex items-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md whitespace-nowrap"
+              >
+                <Users className="w-4 h-4" />
+                Edit Team & Rates
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -99,8 +152,8 @@ export function DossierView({
             Dossier Generator
           </h2>
           <p className="text-sm text-slate-600 max-w-2xl mt-2">
-            Compile a markdown dossier for any project using current Production Engine assumptions. Use this as a war-room artifact or as the
-            backbone for a publisher-safe summary.
+            Compile a markdown dossier for any project using current Production Engine assumptions. Generate internal planning documents or
+            publisher-ready summaries.
           </p>
         </div>
         <FileText className="w-10 h-10 text-indigo-500" />
