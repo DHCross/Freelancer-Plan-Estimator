@@ -22,6 +22,7 @@ export * from "./EditableProductGrid";
 export * from "./ProductListingView";
 export * from "./EnhancedEstimatorTools";
 export * from "./DeadlineEstimator";
+export * from "./CartographyPlanner";
 
 // New Dashboard Components
 export * from "./DashboardView";

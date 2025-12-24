@@ -1,0 +1,14 @@
+
+> hoskbrew-dashboard@0.1.0 dev
+> next dev
+
+   ▲ Next.js 16.0.10 (Turbopack)
+   - Local:         http://localhost:3000
+   - Network:       http://192.168.0.2:3000
+
+ ✓ Starting...
+ ✓ Ready in 3.1s
+ ○ Compiling / ...
+ GET / 200 in 7.2s (compile: 6.4s, render: 750ms)
+ GET / 200 in 106ms (compile: 6ms, render: 100ms)
+ GET / 200 in 93ms (compile: 4ms, render: 89ms)

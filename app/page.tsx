@@ -16,6 +16,7 @@ import {
   BookOpen,
   Lightbulb,
   Wrench,
+  Map as MapIcon,
 } from "lucide-react";
 
 import {
@@ -52,8 +53,9 @@ import {
   PurgeView,
   TeamPlanner,
   DossierView,
+  CartographyPlanner,
 } from "@/components/dashboard";
-import { ScenarioEngine } from "@/components/dashboard/ScenarioEngine";
+import { ScenarioWorkspace } from "@/components/dashboard/scenarios/ScenarioWorkspace";
 import { FailureAnalysis } from "@/components/dashboard/FailureAnalysis";
 import { TeamConfiguration } from "@/components/dashboard/TeamConfiguration";
 import { TeamManagement } from "@/components/dashboard/TeamManagement";
@@ -101,6 +103,7 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
             items: [
               { id: "products", label: "Product Listing", icon: Briefcase },
               { id: "budget", label: "Budget & Timeline", icon: Calendar },
+              { id: "cartography", label: "Cartography", icon: MapIcon },
             ],
             defaultExpanded: true,
           },
@@ -681,6 +684,7 @@ function DashboardPageContent() {
               {subView === "products" && "Product Listing"}
               {subView === "budget" && "Budget & Timeline"}
               {subView === "methodology" && "How We Build"}
+              {subView === "cartography" && "Cartography Planner"}
             </span>
           </div>
 
@@ -701,7 +705,7 @@ function DashboardPageContent() {
             </div>
           )}
 
-          {subView === "scenarios" && <ScenarioEngine clientMode={isClientMode} />}
+          {subView === "scenarios" && <ScenarioWorkspace clientMode={isClientMode} projects={projects} />}
 
           {subView === "status" && (
             <ProjectStatusView
@@ -724,6 +728,10 @@ function DashboardPageContent() {
               clientMode={isClientMode}
               onProjectUpdate={handleProjectUpdate}
             />
+          )}
+
+          {subView === "cartography" && (
+            <CartographyPlanner />
           )}
         </div>
       );

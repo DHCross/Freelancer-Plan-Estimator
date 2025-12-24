@@ -10,6 +10,7 @@ import {
   ReplacementRole,
   OrphanedAsset,
   ArtTierConfig,
+  MapComplexity,
 } from "./types";
 
 export const TEAM_ROSTER: TeamMember[] = [
@@ -141,6 +142,14 @@ export const ROLE_TEMPLATES = {
     compileSpeed: 1800,
     chaosBuffer: 15,
     description: "Specialized tasks like stat blocks, mechanics, rules systems"
+  },
+  "Cartographer": {
+    hourlyRate: 40,
+    weeklyCapacity: 15,
+    draftSpeed: 0,
+    compileSpeed: 0,
+    chaosBuffer: 20,
+    description: "Creates maps and cartographic assets"
   }
 };
 
@@ -761,3 +770,45 @@ export const ORPHANED_ASSETS: OrphanedAsset[] = [
     ask: "Assign analyst once scaffolding clears",
   },
 ];
+
+export const MAP_COMPLEXITY_DEFAULTS: Record<MapComplexity, {
+  baseDraftHours: number;
+  baseRevisionHours: number;
+  expectedRevisions: number;
+  internalBriefingHours: number;
+  internalReviewHoursPerPass: number;
+  integrationHours: number;
+}> = {
+  S: {
+    baseDraftHours: 5,
+    baseRevisionHours: 2.5,
+    expectedRevisions: 1.5,
+    internalBriefingHours: 1.5,
+    internalReviewHoursPerPass: 0.75,
+    integrationHours: 1.5,
+  },
+  M: {
+    baseDraftHours: 10,
+    baseRevisionHours: 3.5,
+    expectedRevisions: 2,
+    internalBriefingHours: 1.5,
+    internalReviewHoursPerPass: 0.75,
+    integrationHours: 1.5,
+  },
+  L: {
+    baseDraftHours: 20,
+    baseRevisionHours: 5,
+    expectedRevisions: 2.5,
+    internalBriefingHours: 2,
+    internalReviewHoursPerPass: 1,
+    integrationHours: 2,
+  },
+  XL: {
+    baseDraftHours: 36,
+    baseRevisionHours: 7,
+    expectedRevisions: 3,
+    internalBriefingHours: 2,
+    internalReviewHoursPerPass: 1.5,
+    integrationHours: 3,
+  },
+};
