@@ -84,6 +84,13 @@ export function DossierView({
 
   return (
     <div className="space-y-6">
+      {/* Reports Overview Banner */}
+      <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-4">
+        <p className="text-sm text-indigo-700">
+          <span className="font-semibold">Reports Hub:</span> Generate internal and client-ready reports from current Production Engine data.
+        </p>
+      </div>
+
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Narrative Export</p>

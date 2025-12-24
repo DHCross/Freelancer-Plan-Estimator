@@ -21,3 +21,12 @@ export * from "./DataFlowIndicator";
 export * from "./EditableProductGrid";
 export * from "./ProductListingView";
 export * from "./EnhancedEstimatorTools";
+export * from "./DeadlineEstimator";
+export * from "./CartographyPlanner";
+
+// New Dashboard Components
+export * from "./DashboardView";
+export * from "./MetricCard";
+export * from "./AlertBanner";
+export * from "./CollapsibleTeamCard";
+export * from "./Tooltip";

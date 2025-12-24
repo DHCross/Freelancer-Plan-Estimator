@@ -265,3 +265,32 @@ export interface RoiResult {
   roiPercent: number;
 }
 
+export type MapType = "battle" | "dungeon" | "regional" | "world" | "tactical" | "other";
+export type MapComplexity = "S" | "M" | "L" | "XL";
+
+export interface MapTicket {
+  id: string;
+  projectId: string;
+  name: string;
+  type: MapType;
+  complexityTier: MapComplexity;
+  isExternalCartographer: boolean;
+  cartographerRoleId: string | null; // ID of the team member or contractor role
+  baseDraftHours: number;
+  baseRevisionHours: number;
+  expectedRevisions: number;
+  internalBriefingHours: number;
+  internalReviewHoursPerPass: number;
+  integrationHours: number;
+  contractorRate: number | null; // explicit hourly rate if known
+  flatMapFee: number | null; // if fixed price
+  dependencies: string[];
+}
+
+export interface CartographySummary {
+  totalMaps: number;
+  totalCartographerHours: number;
+  totalInternalSupportHours: number;
+  totalCartographyCost: number;
+  mapCriticalPathDays: number;
+}

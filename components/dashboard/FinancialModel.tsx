@@ -110,6 +110,19 @@ export function FinancialModel({ defaultDevCost = 20000 }: FinancialModelProps) 
 
     return (
         <div className="space-y-6">
+            {/* Header with subtitle */}
+            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-2">
+                    <div className="bg-indigo-100 p-2 rounded-lg">
+                        <DollarSign className="w-6 h-6 text-indigo-600" />
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-bold text-slate-900">Financial Model</h2>
+                        <p className="text-sm text-slate-600">Model unit economics and profitability for the selected product.</p>
+                    </div>
+                </div>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Inputs Column */}
                 <div className="space-y-6">
