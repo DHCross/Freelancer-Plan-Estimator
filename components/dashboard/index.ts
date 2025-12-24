@@ -24,6 +24,8 @@ export * from "./EnhancedEstimatorTools";
 export * from "./DeadlineEstimator";
 export * from "./CartographyPlanner";
 export * from "./DocumentWordCounter";
+export * from "./ArtBudgetView";
+export * from "./LayoutSafeDeadlineCalculator";
 
 // New Dashboard Components
 export * from "./DashboardView";

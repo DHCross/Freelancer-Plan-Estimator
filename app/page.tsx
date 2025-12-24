@@ -17,6 +17,8 @@ import {
   Lightbulb,
   Wrench,
   Map as MapIcon,
+  Palette,
+  Shield,
 } from "lucide-react";
 
 import {
@@ -54,6 +56,8 @@ import {
   TeamPlanner,
   DossierView,
   CartographyPlanner,
+  ArtBudgetView,
+  LayoutSafeDeadlineCalculator,
 } from "@/components/dashboard";
 import { ScenarioWorkspace } from "@/components/dashboard/scenarios/ScenarioWorkspace";
 import { FailureAnalysis } from "@/components/dashboard/FailureAnalysis";
@@ -103,9 +107,18 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
             items: [
               { id: "products", label: "Product Listing", icon: Briefcase },
               { id: "budget", label: "Budget & Timeline", icon: Calendar },
-              { id: "cartography", label: "Cartography", icon: MapIcon },
             ],
             defaultExpanded: true,
+          },
+          {
+            id: "art-assets",
+            label: "Art Assets",
+            description: "Illustrations, maps, and visual content",
+            items: [
+              { id: "art-budget", label: "Art Budget", icon: Palette },
+              { id: "cartography", label: "Cartography", icon: MapIcon },
+            ],
+            defaultExpanded: false,
           },
         ],
       };
@@ -170,6 +183,7 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
             items: [
               { id: "dossier", label: "Dossier", icon: BookOpen },
               { id: "deadline-estimator", label: "Deadline Estimator", icon: Calendar },
+              { id: "layout-safe", label: "Layout-Safe Calculator", icon: Shield },
               { id: "export-report", label: "Export Report", icon: FileText },
               { id: "lessons-learned", label: "Lessons Learned", icon: Lightbulb },
             ],
@@ -684,7 +698,8 @@ function DashboardPageContent() {
               {subView === "products" && "Product Listing"}
               {subView === "budget" && "Budget & Timeline"}
               {subView === "methodology" && "How We Build"}
-              {subView === "cartography" && "Cartography Planner"}
+              {subView === "art-budget" && "Art Budget"}
+              {subView === "cartography" && "Cartography"}
             </span>
           </div>
 
@@ -746,6 +761,10 @@ function DashboardPageContent() {
               clientMode={isClientMode}
               onProjectUpdate={handleProjectUpdate}
             />
+          )}
+
+          {subView === "art-budget" && (
+            <ArtBudgetView clientMode={isClientMode} />
           )}
 
           {subView === "cartography" && (
@@ -943,6 +962,10 @@ function DashboardPageContent() {
               metrics={metrics}
               onUpdateProject={handleProjectUpdate}
             />
+          )}
+
+          {subView === "layout-safe" && (
+            <LayoutSafeDeadlineCalculator />
           )}
 
           {subView === "export-report" && (
