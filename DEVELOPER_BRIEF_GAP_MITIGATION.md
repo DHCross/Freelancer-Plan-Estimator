@@ -206,31 +206,37 @@ Replace the current "Ghost Capacity" card (in PurgeView.tsx) with:
 
 ## 📝 Implementation Checklist
 
-- [ ] **Create new data type:** `OpenRole` and `OperationalDeficit` interfaces
-- [ ] **Parse ghost capacity:** Convert label "Jon (Writing/Editing)" → role "Lead Writer"
-- [ ] **Add state management:** `mitigations` state object tracking selected strategy per role
-- [ ] **Build UI components:**
-  - [ ] `GapCard` subcomponent for each role with title, hours, and 3 buttons
-  - [ ] Mitigation buttons with proper styling (amber/purple/red) and selected state
-  - [ ] Disabled state for AI buttons on non-writing roles
-  - [ ] Badge display (💼🤖✂️) next to role name when selected
-- [ ] **Calculate summary stats:**
-  - [ ] Count freelancers needed (count roles with "freelancer" strategy)
-  - [ ] Count AI tasks (count roles with "ai_agent" strategy)
-  - [ ] Count scope cuts (count roles with "cut_scope" strategy)
-  - [ ] Calculate remaining deficit after mitigation
-- [ ] **Display cost estimates:**
-  - [ ] Freelancer costs using median ROLE_TEMPLATES rates
-  - [ ] AI note (e.g., "Included in subscription")
-  - [ ] Scope cut impact (estimated % loss)
-- [ ] **Error handling:**
-  - [ ] Ensure exactly one mitigation per role at a time
-  - [ ] Validate against role type (AI only for writing roles)
-- [ ] **Testing:**
-  - [ ] Select different mitigation options and verify state updates
-  - [ ] Verify counters update correctly
-  - [ ] Check disabled state on non-writing roles
-  - [ ] Verify total deficit calculation updates
+### Core Data & State
+- **Create new data type:** `OpenRole` and `OperationalDeficit` interfaces
+- **Parse ghost capacity:** Convert label "Jon (Writing/Editing)" → role "Lead Writer"
+- **Add state management:** `mitigations` state object tracking selected strategy per role
+
+### UI Components
+- **`GapCard` subcomponent** for each role with title, hours, and 3 buttons
+- **Mitigation buttons** with proper styling (amber/purple/red) and selected state
+- **Disabled state** for AI buttons on non-writing roles
+- **Badge display** (💼🤖✂️) next to role name when selected
+
+### Summary Stats Calculations
+- Count **freelancers needed** (count roles with "freelancer" strategy)
+- Count **AI tasks** (count roles with "ai_agent" strategy)
+- Count **scope cuts** (count roles with "cut_scope" strategy)
+- Calculate **remaining deficit** after mitigation
+
+### Cost Estimates Display
+- **Freelancer costs** using median ROLE_TEMPLATES rates
+- **AI note** (e.g., "Included in subscription")
+- **Scope cut impact** (estimated % loss)
+
+### Error Handling & Validation
+- Ensure exactly **one mitigation per role** at a time
+- Validate against role type (**AI only for writing roles**)
+
+### Testing Requirements
+- Select different mitigation options and verify state updates
+- Verify counters update correctly
+- Check disabled state on non-writing roles
+- Verify total deficit calculation updates
 
 ---
 
