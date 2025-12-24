@@ -23,6 +23,7 @@ export * from "./ProductListingView";
 export * from "./EnhancedEstimatorTools";
 export * from "./DeadlineEstimator";
 export * from "./CartographyPlanner";
+export * from "./DocumentWordCounter";
 
 // New Dashboard Components
 export * from "./DashboardView";
