@@ -1,6 +1,6 @@
 "use client";
 
-import { Lock, AlertTriangle, TrendingUp, Users, ArrowRight } from "lucide-react";
+import { Lock, AlertTriangle, TrendingUp, Users, ArrowRight, Wrench } from "lucide-react";
 import { formatNumber } from "@/lib/utils";
 import { UnifiedProjectModel, ResourceValidation } from "@/lib/unified-project-model";
 import { useState, useEffect, useCallback } from "react";
@@ -11,9 +11,10 @@ interface ResourceValidationHubProps {
   onReassignProjects?: () => void;
   onHireContractor?: () => void;
   onExtendTimeline?: (newTimeline: number) => void;
+  onNavigateToTeamBuilder?: () => void;
 }
 
-export function ResourceValidationHub({ clientMode = false, onReassignProjects, onHireContractor, onExtendTimeline }: ResourceValidationHubProps) {
+export function ResourceValidationHub({ clientMode = false, onReassignProjects, onHireContractor, onExtendTimeline, onNavigateToTeamBuilder }: ResourceValidationHubProps) {
   const [unifiedModel] = useState(() => UnifiedProjectModel.getInstance());
   const [resourceValidation, setResourceValidation] = useState<ResourceValidation[]>([]);
   const [scenario, setScenario] = useState(unifiedModel.getProjectScenario());
@@ -112,15 +113,26 @@ export function ResourceValidationHub({ clientMode = false, onReassignProjects, 
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Data Flow Indicator */}
-      <div className="bg-slate-100 border border-slate-200 rounded-lg p-3 flex items-center justify-center gap-3 text-sm">
-        <span className="font-medium text-slate-600">Team Builder</span>
-        <ArrowRight className="w-4 h-4 text-slate-400" />
-        <span className="font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded">Resource Validation</span>
-        <ArrowRight className="w-4 h-4 text-slate-400" />
-        <span className="font-medium text-slate-600">Scenario Engine</span>
-        <ArrowRight className="w-4 h-4 text-slate-400" />
-        <span className="font-medium text-slate-600">Financial Model</span>
+      {/* Data Flow Indicator with Edit Button */}
+      <div className="bg-slate-100 border border-slate-200 rounded-lg p-3 flex items-center justify-between">
+        <div className="flex items-center justify-center gap-3 text-sm flex-1">
+          <span className="font-medium text-slate-600">Team Builder</span>
+          <ArrowRight className="w-4 h-4 text-slate-400" />
+          <span className="font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded">Resource Validation</span>
+          <ArrowRight className="w-4 h-4 text-slate-400" />
+          <span className="font-medium text-slate-600">Scenario Engine</span>
+          <ArrowRight className="w-4 h-4 text-slate-400" />
+          <span className="font-medium text-slate-600">Financial Model</span>
+        </div>
+        {onNavigateToTeamBuilder && (
+          <button
+            onClick={onNavigateToTeamBuilder}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg transition-all duration-200 hover:shadow-md ml-4"
+          >
+            <Wrench className="w-3 h-3" />
+            <span>Edit Team</span>
+          </button>
+        )}
       </div>
 
       {/* Resource Validation Header */}

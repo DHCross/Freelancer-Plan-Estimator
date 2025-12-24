@@ -699,9 +699,27 @@ function DashboardPageContent() {
 
           {subView === "integrated" && (
             <div className="space-y-8">
-              <ResourceValidationHub clientMode={isClientMode} />
-              <IntegratedScenarioEngine clientMode={isClientMode} />
-              <IntegratedFinancialModel clientMode={isClientMode} />
+              <ResourceValidationHub 
+                clientMode={isClientMode} 
+                onNavigateToTeamBuilder={() => {
+                  setPrimaryTab("team");
+                  setSubView("teambuilder");
+                }}
+              />
+              <IntegratedScenarioEngine 
+                clientMode={isClientMode} 
+                onNavigateToTeamBuilder={() => {
+                  setPrimaryTab("team");
+                  setSubView("teambuilder");
+                }}
+              />
+              <IntegratedFinancialModel 
+                clientMode={isClientMode}
+                onNavigateToTeamBuilder={() => {
+                  setPrimaryTab("team");
+                  setSubView("teambuilder");
+                }}
+              />
             </div>
           )}
 
