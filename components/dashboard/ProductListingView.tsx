@@ -58,10 +58,8 @@ export function ProductListingView({ teamRoster }: ProductListingViewProps) {
     // Assign to Dan who is doing the layout work
     updateProductField(a0.id, "assignedTo", dan.id);
     
-    // Use setTimeout to ensure state updates are processed before saving
-    setTimeout(async () => {
-      await saveProductChanges(a0.id);
-    }, 0);
+    // Save changes to persist the updates
+    await saveProductChanges(a0.id);
     
     setToastMessage(`Layout work scheduled for ${dan.name.split(" ")[0]}.`);
   };
