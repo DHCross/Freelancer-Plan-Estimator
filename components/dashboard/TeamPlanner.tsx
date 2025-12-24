@@ -1,6 +1,6 @@
 "use client";
 
-import { Lock, AlertTriangle, HelpCircle } from "lucide-react";
+import { Lock, AlertTriangle, HelpCircle, Edit2 } from "lucide-react";
 import { WriterLoad } from "@/lib/types";
 import { useTeamLoad } from "@/lib/TeamLoadContext";
 import { formatNumber } from "@/lib/utils";
@@ -144,6 +144,18 @@ export function TeamPlanner({ writers, clientMode = false, onNavigateToTeamBuild
                   style={{ width: `${Math.min(percent, 100)}%` }}
                 />
               </div>
+              
+              {/* Edit Details Button */}
+              {!clientMode && onNavigateToTeamBuilder && (
+                <button
+                  onClick={onNavigateToTeamBuilder}
+                  className="w-full mb-4 flex items-center justify-center gap-2 px-3 py-2 bg-slate-100 hover:bg-indigo-100 text-slate-700 hover:text-indigo-700 text-sm font-medium rounded-lg border border-slate-200 hover:border-indigo-300 transition-all duration-200"
+                >
+                  <Edit2 className="w-4 h-4" />
+                  <span>Edit Details</span>
+                </button>
+              )}
+
               <div className="space-y-2">
                 {writer.projects.map((project) => (
                   <div
