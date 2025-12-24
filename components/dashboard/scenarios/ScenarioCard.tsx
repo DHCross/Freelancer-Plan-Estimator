@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { Project } from "@/lib/types";
 
 export interface ScenarioConfig {
+  name?: string;
   teamSize: number;
   budget: number;
   timeline: number; // months
@@ -165,6 +166,7 @@ export function ScenarioCard({
       // Guess configuration from project data
       // This is an estimation since Project doesn't map 1:1 to ScenarioConfig
       const newConfig: Partial<ScenarioConfig> = {
+        name: project.name,
         wordCount: project.targetWords || 50000,
         // Heuristics for other fields if available in project
         // For now we just load word count as it is the most reliable mapper
@@ -176,11 +178,17 @@ export function ScenarioCard({
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-6 shadow-sm relative">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Calculator className="w-5 h-5 text-indigo-600" />
-          <h3 className="text-lg font-semibold text-slate-900">Scenario Configuration</h3>
+        <div className="flex items-center gap-2 flex-1">
+          <Calculator className="w-5 h-5 text-indigo-600 shrink-0" />
+          <input
+            type="text"
+            value={config.name || "Scenario Configuration"}
+            onChange={(e) => handleConfigChange({ name: e.target.value })}
+            className="text-lg font-semibold text-slate-900 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none w-full mr-4"
+            placeholder="Scenario Name"
+          />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
            {projects.length > 0 && (
             <select
               className="text-xs border border-slate-200 rounded px-2 py-1 text-slate-600 max-w-[150px]"
