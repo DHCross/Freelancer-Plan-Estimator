@@ -311,6 +311,22 @@ export function LayoutSafeDeadlineCalculator({ onApplyDates }: LayoutSafeDeadlin
                 <span>{layoutDays + reviewDays + calculations.chaosBufferDays} days</span>
               </div>
             </div>
+
+            {/* Layout Availability Reminder */}
+            <div className="mt-4 bg-indigo-50 border border-indigo-100 rounded-lg p-3">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-indigo-600 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs font-bold text-indigo-900 uppercase mb-1">Layout Availability Window</p>
+                  <p className="text-sm text-indigo-800">
+                    You must be available for quick decisions from <strong>{formatDateNice(calculations.contentLockDate)}</strong> to <strong>{formatDateNice(calculations.target)}</strong>.
+                  </p>
+                  <p className="text-xs text-indigo-600 mt-1">
+                    Martin needs rapid turnaround on layout questions during this phase.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Apply Button */}

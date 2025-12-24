@@ -19,6 +19,7 @@ import {
   Map as MapIcon,
   Palette,
   Shield,
+  Lock,
 } from "lucide-react";
 
 import {
@@ -58,6 +59,7 @@ import {
   CartographyPlanner,
   ArtBudgetView,
   LayoutSafeDeadlineCalculator,
+  ProductionReadinessChecklist,
 } from "@/components/dashboard";
 import { ScenarioWorkspace } from "@/components/dashboard/scenarios/ScenarioWorkspace";
 import { FailureAnalysis } from "@/components/dashboard/FailureAnalysis";
@@ -184,6 +186,7 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
               { id: "dossier", label: "Dossier", icon: BookOpen },
               { id: "deadline-estimator", label: "Deadline Estimator", icon: Calendar },
               { id: "layout-safe", label: "Layout-Safe Calculator", icon: Shield },
+              { id: "production-readiness", label: "Production Readiness Checklist", icon: Lock },
               { id: "export-report", label: "Export Report", icon: FileText },
               { id: "lessons-learned", label: "Lessons Learned", icon: Lightbulb },
             ],
@@ -930,6 +933,8 @@ function DashboardPageContent() {
             <span className="text-slate-900 font-medium">
               {subView === "dossier" && "Dossier"}
               {subView === "deadline-estimator" && "Deadline Estimator"}
+              {subView === "layout-safe" && "Layout-Safe Calculator"}
+              {subView === "production-readiness" && "Production Readiness"}
               {subView === "export-report" && "Export Report"}
               {subView === "lessons-learned" && "Lessons Learned"}
             </span>
@@ -952,6 +957,10 @@ function DashboardPageContent() {
                 setPrimaryTab("team");
                 setSubView("teambuilder");
               }}
+              onNavigateToProductionReadiness={() => {
+                setPrimaryTab("reports");
+                setSubView("production-readiness");
+              }}
             />
           )}
 
@@ -966,6 +975,10 @@ function DashboardPageContent() {
 
           {subView === "layout-safe" && (
             <LayoutSafeDeadlineCalculator />
+          )}
+
+          {subView === "production-readiness" && (
+            <ProductionReadinessChecklist />
           )}
 
           {subView === "export-report" && (

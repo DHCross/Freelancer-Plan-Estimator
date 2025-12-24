@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { ClipboardList, FileText, Copy, Settings, Users, Briefcase, ArrowRight } from "lucide-react";
+import { ClipboardList, FileText, Copy, Settings, Users, Briefcase, ArrowRight, Lock } from "lucide-react";
 import { DisplayProject, Metrics, DefenseAnalysisResult } from "@/lib/types";
 import { generateDossierMarkdown, DossierTone } from "@/lib/dossier-generator";
 import { formatNumber, formatCurrency } from "@/lib/utils";
@@ -16,6 +16,7 @@ interface DossierViewProps {
   teamWeeklyCapacity: number;
   onNavigateToProducts?: () => void;
   onNavigateToTeamBuilder?: () => void;
+  onNavigateToProductionReadiness?: () => void;
 }
 
 export function DossierView({
@@ -28,6 +29,7 @@ export function DossierView({
   teamWeeklyCapacity,
   onNavigateToProducts,
   onNavigateToTeamBuilder,
+  onNavigateToProductionReadiness,
 }: DossierViewProps) {
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(() => {
     const a1 = analysis.find((p) => p.name.toLowerCase().includes("problem of possibil"));
@@ -120,6 +122,16 @@ export function DossierView({
             </div>
           </div>
           <div className="flex flex-col gap-2">
+            {onNavigateToProductionReadiness && (
+              <button
+                onClick={onNavigateToProductionReadiness}
+                className="flex items-center gap-2 px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md whitespace-nowrap"
+              >
+                <Lock className="w-4 h-4" />
+                Lock Structure
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            )}
             {onNavigateToProducts && (
               <button
                 onClick={onNavigateToProducts}
