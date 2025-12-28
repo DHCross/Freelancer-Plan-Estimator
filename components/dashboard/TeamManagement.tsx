@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Users, Plus, Edit2, Trash2, Save, X, Info, GripVertical, Copy, Download, DollarSign, Clock, PenTool, Shield, BarChart3, ChevronDown } from "lucide-react";
 import { TeamMember } from "@/lib/types";
 import { ROLE_TEMPLATES } from "@/lib/constants";
@@ -9,6 +9,7 @@ interface TeamManagementProps {
   teamMembers: TeamMember[];
   onUpdateTeamMembers: (members: TeamMember[]) => void;
   clientMode?: boolean;
+  initialEditMemberId?: string | null;
 }
 
 interface Toast {
@@ -17,12 +18,23 @@ interface Toast {
   type: 'success' | 'error';
 }
 
-export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = false }: TeamManagementProps) {
+export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = false, initialEditMemberId = null }: TeamManagementProps) {
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const [showCapacityCalculator, setShowCapacityCalculator] = useState(false);
+
+  // Auto-open a specific member for editing when initialEditMemberId changes
+  useEffect(() => {
+    if (initialEditMemberId) {
+      const member = teamMembers.find(m => m.id === initialEditMemberId);
+      if (member) {
+        setEditingMember({ ...member });
+        setIsAddingNew(false);
+      }
+    }
+  }, [initialEditMemberId, teamMembers]);
 
   // Toast notification handler
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {

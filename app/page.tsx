@@ -286,6 +286,7 @@ function DashboardPageContent() {
   const [subView, setSubView] = useState("dashboard");
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isPresentationMode, setIsPresentationMode] = useState(false);
+  const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
 
   // ========== DATA STATE ==========
   const [projects, setProjects] = useState(() => {
@@ -470,7 +471,18 @@ function DashboardPageContent() {
       } else {
         setSubView(DEFAULT_SUBVIEWS[validTab]);
       }
+      // Clear editing member ID when navigating away from teambuilder
+      if (subTab !== "teambuilder") {
+        setEditingMemberId(null);
+      }
     }
+  }, []);
+
+  // Handler to navigate to team builder with a specific member to edit
+  const handleEditMember = useCallback((memberId: string) => {
+    setEditingMemberId(memberId);
+    setPrimaryTab("team");
+    setSubView("teambuilder");
   }, []);
 
   const handleExportData = () => {
@@ -755,7 +767,11 @@ function DashboardPageContent() {
           </div>
 
           {subView === "team-overview" && (
-            <TeamPlanner writers={writerLoad} clientMode={isClientMode} />
+            <TeamPlanner 
+              writers={writerLoad} 
+              clientMode={isClientMode} 
+              onEditMember={handleEditMember}
+            />
           )}
 
           {subView === "teambuilder" && (
@@ -764,6 +780,7 @@ function DashboardPageContent() {
                 teamMembers={teamRoster}
                 onUpdateTeamMembers={handleTeamMemberUpdate}
                 clientMode={isClientMode}
+                initialEditMemberId={editingMemberId}
               />
               <TeamConfiguration clientMode={isClientMode} />
             </div>

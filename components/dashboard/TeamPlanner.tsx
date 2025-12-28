@@ -1,6 +1,6 @@
 "use client";
 
-import { Lock, AlertTriangle, HelpCircle } from "lucide-react";
+import { Lock, AlertTriangle, HelpCircle, Edit2 } from "lucide-react";
 import { WriterLoad } from "@/lib/types";
 import { useTeamLoad } from "@/lib/TeamLoadContext";
 import { formatNumber } from "@/lib/utils";
@@ -9,9 +9,10 @@ import { Tooltip } from "./Tooltip";
 interface TeamPlannerProps {
   writers: WriterLoad[];
   clientMode?: boolean;
+  onEditMember?: (memberId: string) => void;
 }
 
-export function TeamPlanner({ writers, clientMode = false }: TeamPlannerProps) {
+export function TeamPlanner({ writers, clientMode = false, onEditMember }: TeamPlannerProps) {
   const { getTeamTotalHours, teamLoads } = useTeamLoad();
   // Find the highest overloaded person for the warning banner
   const mostOverloaded = writers.reduce((max, writer) => {
@@ -120,6 +121,18 @@ export function TeamPlanner({ writers, clientMode = false }: TeamPlannerProps) {
                   style={{ width: `${Math.min(percent, 100)}%` }}
                 />
               </div>
+              
+              {/* Edit Details Button */}
+              {!clientMode && onEditMember && (
+                <button
+                  onClick={() => onEditMember(writer.id)}
+                  className="w-full mb-4 flex items-center justify-center gap-2 px-3 py-2 bg-slate-100 hover:bg-indigo-100 text-slate-700 hover:text-indigo-700 text-sm font-medium rounded-lg border border-slate-200 hover:border-indigo-300 transition-all duration-200"
+                >
+                  <Edit2 className="w-4 h-4" />
+                  <span>Edit Details</span>
+                </button>
+              )}
+
               <div className="space-y-2">
                 {writer.projects.map((project) => (
                   <div
