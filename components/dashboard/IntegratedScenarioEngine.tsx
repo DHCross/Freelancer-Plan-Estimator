@@ -1,15 +1,16 @@
 "use client";
 
-import { Calculator, AlertTriangle, Clock, DollarSign, ArrowRight, Link2, Users, Save, FolderOpen, GitBranch, Plus, X, Check, Trash2 } from "lucide-react";
+import { Calculator, AlertTriangle, Clock, DollarSign, ArrowRight, Link2, Users, Save, FolderOpen, GitBranch, Plus, X, Check, Trash2, Wrench } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { UnifiedProjectModel } from "@/lib/unified-project-model";
 import { getCapacityColor, getBudgetColor, getTimelineColor, actionColors } from "@/lib/colors";
 
 interface IntegratedScenarioEngineProps {
   clientMode?: boolean;
+  onNavigateToTeamBuilder?: () => void;
 }
 
-export function IntegratedScenarioEngine({ clientMode = false }: IntegratedScenarioEngineProps) {
+export function IntegratedScenarioEngine({ clientMode = false, onNavigateToTeamBuilder }: IntegratedScenarioEngineProps) {
   const [savedScenarios, setSavedScenarios] = useState<any[]>([]);
   const [showComparison, setShowComparison] = useState(false);
   const [scenarioName, setScenarioName] = useState("");
@@ -112,9 +113,20 @@ export function IntegratedScenarioEngine({ clientMode = false }: IntegratedScena
             <Calculator className="w-5 h-5 text-indigo-600" />
             <h3 className="text-lg font-semibold text-slate-900">Project Scenario Engine</h3>
           </div>
-          <div className="flex items-center gap-2 text-xs text-slate-500">
-            <Link2 className="w-3 h-3" />
-            <span>Data from Team Builder &amp; Resource Validation</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-xs text-slate-500">
+              <Link2 className="w-3 h-3" />
+              <span>Data from Team Builder &amp; Resource Validation</span>
+            </div>
+            {onNavigateToTeamBuilder && (
+              <button
+                onClick={onNavigateToTeamBuilder}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg transition-all duration-200 hover:shadow-md"
+              >
+                <Wrench className="w-3 h-3" />
+                <span>Edit Team</span>
+              </button>
+            )}
           </div>
         </div>
 

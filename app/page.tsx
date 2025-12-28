@@ -17,6 +17,9 @@ import {
   Lightbulb,
   Wrench,
   Map as MapIcon,
+  Palette,
+  Shield,
+  Lock,
 } from "lucide-react";
 
 import {
@@ -54,6 +57,9 @@ import {
   TeamPlanner,
   DossierView,
   CartographyPlanner,
+  ArtBudgetView,
+  LayoutSafeDeadlineCalculator,
+  ProductionReadinessChecklist,
 } from "@/components/dashboard";
 import { ScenarioWorkspace } from "@/components/dashboard/scenarios/ScenarioWorkspace";
 import { FailureAnalysis } from "@/components/dashboard/FailureAnalysis";
@@ -103,9 +109,18 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
             items: [
               { id: "products", label: "Product Listing", icon: Briefcase },
               { id: "budget", label: "Budget & Timeline", icon: Calendar },
-              { id: "cartography", label: "Cartography", icon: MapIcon },
             ],
             defaultExpanded: true,
+          },
+          {
+            id: "art-assets",
+            label: "Art Assets",
+            description: "Illustrations, maps, and visual content",
+            items: [
+              { id: "art-budget", label: "Art Budget", icon: Palette },
+              { id: "cartography", label: "Cartography", icon: MapIcon },
+            ],
+            defaultExpanded: false,
           },
         ],
       };
@@ -170,6 +185,8 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
             items: [
               { id: "dossier", label: "Dossier", icon: BookOpen },
               { id: "deadline-estimator", label: "Deadline Estimator", icon: Calendar },
+              { id: "layout-safe", label: "Layout-Safe Calculator", icon: Shield },
+              { id: "production-readiness", label: "Production Readiness Checklist", icon: Lock },
               { id: "export-report", label: "Export Report", icon: FileText },
               { id: "lessons-learned", label: "Lessons Learned", icon: Lightbulb },
             ],
@@ -696,7 +713,8 @@ function DashboardPageContent() {
               {subView === "products" && "Product Listing"}
               {subView === "budget" && "Budget & Timeline"}
               {subView === "methodology" && "How We Build"}
-              {subView === "cartography" && "Cartography Planner"}
+              {subView === "art-budget" && "Art Budget"}
+              {subView === "cartography" && "Cartography"}
             </span>
           </div>
 
@@ -711,9 +729,27 @@ function DashboardPageContent() {
 
           {subView === "integrated" && (
             <div className="space-y-8">
-              <ResourceValidationHub clientMode={isClientMode} />
-              <IntegratedScenarioEngine clientMode={isClientMode} />
-              <IntegratedFinancialModel clientMode={isClientMode} />
+              <ResourceValidationHub 
+                clientMode={isClientMode} 
+                onNavigateToTeamBuilder={() => {
+                  setPrimaryTab("team");
+                  setSubView("teambuilder");
+                }}
+              />
+              <IntegratedScenarioEngine 
+                clientMode={isClientMode} 
+                onNavigateToTeamBuilder={() => {
+                  setPrimaryTab("team");
+                  setSubView("teambuilder");
+                }}
+              />
+              <IntegratedFinancialModel 
+                clientMode={isClientMode}
+                onNavigateToTeamBuilder={() => {
+                  setPrimaryTab("team");
+                  setSubView("teambuilder");
+                }}
+              />
             </div>
           )}
 
@@ -740,6 +776,10 @@ function DashboardPageContent() {
               clientMode={isClientMode}
               onProjectUpdate={handleProjectUpdate}
             />
+          )}
+
+          {subView === "art-budget" && (
+            <ArtBudgetView clientMode={isClientMode} />
           )}
 
           {subView === "cartography" && (
@@ -771,6 +811,7 @@ function DashboardPageContent() {
               writers={writerLoad} 
               clientMode={isClientMode} 
               onEditMember={handleEditMember}
+              onNavigateToTeamBuilder={() => setSubView("teambuilder")}
             />
           )}
 
@@ -906,6 +947,8 @@ function DashboardPageContent() {
             <span className="text-slate-900 font-medium">
               {subView === "dossier" && "Dossier"}
               {subView === "deadline-estimator" && "Deadline Estimator"}
+              {subView === "layout-safe" && "Layout-Safe Calculator"}
+              {subView === "production-readiness" && "Production Readiness"}
               {subView === "export-report" && "Export Report"}
               {subView === "lessons-learned" && "Lessons Learned"}
             </span>
@@ -920,6 +963,18 @@ function DashboardPageContent() {
               defendWPH={defendWPH}
               marketPerWord={marketPerWord}
               teamWeeklyCapacity={teamWeeklyCapacity}
+              onNavigateToProducts={() => {
+                setPrimaryTab("planning");
+                setSubView("products");
+              }}
+              onNavigateToTeamBuilder={() => {
+                setPrimaryTab("team");
+                setSubView("teambuilder");
+              }}
+              onNavigateToProductionReadiness={() => {
+                setPrimaryTab("reports");
+                setSubView("production-readiness");
+              }}
             />
           )}
 
@@ -930,6 +985,14 @@ function DashboardPageContent() {
               metrics={metrics}
               onUpdateProject={handleProjectUpdate}
             />
+          )}
+
+          {subView === "layout-safe" && (
+            <LayoutSafeDeadlineCalculator />
+          )}
+
+          {subView === "production-readiness" && (
+            <ProductionReadinessChecklist />
           )}
 
           {subView === "export-report" && (

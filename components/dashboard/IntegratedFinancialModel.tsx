@@ -10,6 +10,7 @@ import {
   AlertCircle,
   ArrowRight,
   Link2,
+  Wrench,
 } from "lucide-react";
 import {
   DistributionChannel,
@@ -52,9 +53,10 @@ const DEFAULT_CHANNELS: DistributionChannel[] = [
 
 interface IntegratedFinancialModelProps {
   clientMode?: boolean;
+  onNavigateToTeamBuilder?: () => void;
 }
 
-export function IntegratedFinancialModel({ clientMode = false }: IntegratedFinancialModelProps) {
+export function IntegratedFinancialModel({ clientMode = false, onNavigateToTeamBuilder }: IntegratedFinancialModelProps) {
   const [unifiedModel] = useState(() => UnifiedProjectModel.getInstance());
   const [scenario, setScenario] = useState(unifiedModel.getProjectScenario());
   
@@ -95,15 +97,26 @@ export function IntegratedFinancialModel({ clientMode = false }: IntegratedFinan
 
   return (
     <div className="space-y-6">
-      {/* Data Flow Indicator */}
-      <div className="bg-slate-100 border border-slate-200 rounded-lg p-3 flex items-center justify-center gap-3 text-sm">
-        <span className="font-medium text-slate-600">Team Builder</span>
-        <ArrowRight className="w-4 h-4 text-slate-400" />
-        <span className="font-medium text-slate-600">Resource Validation</span>
-        <ArrowRight className="w-4 h-4 text-slate-400" />
-        <span className="font-medium text-slate-600">Scenario Engine</span>
-        <ArrowRight className="w-4 h-4 text-slate-400" />
-        <span className="font-bold text-emerald-600 bg-emerald-100 px-2 py-1 rounded">Financial Model</span>
+      {/* Data Flow Indicator with Edit Button */}
+      <div className="bg-slate-100 border border-slate-200 rounded-lg p-3 flex items-center justify-between">
+        <div className="flex items-center justify-center gap-3 text-sm flex-1">
+          <span className="font-medium text-slate-600">Team Builder</span>
+          <ArrowRight className="w-4 h-4 text-slate-400" />
+          <span className="font-medium text-slate-600">Resource Validation</span>
+          <ArrowRight className="w-4 h-4 text-slate-400" />
+          <span className="font-medium text-slate-600">Scenario Engine</span>
+          <ArrowRight className="w-4 h-4 text-slate-400" />
+          <span className="font-bold text-emerald-600 bg-emerald-100 px-2 py-1 rounded">Financial Model</span>
+        </div>
+        {onNavigateToTeamBuilder && (
+          <button
+            onClick={onNavigateToTeamBuilder}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg transition-all duration-200 hover:shadow-md ml-4"
+          >
+            <Wrench className="w-3 h-3" />
+            <span>Edit Team</span>
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

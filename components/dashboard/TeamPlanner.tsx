@@ -5,14 +5,17 @@ import { WriterLoad } from "@/lib/types";
 import { useTeamLoad } from "@/lib/TeamLoadContext";
 import { formatNumber } from "@/lib/utils";
 import { Tooltip } from "./Tooltip";
+import { Wrench } from "lucide-react";
 
 interface TeamPlannerProps {
   writers: WriterLoad[];
   clientMode?: boolean;
   onEditMember?: (memberId: string) => void;
+  onNavigateToTeamBuilder?: () => void;
 }
 
-export function TeamPlanner({ writers, clientMode = false, onEditMember }: TeamPlannerProps) {
+export function TeamPlanner({ writers, clientMode = false, onEditMember, onNavigateToTeamBuilder }: TeamPlannerProps) {
+
   const { getTeamTotalHours, teamLoads } = useTeamLoad();
   // Find the highest overloaded person for the warning banner
   const mostOverloaded = writers.reduce((max, writer) => {
@@ -39,25 +42,47 @@ export function TeamPlanner({ writers, clientMode = false, onEditMember }: TeamP
               : "Monitor workload and bottlenecks across all contributors."}
           </p>
         </div>
-        {!clientMode && (
-          <Tooltip 
-            content="Load = assigned hours ÷ annual capacity (weekly hours × 48 weeks). Bars turn red when assigned hours exceed capacity."
-            position="left"
-          >
-            <button className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-lg transition-colors">
-              <HelpCircle className="w-3.5 h-3.5" />
-              <span>How load % works</span>
+        <div className="flex items-center gap-2">
+          {!clientMode && onNavigateToTeamBuilder && (
+            <button 
+              onClick={onNavigateToTeamBuilder}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-all duration-200 hover:shadow-lg hover:scale-[1.02]"
+            >
+              <Wrench className="w-4 h-4" />
+              <span>Edit Team</span>
             </button>
-          </Tooltip>
-        )}
+          )}
+          {!clientMode && (
+            <Tooltip 
+              content="Load = assigned hours ÷ annual capacity (weekly hours × 48 weeks). Bars turn red when assigned hours exceed capacity."
+              position="left"
+            >
+              <button className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-lg transition-colors">
+                <HelpCircle className="w-3.5 h-3.5" />
+                <span>How load % works</span>
+              </button>
+            </Tooltip>
+          )}
+        </div>
       </div>
 
       {/* Bottleneck Warning Banner */}
       {hasBottleneck && !clientMode && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
           <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
-          <div>
-            <h4 className="font-bold text-red-800">Resource Bottleneck Detected</h4>
+          <div className="flex-1">
+            <div className="flex items-start justify-between">
+              <h4 className="font-bold text-red-800">Resource Bottleneck Detected</h4>
+              {onNavigateToTeamBuilder && (
+                <button 
+                  onClick={onNavigateToTeamBuilder}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md"
+                >
+                  <Wrench className="w-3.5 h-3.5" />
+                  <span>Resolve in Team Builder</span>
+                </button>
+              )}
+            </div>
             <p className="text-sm text-red-700 mt-1">
               <strong>{mostOverloaded.name}</strong> is at <strong>{mostOverloadedPercent}%</strong> capacity 
               ({formatNumber(mostOverloaded.totalHours)}h assigned vs {formatNumber(mostOverloaded.annualCapacity)}h available annually).
@@ -123,14 +148,26 @@ export function TeamPlanner({ writers, clientMode = false, onEditMember }: TeamP
               </div>
               
               {/* Edit Details Button */}
-              {!clientMode && onEditMember && (
-                <button
-                  onClick={() => onEditMember(writer.id)}
-                  className="w-full mb-4 flex items-center justify-center gap-2 px-3 py-2 bg-slate-100 hover:bg-indigo-100 text-slate-700 hover:text-indigo-700 text-sm font-medium rounded-lg border border-slate-200 hover:border-indigo-300 transition-all duration-200"
-                >
-                  <Edit2 className="w-4 h-4" />
-                  <span>Edit Details</span>
-                </button>
+              {!clientMode && (
+                <>
+                  {onEditMember ? (
+                    <button
+                      onClick={() => onEditMember(writer.id)}
+                      className="w-full mb-4 flex items-center justify-center gap-2 px-3 py-2 bg-slate-100 hover:bg-indigo-100 text-slate-700 hover:text-indigo-700 text-sm font-medium rounded-lg border border-slate-200 hover:border-indigo-300 transition-all duration-200"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                      <span>Edit Details</span>
+                    </button>
+                  ) : onNavigateToTeamBuilder ? (
+                    <button
+                      onClick={onNavigateToTeamBuilder}
+                      className="w-full mb-4 flex items-center justify-center gap-2 px-3 py-2 bg-slate-100 hover:bg-indigo-100 text-slate-700 hover:text-indigo-700 text-sm font-medium rounded-lg border border-slate-200 hover:border-indigo-300 transition-all duration-200"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                      <span>Edit Details</span>
+                    </button>
+                  ) : null}
+                </>
               )}
 
               <div className="space-y-2">

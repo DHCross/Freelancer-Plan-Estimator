@@ -10,6 +10,7 @@ import {
   EmployeeEstimateConfig 
 } from "@/lib/employee-estimate-generator";
 import { todayISO } from "@/lib/calculations";
+import { DocumentWordCounter } from "./DocumentWordCounter";
 
 interface EmployeeEstimateReportProps {
   projects: DisplayProject[];
@@ -355,6 +356,12 @@ export function EmployeeEstimateReport({ projects, metrics, teamRoster, clientMo
                 />
               </label>
             </div>
+            
+            {/* Document Word Counter */}
+            <DocumentWordCounter
+              label="Calculate from Files"
+              onApplyTotal={(wordCount) => setExistingWords(wordCount)}
+            />
           </div>
 
           {/* Pacing Section */}
