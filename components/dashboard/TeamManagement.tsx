@@ -269,11 +269,14 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
           </div>
 
           <div className="space-y-4">
-            {teamMembers.map((member, index) => (
+            {teamMembers.map((member, index) => {
+              const isEditingMember = editingMember?.id === member.id;
+
+              return (
               <div
                 key={member.id}
-                draggable
-                onDragStart={() => handleDragStart(member.id)}
+                draggable={!isEditingMember}
+                onDragStart={isEditingMember ? undefined : () => handleDragStart(member.id)}
                 onDragOver={handleDragOver}
                 onDrop={() => handleDrop(member.id)}
                 className={`border border-slate-200 rounded-lg p-4 transition-all ${
@@ -433,7 +436,8 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
                   </div>
                 )}
               </div>
-            ))}
+              );
+            })}
 
             {isAddingNew && editingMember && (
               <div className="border border-dashed border-indigo-300 rounded-lg p-4 bg-indigo-50">
