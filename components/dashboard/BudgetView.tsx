@@ -481,18 +481,18 @@ export function BudgetView({ analysis, quarters, clientMode, onProjectUpdate }: 
                     >
                       {/* Selection Checkbox (Internal Mode) */}
                       {!clientMode && (
-                        <div className="absolute top-2 left-2">
+                        <div className="absolute top-2 left-2 flex items-center">
                           <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => toggleSelection(item.id)}
-                            className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                            className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 mr-2"
                           />
                         </div>
                       )}
                       
                       {/* Project Content */}
-                      <div className={isSelected ? 'ml-6' : ''}>
+                      <div className={isSelected ? 'ml-8' : ''}>
                         {clientMode ? (
                           // Client view - read-only
                           <div>
