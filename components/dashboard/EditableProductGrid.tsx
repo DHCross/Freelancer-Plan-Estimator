@@ -284,13 +284,15 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
               return (
                 <tr key={project.id} className={`${rowClass} hover:bg-slate-50 transition-colors`}>
                   <td className={`px-3 ${isCompact ? "py-2" : "py-3"}`}>
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => handleToggleSelection(project.id)}
-                      className="w-4 h-4 cursor-pointer"
-                      title="Select this product for bulk actions"
-                    />
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleToggleSelection(project.id)}
+                        className="w-4 h-4 cursor-pointer mr-2"
+                        title="Select this product for bulk actions"
+                      />
+                    </div>
                   </td>
                   <td className={`px-4 ${isCompact ? "py-2" : "py-3"}`}>
                     {isEditing ? (

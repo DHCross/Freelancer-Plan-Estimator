@@ -152,7 +152,17 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
   };
 
   const handleSaveMember = () => {
-    if (!editingMember || !editingMember.name.trim() || !editingMember.role.trim()) return;
+    if (!editingMember) return;
+
+    if (!editingMember.name.trim()) {
+      showToast("Name is required", "error");
+      return;
+    }
+
+    if (!editingMember.role.trim()) {
+      showToast("Role is required", "error");
+      return;
+    }
 
     const normalized: TeamMember = {
       ...editingMember,
@@ -303,7 +313,7 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
                             className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
                             value={editingMember.role}
                             onChange={(e) => handleFieldChange("role", e.target.value)}
-                            placeholder="Enter role or select template"
+                            placeholder="Enter any role or select from templates"
                           />
                           <select
                             className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"

@@ -55,30 +55,56 @@ export function QuickEstimator({ teamRoster }: { teamRoster: TeamMember[] }) {
   const [selectedComplexity, setComplexity] = useState(COMPLEXITY[0]);
   const [selectedMember, setMember] = useState(defaultMember);
   const [showBufferBreakdown, setShowBufferBreakdown] = useState(false);
+  const [dailyHours, setDailyHours] = useState(4);
+  const [useMemberBuffer, setUseMemberBuffer] = useState(true);
+  const [customBufferPercent, setCustomBufferPercent] = useState(15);
+  const [copiedSummary, setCopiedSummary] = useState(false);
 
   const member = useMemo(() => teamRoster.find((m) => m.id === selectedMember), [selectedMember, teamRoster]);
   const speed = member ? Math.max(50, Math.round(member.draftSpeed * selectedComplexity.multiplier)) : 200;
+  const baseBufferPercent = member?.chaosBuffer ?? 15;
+  const effectiveBufferPercent = useMemberBuffer ? baseBufferPercent : customBufferPercent;
 
   const result = runEstimator({
     activity: `${selectedSize.label} estimate`,
     totalWords: selectedSize.words,
     draftSpeed: speed,
-    bufferPercent: member?.chaosBuffer ?? 15,
-    dailyHours: 4,
+    bufferPercent: effectiveBufferPercent,
+    dailyHours,
     teamMemberId: member?.id,
   });
 
   const timeColor = getTimeColor(result.hours);
   
   // Calculate raw vs buffered time
-  const bufferPercent = member?.chaosBuffer ?? 15;
-  const rawHours = Math.round(result.hours / (1 + bufferPercent / 100));
+  const rawHours = Math.round(result.hours / (1 + effectiveBufferPercent / 100));
   const bufferHours = result.hours - rawHours;
 
   // Check if finish date is on weekend
   const finishDate = parseISO(result.date);
   const isWeekendFinish = isWeekend(finishDate);
   const finishDayName = format(finishDate, "EEEE");
+
+  const handleCopySummary = async () => {
+    const summary = [
+      "Quick Estimate",
+      `Size: ${selectedSize.label} (${selectedSize.words.toLocaleString()} words)`,
+      `Complexity: ${selectedComplexity.label}`,
+      `Owner: ${member?.name ?? "Unassigned"}`,
+      `Estimated time: ${result.hours} hrs (~${result.days} days)`,
+      `Finish by: ${format(finishDate, "MMM d, yyyy")}`,
+      `Daily focus: ${dailyHours} hrs/day`,
+      `Buffer: ${effectiveBufferPercent}%`,
+    ].join("\n");
+
+    try {
+      await navigator.clipboard.writeText(summary);
+      setCopiedSummary(true);
+      setTimeout(() => setCopiedSummary(false), 2000);
+    } catch {
+      // no-op
+    }
+  };
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -204,6 +230,54 @@ export function QuickEstimator({ teamRoster }: { teamRoster: TeamMember[] }) {
             })}
           </div>
         </div>
+
+        {/* Schedule assumptions */}
+        <div>
+          <p className="text-xs font-bold uppercase text-slate-400 mb-3">Schedule assumptions</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <label className="block">
+              <span className="text-xs font-medium text-slate-600">Daily focus hours</span>
+              <input
+                type="number"
+                min={1}
+                max={12}
+                value={dailyHours}
+                onChange={(e) => setDailyHours(Number(e.target.value))}
+                className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
+              />
+              <span className="text-[10px] text-slate-400">Assumes a 5-day workweek</span>
+            </label>
+            <label className="flex items-center gap-2 text-sm text-slate-600">
+              <input
+                type="checkbox"
+                checked={useMemberBuffer}
+                onChange={() => {
+                  setUseMemberBuffer((prev) => {
+                    if (prev) {
+                      setCustomBufferPercent(baseBufferPercent);
+                    }
+                    return !prev;
+                  });
+                }}
+                className="rounded border-slate-300"
+              />
+              Use member chaos buffer
+            </label>
+            <label className="block">
+              <span className="text-xs font-medium text-slate-600">Buffer %</span>
+              <input
+                type="number"
+                min={0}
+                max={50}
+                value={effectiveBufferPercent}
+                onChange={(e) => setCustomBufferPercent(Number(e.target.value))}
+                disabled={useMemberBuffer}
+                className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm disabled:bg-slate-100 disabled:text-slate-400"
+              />
+              <span className="text-[10px] text-slate-400">Protects against chaos</span>
+            </label>
+          </div>
+        </div>
       </div>
 
       {/* Results - Floating Card Style */}
@@ -257,7 +331,7 @@ export function QuickEstimator({ teamRoster }: { teamRoster: TeamMember[] }) {
               ) : (
                 <div className="text-lg font-medium mt-1 text-emerald-400 flex items-center gap-1 lg:justify-end">
                   <CheckCircle className="w-4 h-4" />
-                  +{bufferPercent}% protected
+                  +{effectiveBufferPercent}% protected
                 </div>
               )}
             </button>
@@ -278,6 +352,15 @@ export function QuickEstimator({ teamRoster }: { teamRoster: TeamMember[] }) {
             </div>
           </div>
         )}
+        <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-400">
+          <button
+            onClick={handleCopySummary}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100 text-xs font-medium"
+          >
+            {copiedSummary ? "Copied summary" : "Copy summary"}
+          </button>
+          <span>Includes size, complexity, finish date, and buffer.</span>
+        </div>
       </div>
     </div>
   );
