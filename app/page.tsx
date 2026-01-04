@@ -26,7 +26,6 @@ import {
   CAPACITY_GAP_STATS,
   DEFAULT_METRICS,
   INITIAL_PROJECTS,
-  LEGACY_GHOST_CAPACITY,
   ORPHANED_ASSETS,
   PRODUCTION_PHASES,
   REPLACEMENT_ROLES,
@@ -53,13 +52,14 @@ import {
   EfficiencyView,
   MethodologyView,
   ProjectStatusView,
-  PurgeView,
   TeamPlanner,
   DossierView,
   CartographyPlanner,
   ArtBudgetView,
   LayoutSafeDeadlineCalculator,
   ProductionReadinessChecklist,
+  ProductLinesView,
+  TeamHealthDashboard,
 } from "@/components/dashboard";
 import { ScenarioWorkspace } from "@/components/dashboard/scenarios/ScenarioWorkspace";
 import { FailureAnalysis } from "@/components/dashboard/FailureAnalysis";
@@ -107,6 +107,7 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
             label: "Projects",
             description: "Product catalog and budgets",
             items: [
+              { id: "product-lines", label: "Product Lines", icon: BookOpen },
               { id: "products", label: "Product Listing", icon: Briefcase },
               { id: "budget", label: "Budget & Timeline", icon: Calendar },
             ],
@@ -303,7 +304,6 @@ function DashboardPageContent() {
   const [subView, setSubView] = useState("dashboard");
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isPresentationMode, setIsPresentationMode] = useState(false);
-  const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
 
   // ========== DATA STATE ==========
   const [projects, setProjects] = useState(() => {
@@ -488,18 +488,7 @@ function DashboardPageContent() {
       } else {
         setSubView(DEFAULT_SUBVIEWS[validTab]);
       }
-      // Clear editing member ID when navigating away from teambuilder
-      if (subTab !== "teambuilder") {
-        setEditingMemberId(null);
-      }
     }
-  }, []);
-
-  // Handler to navigate to team builder with a specific member to edit
-  const handleEditMember = useCallback((memberId: string) => {
-    setEditingMemberId(memberId);
-    setPrimaryTab("team");
-    setSubView("teambuilder");
   }, []);
 
   const handleExportData = () => {
@@ -710,6 +699,7 @@ function DashboardPageContent() {
               {subView === "integrated" && "Resource Validation"}
               {subView === "scenarios" && "Scenario Engine"}
               {subView === "status" && "Task Board"}
+              {subView === "product-lines" && "Product Lines"}
               {subView === "products" && "Product Listing"}
               {subView === "budget" && "Budget & Timeline"}
               {subView === "methodology" && "How We Build"}
@@ -763,9 +753,25 @@ function DashboardPageContent() {
             />
           )}
 
+          {subView === "product-lines" && (
+            <ProductLinesView projects={analysisWithDisplay} teamRoster={teamRoster} />
+          )}
+
           {subView === "products" && (
             <ProductProvider initialProducts={projects} onProductsChange={(p) => setProjects(p)}>
-              <ProductListingView teamRoster={teamRoster} />
+              <ProductListingView
+                teamRoster={teamRoster}
+                onNavigateToProductLines={(lineId) => {
+                  setSubView("product-lines");
+                  // Scroll to line anchor if provided
+                  if (lineId && typeof window !== "undefined") {
+                    setTimeout(() => {
+                      const el = document.getElementById(`product-line-${lineId}`);
+                      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }, 150);
+                  }
+                }}
+              />
             </ProductProvider>
           )}
 
@@ -810,7 +816,6 @@ function DashboardPageContent() {
             <TeamPlanner 
               writers={writerLoad} 
               clientMode={isClientMode} 
-              onEditMember={handleEditMember}
               onNavigateToTeamBuilder={() => setSubView("teambuilder")}
             />
           )}
@@ -821,7 +826,6 @@ function DashboardPageContent() {
                 teamMembers={teamRoster}
                 onUpdateTeamMembers={handleTeamMemberUpdate}
                 clientMode={isClientMode}
-                initialEditMemberId={editingMemberId}
               />
               <TeamConfiguration clientMode={isClientMode} />
             </div>
@@ -831,7 +835,11 @@ function DashboardPageContent() {
             isClientMode ? (
               <CapacityGapView {...CAPACITY_GAP_STATS} />
             ) : (
-              <PurgeView ghostCapacity={LEGACY_GHOST_CAPACITY} />
+              <TeamHealthDashboard
+                writers={writerLoad}
+                projects={analysisWithDisplay}
+                teamRoster={teamRoster}
+              />
             )
           )}
 

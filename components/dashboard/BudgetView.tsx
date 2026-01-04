@@ -479,20 +479,8 @@ export function BudgetView({ analysis, quarters, clientMode, onProjectUpdate }: 
                           : "border-slate-400 bg-slate-50 hover:bg-slate-100"
                       }`}
                     >
-                      {/* Selection Checkbox (Internal Mode) */}
-                      {!clientMode && (
-                        <div className="absolute top-2 left-2">
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => toggleSelection(item.id)}
-                            className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
-                          />
-                        </div>
-                      )}
-                      
                       {/* Project Content */}
-                      <div className={isSelected ? 'ml-6' : ''}>
+                      <div>
                         {clientMode ? (
                           // Client view - read-only
                           <div>
@@ -513,16 +501,38 @@ export function BudgetView({ analysis, quarters, clientMode, onProjectUpdate }: 
                           // Internal view - with edit controls
                           <div className="space-y-2">
                             {/* Project Header with Edit Toggle */}
-                            <div className="flex justify-between items-center mb-2 border-b border-slate-200 pb-1">
+                            <div className="flex justify-between items-center mb-2 border-b border-slate-200 pb-1 gap-2">
                               {isEditing ? (
-                                <input
-                                  type="text"
-                                  value={item.name}
-                                  onChange={e => updateItem(item.id, "name", e.target.value)}
-                                  className="font-bold text-indigo-900 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none px-1 truncate pr-2 flex-1"
-                                />
+                                <div className="flex items-center gap-2 flex-1 min-w-0">
+                                  {!clientMode && (
+                                    <input
+                                      type="checkbox"
+                                      checked={isSelected}
+                                      onChange={() => toggleSelection(item.id)}
+                                      className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                                      title="Select for bulk actions"
+                                    />
+                                  )}
+                                  <input
+                                    type="text"
+                                    value={item.name}
+                                    onChange={e => updateItem(item.id, "name", e.target.value)}
+                                    className="font-bold text-indigo-900 bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 focus:outline-none px-1 truncate pr-2 flex-1"
+                                  />
+                                </div>
                               ) : (
-                                <span className="font-bold text-indigo-900 truncate flex-1">{item.name}</span>
+                                <div className="flex items-center gap-2 flex-1 min-w-0">
+                                  {!clientMode && (
+                                    <input
+                                      type="checkbox"
+                                      checked={isSelected}
+                                      onChange={() => toggleSelection(item.id)}
+                                      className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                                      title="Select for bulk actions"
+                                    />
+                                  )}
+                                  <span className="font-bold text-indigo-900 truncate flex-1">{item.name}</span>
+                                </div>
                               )}
                               <div className="flex items-center gap-1">
                                 <span className="font-mono font-bold text-green-600 text-xs">${Math.round(cost).toLocaleString()}</span>

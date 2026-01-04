@@ -11,6 +11,7 @@ import {
   OrphanedAsset,
   ArtTierConfig,
   MapComplexity,
+  ProductLine,
 } from "./types";
 
 export const TEAM_ROSTER: TeamMember[] = [
@@ -152,6 +153,33 @@ export const ROLE_TEMPLATES = {
     description: "Creates maps and cartographic assets"
   }
 };
+
+export const PRODUCT_LINES: ProductLine[] = [
+  {
+    id: "chaos-rising",
+    label: "Chaos Rising (A-Series)",
+    owner: "Martin",
+    color: "#f97316",
+    description: "Flagship narrative line spanning A0–A4 plus supporting canon.",
+    productIds: [6, 7, 11, 12, 13, 15, 16, 17, 14],
+  },
+  {
+    id: "eldritch",
+    label: "Eldritch 2E + Core IP",
+    owner: "Matthew",
+    color: "#3b82f6",
+    description: "Core IP protection, Dec 22 launch window, non-negotiable milestones.",
+    productIds: [1],
+  },
+  {
+    id: "infrastructure",
+    label: "Infrastructure & Scaffolding",
+    owner: "Dan",
+    color: "#10b981",
+    description: "Scaffolding and system reliability that unblock the A-series schedule.",
+    productIds: [2, 3, 4, 5],
+  },
+];
 
 export const INITIAL_PROJECTS: Project[] = [
   // Martin's Chaos Rising Product Line

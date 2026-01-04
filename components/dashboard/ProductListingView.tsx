@@ -10,6 +10,7 @@ import { useTeamLoad } from "@/lib/TeamLoadContext";
 
 interface ProductListingViewProps {
   teamRoster: TeamMember[];
+  onNavigateToProductLines?: (productLineId?: string) => void;
 }
 
 // Simple internal toast component
@@ -27,7 +28,7 @@ function Toast({ message, onClose }: { message: string; onClose: () => void }) {
   );
 }
 
-export function ProductListingView({ teamRoster }: ProductListingViewProps) {
+export function ProductListingView({ teamRoster, onNavigateToProductLines }: ProductListingViewProps) {
   const { products, updateProductField, saveProductChanges } = useProducts();
   const { updateTeamLoad } = useTeamLoad();
 
@@ -121,7 +122,7 @@ export function ProductListingView({ teamRoster }: ProductListingViewProps) {
         </div>
       )}
 
-      <EditableProductGrid teamRoster={teamRoster} />
+      <EditableProductGrid teamRoster={teamRoster} onNavigateToProductLines={onNavigateToProductLines} />
       {toastMessage && <Toast message={toastMessage} onClose={() => setToastMessage(null)} />}
     </div>
   );

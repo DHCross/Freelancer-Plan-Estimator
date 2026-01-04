@@ -78,6 +78,15 @@ export interface ProjectAnalysis extends Project {
   estCost: number;
 }
 
+export interface ProductLine {
+  id: string;
+  label: string;
+  owner: Stakeholder;
+  color: string;
+  description: string;
+  productIds: number[];
+}
+
 export interface StakeholderDemand {
   stakeholder: Stakeholder;
   internalLabel: string;

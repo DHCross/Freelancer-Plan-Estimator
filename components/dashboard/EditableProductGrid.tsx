@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Save, X, AlertCircle, Trash2, Filter } from "lucide-react";
+import { Save, X, AlertCircle, Trash2, Filter, ChevronDown } from "lucide-react";
 import { Project, TeamMember } from "@/lib/types";
 import { useProducts } from "@/lib/ProductContext";
+import { PRODUCT_LINES } from "@/lib/constants";
 
 const STATUSES = [
   { value: "draft", label: "Drafting", color: "bg-blue-100 text-blue-800 border-blue-300", priority: 2 },
@@ -22,10 +23,12 @@ const FILTER_OPTIONS = [
   { value: "cleanup", label: "Cleanup" },
   { value: "planning", label: "Planning" },
   { value: "production", label: "Production" },
+  { value: "complete", label: "Complete" },
 ];
 
 interface EditableProductGridProps {
   teamRoster: TeamMember[];
+  onNavigateToProductLines?: (productLineId?: string) => void;
 }
 
 /**
@@ -39,18 +42,42 @@ interface EditableProductGridProps {
  * - If a project is "Completed", this is shown clearly in the Status dropdown
  * - Strikethrough styling is NOT used to avoid confusion
  */
-export function EditableProductGrid({ teamRoster }: EditableProductGridProps) {
+export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: EditableProductGridProps) {
   const { products, updateProductField, saveProductChanges, discardProductChanges, getPendingChangesForProject, hasUnsavedChanges } =
     useProducts();
   const [editingId, setEditingId] = useState<number | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [ownerFilter, setOwnerFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [productLineFilter, setProductLineFilter] = useState<string>("all");
   const [isCompact, setIsCompact] = useState(false);
 
   const teamOptions = useMemo(
     () => teamRoster.map((t) => ({ id: t.id, name: t.name })),
     [teamRoster]
   );
+
+  const uniqueTypes = useMemo(() => {
+    const set = new Set<string>();
+    products.forEach((p) => set.add(p.type));
+    return ["all", ...Array.from(set)];
+  }, [products]);
+
+  const productLineByProjectId = useMemo(() => {
+    const map = new Map<number, string>();
+    PRODUCT_LINES.forEach((line) => {
+      line.productIds.forEach((pid) => map.set(pid, line.id));
+    });
+    return map;
+  }, []);
+
+  const productLineOptions = useMemo(() => {
+    return [
+      { value: "all", label: "All" },
+      ...PRODUCT_LINES.map((line) => ({ value: line.id, label: line.label })),
+    ];
+  }, []);
 
   // Filter and sort products
   const filteredAndSortedProducts = useMemo(() => {
@@ -59,6 +86,21 @@ export function EditableProductGrid({ teamRoster }: EditableProductGridProps) {
     // Apply status filter
     if (statusFilter !== "all") {
       filtered = filtered.filter(p => p.internalStatus === statusFilter);
+    }
+
+    // Apply owner filter
+    if (ownerFilter !== "all") {
+      filtered = filtered.filter((p) => p.assignedTo === ownerFilter);
+    }
+
+    // Apply type filter
+    if (typeFilter !== "all") {
+      filtered = filtered.filter((p) => p.type === typeFilter);
+    }
+
+    // Apply product line filter (by membership in PRODUCT_LINES)
+    if (productLineFilter !== "all") {
+      filtered = filtered.filter((p) => productLineByProjectId.get(p.id) === productLineFilter);
     }
     
     // Sort by launch window ascending, then by status priority (production first)
@@ -72,7 +114,7 @@ export function EditableProductGrid({ teamRoster }: EditableProductGridProps) {
       const bPriority = STATUSES.find(s => s.value === b.internalStatus)?.priority ?? 99;
       return aPriority - bPriority;
     });
-  }, [products, statusFilter]);
+  }, [products, statusFilter, ownerFilter, typeFilter, productLineFilter, productLineByProjectId]);
 
   const handleToggleSelection = (projectId: number) => {
     setSelectedIds((prev) => {
@@ -112,35 +154,99 @@ export function EditableProductGrid({ teamRoster }: EditableProductGridProps) {
     <div className="space-y-4">
       {/* Filter Bar */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="flex items-center gap-2">
-          <Filter className="w-4 h-4 text-slate-400" />
-          <div className="flex gap-1">
-            {FILTER_OPTIONS.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => setStatusFilter(option.value)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${
-                  statusFilter === option.value
-                    ? "bg-blue-600 text-white"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2 text-slate-600 text-sm">
+            <Filter className="w-4 h-4 text-slate-400" />
+            <span className="font-medium">Filters</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-slate-500">Status</label>
+            <div className="relative">
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="appearance-none pr-8 pl-3 py-2 text-xs border border-slate-300 rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
               >
-                {option.label}
-                {option.value !== "all" && (
-                  <span className="ml-1 text-[10px] opacity-75">
-                    ({products.filter(p => p.internalStatus === option.value).length})
-                  </span>
-                )}
-              </button>
-            ))}
+                {FILTER_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2 top-2.5 pointer-events-none" />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-slate-500">Owner</label>
+            <div className="relative">
+              <select
+                value={ownerFilter}
+                onChange={(e) => setOwnerFilter(e.target.value)}
+                className="appearance-none pr-8 pl-3 py-2 text-xs border border-slate-300 rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+              >
+                <option value="all">All</option>
+                {teamOptions.map((team) => (
+                  <option key={team.id} value={team.id}>{team.name}</option>
+                ))}
+              </select>
+              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2 top-2.5 pointer-events-none" />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-slate-500">Type</label>
+            <div className="relative">
+              <select
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+                className="appearance-none pr-8 pl-3 py-2 text-xs border border-slate-300 rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+              >
+                {uniqueTypes.map((type) => (
+                  <option key={type} value={type}>{type === "all" ? "All" : type}</option>
+                ))}
+              </select>
+              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2 top-2.5 pointer-events-none" />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-slate-500">Product Line</label>
+            <div className="relative">
+              <select
+                value={productLineFilter}
+                onChange={(e) => setProductLineFilter(e.target.value)}
+                className="appearance-none pr-8 pl-3 py-2 text-xs border border-slate-300 rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+              >
+                {productLineOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2 top-2.5 pointer-events-none" />
+            </div>
           </div>
         </div>
-        <button
-          onClick={() => setIsCompact(!isCompact)}
-          className="text-xs text-slate-500 hover:text-slate-700 px-2 py-1 rounded hover:bg-slate-100"
-        >
-          {isCompact ? "Comfortable" : "Compact"} view
-        </button>
+
+        <div className="flex items-center gap-2 text-xs text-slate-500">
+          <button
+            onClick={() => {
+              setStatusFilter("all");
+              setOwnerFilter("all");
+              setTypeFilter("all");
+              setProductLineFilter("all");
+            }}
+            className="px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600"
+            title="Clear all filters"
+          >
+            Reset
+          </button>
+          <button
+            onClick={() => setIsCompact(!isCompact)}
+            className="text-xs text-slate-500 hover:text-slate-700 px-2 py-1 rounded hover:bg-slate-100"
+          >
+            {isCompact ? "Comfortable" : "Compact"} view
+          </button>
+        </div>
       </div>
 
       <div className="overflow-x-auto rounded-lg border border-slate-200">
@@ -158,6 +264,7 @@ export function EditableProductGrid({ teamRoster }: EditableProductGridProps) {
               </th>
               <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-left text-xs font-semibold text-slate-600 uppercase`}>Project Name</th>
               <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-left text-xs font-semibold text-slate-600 uppercase`}>Description</th>
+              <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-left text-xs font-semibold text-slate-600 uppercase`}>Product Line</th>
               <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-left text-xs font-semibold text-slate-600 uppercase`}>Owner</th>
               <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-left text-xs font-semibold text-slate-600 uppercase`}>Status</th>
               <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-left text-xs font-semibold text-slate-600 uppercase`}>Launch Window</th>
@@ -209,6 +316,21 @@ export function EditableProductGrid({ teamRoster }: EditableProductGridProps) {
                       />
                     ) : (
                       <span className="text-sm text-slate-600">{displayData.type}</span>
+                    )}
+                  </td>
+                  <td className={`px-4 ${isCompact ? "py-2" : "py-3"}`}>
+                    <span className="text-sm text-slate-600">
+                      {productLineByProjectId.get(project.id)
+                        ? PRODUCT_LINES.find((pl) => pl.id === productLineByProjectId.get(project.id))?.label
+                        : "—"}
+                    </span>
+                    {!isEditing && onNavigateToProductLines && productLineByProjectId.get(project.id) && (
+                      <button
+                        className="block text-[11px] text-indigo-600 hover:text-indigo-800 mt-1"
+                        onClick={() => onNavigateToProductLines(productLineByProjectId.get(project.id) as string)}
+                      >
+                        View line
+                      </button>
                     )}
                   </td>
                   <td className={`px-4 ${isCompact ? "py-2" : "py-3"}`}>
