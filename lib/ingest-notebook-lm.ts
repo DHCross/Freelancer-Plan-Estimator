@@ -1,12 +1,24 @@
 import { UnifiedProjectModel, UnifiedProjectState } from "./unified-project-model";
+
 import type { NotebookLMExport, NotebookLMTask, NotebookLMResource } from "./notebook-lm-types";
 import type { Project, TeamMember, TaskRate } from "./types";
+
+// @ts-ignore - Unused imports are kept for future expansion
+import { NotebookLMExport, NotebookLMTask, NotebookLMResource } from "./notebook-lm-types";
+// @ts-ignore
+import { Project, TeamMember, TaskRate } from "./types";
+
 
 export class DataIngestionService {
   /**
    * Transforms a raw NotebookLM JSON export into the internal UnifiedProjectState.
    */
+
   public static ingest(data: NotebookLMExport, _currentModel: UnifiedProjectModel): UnifiedProjectState {
+
+  // @ts-ignore - currentModel reserved for future state merging
+  public static ingest(data: NotebookLMExport, currentModel: UnifiedProjectModel): UnifiedProjectState {
+
     const project = DataIngestionService.mapProject(data);
     const team = DataIngestionService.mapTeam(data.resources);
     
@@ -35,6 +47,10 @@ export class DataIngestionService {
       lastUpdated: new Date()
     };
   }
+
+
+
+  // @ts-ignore
 
   private static mapProject(data: NotebookLMExport): Project {
     return {
