@@ -201,7 +201,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [timeoutId, hideTooltip]);
 
   const Icon = content.icon;
 
