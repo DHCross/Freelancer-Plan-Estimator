@@ -14,20 +14,24 @@ export function NotebookLMImporter() {
   const handleImport = () => {
     try {
       const parsed = JSON.parse(jsonInput);
-      
+
       // In a real app, we'd get the actual singleton instance or context
       // For now, we simulate the ingestion to validate format
       // forcing a type check implicitly via the function call
-      
-      const result = DataIngestionService.ingest(parsed);
-      
+
+      // We are "faking" the model instance passed in because the service 
+      // is currently stateless in our implementation
+      const modelStub = {} as UnifiedProjectModel;
+
+      const result = DataIngestionService.ingest(parsed, modelStub);
+
       console.log("Ingestion Result:", result);
       setStatus("success");
       setErrorMessage("");
-      
+
       // Here we would dispatch to context, e.g.:
       // addProjectFromImport(result);
-      
+
     } catch (e: any) {
       console.error(e);
       setStatus("error");
@@ -41,7 +45,7 @@ export function NotebookLMImporter() {
         <FileJson className="w-5 h-5 text-indigo-400" />
         <h3>NotebookLM Project Injection</h3>
       </div>
-      
+
       <div className="text-sm text-slate-400">
         Paste the raw JSON output from the NotebookLM audit to inject schedule, tasks, and financial constraints directly into the planning engine.
       </div>
@@ -67,8 +71,8 @@ export function NotebookLMImporter() {
         <div className="bg-emerald-950/30 border border-emerald-900/50 text-emerald-200 text-sm p-3 rounded flex items-center gap-2">
           <CheckCircle className="w-4 h-4" />
           <div>
-             <div className="font-semibold">Injection Successful</div>
-             <div className="text-xs opacity-80">Project milestones and constraints updated.</div>
+            <div className="font-semibold">Injection Successful</div>
+            <div className="text-xs opacity-80">Project milestones and constraints updated.</div>
           </div>
         </div>
       )}
