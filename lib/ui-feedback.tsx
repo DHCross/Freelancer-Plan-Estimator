@@ -284,10 +284,11 @@ export const useDebouncedValidation = (
     return () => clearTimeout(timer);
   }, [value, delay]);
 
-  useEffect(() => {
-    const validationError = validateField(debouncedValue, rules);
+  const validationError = React.useMemo(() => validateField(debouncedValue, rules), [debouncedValue, rules]);
+
+  React.useLayoutEffect(() => {
     setError(validationError);
-  }, [debouncedValue, rules]);
+  }, [validationError]);
 
   return error;
 };
