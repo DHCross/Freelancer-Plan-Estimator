@@ -27,7 +27,7 @@ export const TEAM_ROSTER: TeamMember[] = [
   {
     id: "martin",
     name: "Martin",
-    role: "Marketing & Creative Strategy Lead / Primary Narrative Author",
+    role: "Visionary Lead / Creative Engine / Primary Author",
     hourlyRate: 50,
     weeklyCapacity: 15,
     draftSpeed: 400,
@@ -161,7 +161,7 @@ export const INITIAL_PROJECTS: Project[] = [
     type: "Small Adventure",
     clientType: "Revenue Accelerator",
     targetWords: 20000,
-    assignedTo: "martin",
+    assignedTo: "dan",
     internalStatus: "Layout",
     clientStatus: "Urgent",
     stakeholder: "Martin",
@@ -174,7 +174,7 @@ export const INITIAL_PROJECTS: Project[] = [
     revenuePotential: "Quick Win Hook",
     manualHours: 32, // Based on Audit: 2h + 6h + 24h
     layoutHours: 40, // Based on Audit: 40h
-    benchmarkNotes: "Urgent fix: NotebookLM audit indicates critical path compression."
+    benchmarkNotes: "Urgent fix: Survival Mode active (See A0 Checklist). NotebookLM audit confirmed."
   },
   {
     id: 7,

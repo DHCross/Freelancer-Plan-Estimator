@@ -60,6 +60,8 @@ import {
   ArtBudgetView,
   LayoutSafeDeadlineCalculator,
   ProductionReadinessChecklist,
+  A0SurvivalChecklist,
+  MartinWorkloadView,
 } from "@/components/dashboard";
 import { ScenarioWorkspace } from "@/components/dashboard/scenarios/ScenarioWorkspace";
 import { FailureAnalysis } from "@/components/dashboard/FailureAnalysis";
@@ -188,6 +190,8 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
               { id: "deadline-estimator", label: "Deadline Estimator", icon: Calendar },
               { id: "layout-safe", label: "Layout-Safe Calculator", icon: Shield },
               { id: "production-readiness", label: "Production Readiness Checklist", icon: Lock },
+              { id: "a0-survival", label: "A0: Survival Checklist", icon: AlertTriangle },
+              { id: "martin-workload", label: "Stakeholder: Martin's Brief", icon: Users },
               { id: "export-report", label: "Export Report", icon: FileText },
               { id: "lessons-learned", label: "Lessons Learned", icon: Lightbulb },
             ],
@@ -996,6 +1000,14 @@ function DashboardPageContent() {
 
           {subView === "production-readiness" && (
             <ProductionReadinessChecklist />
+          )}
+
+          {subView === "a0-survival" && (
+            <A0SurvivalChecklist />
+          )}
+
+          {subView === "martin-workload" && (
+            <MartinWorkloadView />
           )}
 
           {subView === "export-report" && (
