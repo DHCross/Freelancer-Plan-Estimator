@@ -28,7 +28,7 @@ export const TEAM_ROSTER: TeamMember[] = [
   {
     id: "martin",
     name: "Martin",
-    role: "Marketing & Creative Strategy Lead / Primary Narrative Author",
+    role: "Visionary Lead / Creative Engine / Primary Author",
     hourlyRate: 50,
     weeklyCapacity: 15,
     draftSpeed: 400,
@@ -189,18 +189,20 @@ export const INITIAL_PROJECTS: Project[] = [
     type: "Small Adventure",
     clientType: "Revenue Accelerator",
     targetWords: 20000,
-    assignedTo: "martin",
-    internalStatus: "Drafting",
-    clientStatus: "In Production",
+    assignedTo: "dan",
+    internalStatus: "Layout",
+    clientStatus: "Urgent",
     stakeholder: "Martin",
-    launchWindow: "Q1 2026",
-    targetDate: "2026-03-31",
-    displayDate: "End of March",
-    isLocked: false,
+    launchWindow: "Jan 2026",
+    targetDate: "2026-01-31",
+    displayDate: "Jan 31st (Hard)",
+    isLocked: true,
     budgetType: "Revenue Generator",
     dependency: "Chaos Rising Framework",
     revenuePotential: "Quick Win Hook",
-    manualHours: undefined,
+    manualHours: 32, // Based on Audit: 2h + 6h + 24h
+    layoutHours: 40, // Based on Audit: 40h
+    benchmarkNotes: "Urgent fix: Survival Mode active (See A0 Checklist). NotebookLM audit confirmed."
   },
   {
     id: 7,
