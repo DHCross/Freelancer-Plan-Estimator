@@ -34,3 +34,4 @@ export * from "./MetricCard";
 export * from "./AlertBanner";
 export * from "./CollapsibleTeamCard";
 export * from "./Tooltip";
+export * from "./NotebookLMImporter";

@@ -162,17 +162,19 @@ export const INITIAL_PROJECTS: Project[] = [
     clientType: "Revenue Accelerator",
     targetWords: 20000,
     assignedTo: "martin",
-    internalStatus: "Drafting",
-    clientStatus: "In Production",
+    internalStatus: "Layout",
+    clientStatus: "Urgent",
     stakeholder: "Martin",
-    launchWindow: "Q1 2026",
-    targetDate: "2026-03-31",
-    displayDate: "End of March",
-    isLocked: false,
+    launchWindow: "Jan 2026",
+    targetDate: "2026-01-31",
+    displayDate: "Jan 31st (Hard)",
+    isLocked: true,
     budgetType: "Revenue Generator",
     dependency: "Chaos Rising Framework",
     revenuePotential: "Quick Win Hook",
-    manualHours: undefined,
+    manualHours: 32, // Based on Audit: 2h + 6h + 24h
+    layoutHours: 40, // Based on Audit: 40h
+    benchmarkNotes: "Urgent fix: NotebookLM audit indicates critical path compression."
   },
   {
     id: 7,
