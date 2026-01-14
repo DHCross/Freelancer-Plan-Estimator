@@ -60,6 +60,8 @@ import {
   ProductionReadinessChecklist,
   ProductLinesView,
   TeamHealthDashboard,
+  A0SurvivalChecklist,
+  MartinWorkloadView,
 } from "@/components/dashboard";
 import { ScenarioWorkspace } from "@/components/dashboard/scenarios/ScenarioWorkspace";
 import { FailureAnalysis } from "@/components/dashboard/FailureAnalysis";
@@ -76,6 +78,7 @@ import { IntegratedFinancialModel } from "@/components/dashboard/IntegratedFinan
 import { ProductProvider } from "@/lib/ProductContext";
 import { ProductListingView } from "@/components/dashboard/ProductListingView";
 import { EnhancedEstimatorTools } from "@/components/dashboard/EnhancedEstimatorTools";
+import { NotebookLMImporter } from "@/components/dashboard/NotebookLMImporter";
 import { DeadlineEstimator } from "@/components/dashboard/DeadlineEstimator";
 import { TeamLoadProvider, useTeamLoad } from "@/lib/TeamLoadContext";
 
@@ -188,6 +191,8 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
               { id: "deadline-estimator", label: "Deadline Estimator", icon: Calendar },
               { id: "layout-safe", label: "Layout-Safe Calculator", icon: Shield },
               { id: "production-readiness", label: "Production Readiness Checklist", icon: Lock },
+              { id: "a0-survival", label: "A0: Survival Checklist", icon: AlertTriangle },
+              { id: "martin-workload", label: "Stakeholder: Martin's Brief", icon: Users },
               { id: "export-report", label: "Export Report", icon: FileText },
               { id: "lessons-learned", label: "Lessons Learned", icon: Lightbulb },
             ],
@@ -356,7 +361,7 @@ function DashboardPageContent() {
   const [estimatorResult, setEstimatorResult] = useState<EstimatorResult | null>(null);
 
   // Team workspace view state
-  const [teamWorkspaceView, setTeamWorkspaceView] = useState<"quick" | "advanced">("quick");
+  const [teamWorkspaceView, setTeamWorkspaceView] = useState<"quick" | "advanced" | "notebook-lm">("quick");
 
   // ========== TEAM LOAD CONTEXT ==========
   const { getTeamTotalHours } = useTeamLoad();
@@ -855,6 +860,7 @@ function DashboardPageContent() {
                     {[
                       { id: "quick" as const, label: "Quick Estimate", description: "Push button • Get timeline" },
                       { id: "advanced" as const, label: "Advanced Estimate", description: "Dial in scope, roles, and exports" },
+                      { id: "notebook-lm" as const, label: "NotebookLM Import", description: "Inject audit JSON from NotebookLM" },
                     ].map((item) => (
                       <button
                         key={item.id}
@@ -874,6 +880,7 @@ function DashboardPageContent() {
               </div>
               <div className="flex-1 space-y-6">
                 {teamWorkspaceView === "quick" && <QuickEstimator teamRoster={teamRoster} />}
+                {teamWorkspaceView === "notebook-lm" && <NotebookLMImporter />}
                 {teamWorkspaceView === "advanced" && (
                   <div className="space-y-6">
                     <EnhancedEstimatorTools
@@ -1001,6 +1008,14 @@ function DashboardPageContent() {
 
           {subView === "production-readiness" && (
             <ProductionReadinessChecklist />
+          )}
+
+          {subView === "a0-survival" && (
+            <A0SurvivalChecklist />
+          )}
+
+          {subView === "martin-workload" && (
+            <MartinWorkloadView />
           )}
 
           {subView === "export-report" && (
