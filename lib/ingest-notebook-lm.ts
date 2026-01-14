@@ -6,7 +6,7 @@ export class DataIngestionService {
   /**
    * Transforms a raw NotebookLM JSON export into the internal UnifiedProjectState.
    */
-  public static ingest(data: NotebookLMExport, _currentModel: UnifiedProjectModel): UnifiedProjectState {
+  public static ingest(data: NotebookLMExport): UnifiedProjectState {
     const project = DataIngestionService.mapProject(data);
     const team = DataIngestionService.mapTeam(data.resources);
     
