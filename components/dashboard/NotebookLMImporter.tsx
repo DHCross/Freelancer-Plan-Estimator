@@ -19,11 +19,7 @@ export function NotebookLMImporter() {
       // For now, we simulate the ingestion to validate format
       // forcing a type check implicitly via the function call
       
-      // We are "faking" the model instance passed in because the service 
-      // is currently stateless in our implementation
-      const modelStub = {} as UnifiedProjectModel; 
-      
-      const result = DataIngestionService.ingest(parsed, modelStub);
+      const result = DataIngestionService.ingest(parsed);
       
       console.log("Ingestion Result:", result);
       setStatus("success");
