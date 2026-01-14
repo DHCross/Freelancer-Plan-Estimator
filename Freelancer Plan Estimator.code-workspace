@@ -7,5 +7,32 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"chat.tools.terminal.autoApprove": {
+			"/^command -v gitkraken && gitkraken --version \\|\\| echo 'GitKraken not found'$/": {
+				"approve": true,
+				"matchCommandLine": true
+			},
+			"/^brew --version$/": {
+				"approve": true,
+				"matchCommandLine": true
+			},
+			"/^brew install --cask gitkraken$/": {
+				"approve": true,
+				"matchCommandLine": true
+			},
+			"/^code --list-extensions \\| grep -i gitlens \\|\\| echo 'GitLens not found'$/": {
+				"approve": true,
+				"matchCommandLine": true
+			},
+			"/^git fetch --all --prune && git rev-parse --abbrev-ref HEAD && git for-each-ref --sort=-committerdate --format='%\\(refname:short\\) %\\(committerdate:iso8601\\)' refs/heads/ \\| sed -n '1,10p' && git branch -r --sort=-committerdate \\| sed -n '1,20p' && \\(git show-ref --verify --quiet refs/heads/backup && echo 'backup exists locally' \\|\\| git show-ref --verify --quiet refs/remotes/origin/backup && echo 'backup exists on origin' \\|\\| echo 'backup not found'\\)$/": {
+				"approve": true,
+				"matchCommandLine": true
+			},
+			"/^git for-each-ref --sort=-committerdate --format='%\\(refname:short\\) %\\(committerdate:iso8601\\) %\\(objectname:short\\) %\\(contents:subject\\)' refs/remotes \\| sed -n '1,50p'$/": {
+				"approve": true,
+				"matchCommandLine": true
+			}
+		}
+	}
 }
