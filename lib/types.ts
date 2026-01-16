@@ -1,5 +1,18 @@
 export type Stakeholder = "Dan" | "Martin" | "Matthew";
 
+export type LifecycleState = "Backlog" | "Planning" | "Production" | "Complete" | "Archived";
+export type TaskStatus = "Blocked" | "Ready" | "Active" | "Review" | "Done";
+
+export interface ExecutionTask {
+  id: string;
+  projectId: number;
+  assigneeId: string;
+  remainingHours: number;
+  status: TaskStatus;
+  dependencyIds: string[];
+  sortOrder: number;
+}
+
 export interface TeamMember {
   id: string;
   name: string;
@@ -33,6 +46,8 @@ export interface Project {
   primaryRole?: string; // Primary role/lane: Writing, Editing, Layout, etc.
   benchmarkNotes?: string; // Layout benchmark or other analysis notes
   estimatedPages?: { min: number; max: number }; // Page range estimates
+  lifecycleState?: LifecycleState;
+  tasks?: ExecutionTask[];
 }
 
 export interface TaskRate {
@@ -70,12 +85,14 @@ export interface AnnualLoadProject extends Project {
 export interface WriterLoad extends TeamMember {
   projects: AnnualLoadProject[];
   totalHours: number;
+  committedHours: number;
   annualCapacity: number;
 }
 
 export interface ProjectAnalysis extends Project {
   total: number;
   estCost: number;
+  committedCost: number;
 }
 
 export interface ProductLine {

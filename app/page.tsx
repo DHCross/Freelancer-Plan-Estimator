@@ -38,7 +38,7 @@ import {
   calculateProjectAnalysis,
   runEstimator,
 } from "@/lib/calculations";
-import type { DisplayProject, EstimatorResult, ProjectWithDisplay, Project, Metrics, TeamMember, EstimationBucketEntry } from "@/lib/types";
+import type { DisplayProject, EstimatorResult, ProjectWithDisplay, Project, Metrics, TeamMember, EstimationBucketEntry, TaskStatus } from "@/lib/types";
 
 // Layout Components
 import { AppLayout, PrimaryTab } from "@/components/layout";
@@ -254,37 +254,39 @@ type StatusColumnConfig = {
   internalLabel: string;
   clientLabel: string;
   description: string;
-  matcher: (status: string, project: DisplayProject) => boolean;
+  matcher?: (status: string, project: DisplayProject) => boolean;
 };
 
 const STATUS_COLUMN_CONFIG: StatusColumnConfig[] = [
   {
-    id: "critical",
-    internalLabel: "Critical Product Lines",
-    clientLabel: "Strategic Priorities",
-    description: "Non-negotiable revenue protection",
-    matcher: (status) => /priority|critical/.test(status),
-  },
-  {
-    id: "assembly",
-    internalLabel: "Assembly Floor",
-    clientLabel: "In Production",
-    description: "Actively drafting or finishing",
-    matcher: (status) => /draft|production|layout|finishing/.test(status),
-  },
-  {
     id: "blocked",
-    internalLabel: "Dependencies",
-    clientLabel: "Dependency Review",
-    description: "Needs enabling work or approvals",
-    matcher: (_status, project) => Boolean(project.dependency),
+    internalLabel: "Blocked",
+    clientLabel: "Blocked",
+    description: "Waiting on dependencies or approvals",
   },
   {
-    id: "queued",
-    internalLabel: "Queued + Waiting",
-    clientLabel: "Upcoming Windows",
-    description: "Approved once scaffolding clears",
-    matcher: (_status, project) => project.launchWindow.toLowerCase().includes("q"),
+    id: "ready",
+    internalLabel: "Ready",
+    clientLabel: "Queued",
+    description: "Ready to start",
+  },
+  {
+    id: "active",
+    internalLabel: "Active",
+    clientLabel: "In Progress",
+    description: "Currently being worked on",
+  },
+  {
+    id: "review",
+    internalLabel: "Review",
+    clientLabel: "In Review",
+    description: "QA, Edit, or Approval",
+  },
+  {
+    id: "done",
+    internalLabel: "Done",
+    clientLabel: "Complete",
+    description: "Finished",
   },
 ];
 
@@ -416,17 +418,42 @@ function DashboardPageContent() {
   );
 
   const statusBuckets = useMemo(() => {
-    const base = STATUS_COLUMN_CONFIG.reduce<Record<string, DisplayProject[]>>((acc, column) => {
-      acc[column.id] = [];
-      return acc;
-    }, {});
+    const base: Record<string, DisplayProject[]> = {
+      blocked: [],
+      ready: [],
+      active: [],
+      review: [],
+      done: [],
+    };
 
     analysisWithDisplay.forEach((project) => {
-      const statusText = (project.displayStatus ?? project.internalStatus).toLowerCase();
-      const matched = STATUS_COLUMN_CONFIG.find((column) => column.matcher(statusText, project));
-      const bucketId = matched?.id ?? "queued";
-      base[bucketId] = base[bucketId] || [];
-      base[bucketId].push(project);
+      // Determine effective status from tasks
+      let effectiveStatus: TaskStatus = "Ready";
+
+      if (project.tasks && project.tasks.length > 0) {
+        const currentTask = project.tasks
+          .sort((a, b) => a.sortOrder - b.sortOrder)
+          .find((t) => t.status !== "Done");
+
+        if (currentTask) {
+          effectiveStatus = currentTask.status;
+        } else {
+          effectiveStatus = "Done";
+        }
+      } else {
+        // Fallback based on lifecycle
+        if (project.lifecycleState === "Complete") effectiveStatus = "Done";
+        else if (project.lifecycleState === "Production") effectiveStatus = "Active";
+        else if (project.lifecycleState === "Planning") effectiveStatus = "Ready";
+        else effectiveStatus = "Ready";
+      }
+
+      const bucketId = effectiveStatus.toLowerCase();
+      if (base[bucketId]) {
+        base[bucketId].push(project);
+      } else {
+        base["ready"].push(project);
+      }
     });
 
     return base;
@@ -686,7 +713,7 @@ function DashboardPageContent() {
             clientMode={isClientMode}
             getInjectedHours={getTeamTotalHours}
             onNavigate={handleNavigate}
-            totalBudgetExposure={analysis.reduce((sum, p) => sum + (p.estCost || 0), 0)}
+            totalBudgetExposure={analysis.reduce((sum, p) => sum + (p.committedCost || 0), 0)}
           />
         </div>
       );

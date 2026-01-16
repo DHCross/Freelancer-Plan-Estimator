@@ -48,7 +48,7 @@ export function DashboardView({
 
     writers.forEach((member) => {
       const injected = getInjectedHours?.(member.id) || 0;
-      const assigned = member.totalHours + injected;
+      const assigned = member.committedHours + injected;
       const capacity = member.annualCapacity || 0;
       const percent = capacity > 0 ? (assigned / capacity) * 100 : 0;
 
@@ -192,7 +192,7 @@ export function DashboardView({
           subtitle={
             clientMode
               ? "Based on current team allocation"
-              : `${analysis.filter(p => p.internalStatus?.toLowerCase().includes("draft")).length} in production · View all products →`
+              : `${analysis.filter(p => p.lifecycleState === "Production").length} in production · View all products →`
           }
           icon={Target}
           status="healthy"

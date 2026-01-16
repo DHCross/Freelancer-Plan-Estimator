@@ -45,6 +45,7 @@ export function calculateAnnualLoad(projects: Project[], teamRoster: TeamMember[
       ...member,
       projects: [],
       totalHours: 0,
+      committedHours: 0,
       annualCapacity: member.weeklyCapacity * 48,
     };
   });
@@ -63,6 +64,21 @@ export function calculateAnnualLoad(projects: Project[], teamRoster: TeamMember[
 
     writer.projects.push({ ...project, calculatedHours: hours });
     writer.totalHours += hours;
+
+    if (project.lifecycleState === "Production") {
+      if (project.tasks && project.tasks.length > 0) {
+        project.tasks.forEach((t) => {
+          if ((t.status === "Active" || t.status === "Review") && t.remainingHours > 0) {
+            const assignee = writers[t.assigneeId];
+            if (assignee) {
+              assignee.committedHours += t.remainingHours;
+            }
+          }
+        });
+      } else {
+        writer.committedHours += hours;
+      }
+    }
   });
 
   return Object.values(writers);
@@ -73,22 +89,42 @@ export function calculateProjectAnalysis(
   metrics: Metrics = DEFAULT_METRICS
 ): ProjectAnalysis[] {
   return projects.map((project) => {
+    let total = 0;
+    let estCost = 0;
+
     if (project.manualHours) {
-      const estCost = project.manualHours * metrics.blendedHourlyRate;
-      return { ...project, total: project.manualHours, estCost };
+      estCost = project.manualHours * metrics.blendedHourlyRate;
+      total = project.manualHours;
+    } else {
+      const writing = (project.targetWords / 1000) * metrics.writingRate;
+      const pages = project.targetWords / metrics.wordsPerPage;
+      const layout = pages * metrics.layoutHoursPerPage;
+      const coreWork = project.internalStatus === "Layout" ? layout : writing + layout;
+      const pm = coreWork * metrics.pmOverheadPercent;
+      const subtotal = coreWork + pm;
+      const contingency = subtotal * metrics.contingencyPercent;
+      total = Math.round(subtotal + contingency);
+      estCost = total * metrics.blendedHourlyRate;
     }
 
-    const writing = (project.targetWords / 1000) * metrics.writingRate;
-    const pages = project.targetWords / metrics.wordsPerPage;
-    const layout = pages * metrics.layoutHoursPerPage;
-    const coreWork = project.internalStatus === "Layout" ? layout : writing + layout;
-    const pm = coreWork * metrics.pmOverheadPercent;
-    const subtotal = coreWork + pm;
-    const contingency = subtotal * metrics.contingencyPercent;
-    const total = Math.round(subtotal + contingency);
-    const estCost = total * metrics.blendedHourlyRate;
+    // Calculate Committed Cost (Execution Boundary)
+    let committedCost = 0;
+    if (project.lifecycleState === "Production") {
+      let activeHours = 0;
+      if (project.tasks && project.tasks.length > 0) {
+        activeHours = project.tasks
+          .filter(t => (t.status === "Active" || t.status === "Review") && t.remainingHours > 0)
+          .reduce((sum, t) => sum + t.remainingHours, 0);
+      } else {
+        // Fallback: If in Production but no tasks, assume total estimate is active
+        activeHours = total;
+      }
+      // Apply contingency to remaining work
+      const contingency = activeHours * metrics.contingencyPercent;
+      committedCost = (activeHours + contingency) * metrics.blendedHourlyRate;
+    }
 
-    return { ...project, total, estCost };
+    return { ...project, total, estCost, committedCost };
   });
 }
 

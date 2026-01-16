@@ -23,11 +23,12 @@ export function CollapsibleTeamCard({
 }: CollapsibleTeamCardProps) {
   const [expanded, setExpanded] = useState(initialExpanded);
 
-  const totalHours = member.totalHours + injectedHours;
+  // Use committedHours for the gauge to reflect "Now Mode"
+  const displayHours = member.committedHours + injectedHours;
   const percent = member.annualCapacity
-    ? Math.round((totalHours / member.annualCapacity) * 100)
+    ? Math.round((displayHours / member.annualCapacity) * 100)
     : 0;
-  const isOver = totalHours > member.annualCapacity;
+  const isOver = displayHours > member.annualCapacity;
   
   // Determine status colors
   const getStatusConfig = () => {
@@ -100,7 +101,7 @@ export function CollapsibleTeamCard({
         {/* Quick Stats */}
         <div className="flex items-center gap-4 mt-3 text-xs text-slate-500">
           <span>{member.projects.length} projects</span>
-          <span className="font-medium">{formatNumber(totalHours)}h / {formatNumber(member.annualCapacity)}h planned</span>
+          <span className="font-medium">{formatNumber(displayHours)}h / {formatNumber(member.annualCapacity)}h committed</span>
         </div>
       </div>
 
