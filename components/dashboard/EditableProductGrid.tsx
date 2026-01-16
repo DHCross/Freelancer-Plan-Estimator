@@ -11,6 +11,7 @@ const STATUSES = [
   { value: "cleanup", label: "Cleanup", color: "bg-yellow-100 text-yellow-800 border-yellow-300", priority: 3 },
   { value: "planning", label: "Planning", color: "bg-purple-100 text-purple-800 border-purple-300", priority: 4 },
   { value: "production", label: "Production", color: "bg-orange-100 text-orange-800 border-orange-300", priority: 1 },
+  { value: "layout", label: "Layout", color: "bg-indigo-100 text-indigo-800 border-indigo-300", priority: 2 },
   { value: "complete", label: "Complete", color: "bg-green-100 text-green-800 border-green-300", priority: 5 },
 ];
 
@@ -148,6 +149,23 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
   const handleCancel = (projectId: number) => {
     discardProductChanges(projectId);
     setEditingId(null);
+  };
+
+  // Helper function to get status display label with assignee for active work phases
+  const getStatusDisplayLabel = (project: Project): string => {
+    const statusConfig = STATUSES.find((s) => s.value === project.internalStatus);
+    const baseLabel = statusConfig?.label || project.internalStatus;
+    
+    // For layout status, append the assignee name to show who's actively working
+    if (project.internalStatus === "layout" && project.assignedTo) {
+      const assignee = teamRoster.find((t) => t.id === project.assignedTo);
+      if (assignee) {
+        const firstName = assignee.name.split(" ")[0];
+        return `${baseLabel} (${firstName})`;
+      }
+    }
+    
+    return baseLabel;
   };
 
   return (
@@ -372,7 +390,7 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
                       <div className={`inline-block px-2 py-1 rounded text-xs font-medium border ${
                         STATUSES.find((s) => s.value === displayData.internalStatus)?.color || "bg-slate-100 text-slate-800 border-slate-300"
                       }`}>
-                        {STATUSES.find((s) => s.value === displayData.internalStatus)?.label || displayData.internalStatus}
+                        {getStatusDisplayLabel(displayData)}
                       </div>
                     )}
                   </td>
