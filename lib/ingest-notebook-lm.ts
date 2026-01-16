@@ -1,6 +1,6 @@
 import type { UnifiedProjectModel, UnifiedProjectState } from "./unified-project-model";
-import type { NotebookLMExport, NotebookLMResource } from "./notebook-lm-types";
-import type { Project, TeamMember } from "./types";
+import type { NotebookLMExport, NotebookLMTask, NotebookLMResource } from "./notebook-lm-types";
+import type { Project, TeamMember, TaskRate } from "./types";
 
 
 export class DataIngestionService {
@@ -12,10 +12,10 @@ export class DataIngestionService {
 
     const project = DataIngestionService.mapProject(data);
     const team = DataIngestionService.mapTeam(data.resources);
-    
+
     // In a real implementation, we would update the model state directly
     // based on the tasks and recalculated financials.
-    
+
     return {
       teamConfig: {
         members: team,
@@ -29,7 +29,7 @@ export class DataIngestionService {
       projectScenario: {
         targetBudget: data.financials.budget_total?.amount || 0,
         targetTimeline: data.schedule.slack_days ? Object.keys(data.schedule.slack_days).length * 14 : 30,
-        validatedBudget: data.schedule.projected_cost.amount,
+        validatedBudget: data.schedule.projected_cost?.amount || 0,
         validatedTimeline: 0,
         bottlenecks: data.risk_contingency?.high_risk_tasks.map((t: { id: string }) => t.id) || [],
         feasible: !data.schedule.urgent,
@@ -39,38 +39,36 @@ export class DataIngestionService {
     };
   }
 
-
-
   // @ts-ignore
 
   private static mapProject(data: NotebookLMExport): Project {
     return {
       id: 999, // Temporary ID for injected project
       name: data.project.name,
-      type: "TRPG Adventure",
-      clientType: "Internal",
-      targetWords: 50000, // Default assumption if missing
-      assignedTo: "Dan Cross", // Default owner
-      internalStatus: "Active",
-      clientStatus: "In Progress",
+      type: "External",
+      clientType: "Venture",
+      targetWords: data.tasks.reduce((acc, t) => acc + (t.complexity === "high" ? 2000 : 500), 0),
+      assignedTo: "Dan",
+      internalStatus: "Prospect",
+      clientStatus: "Quoted",
       stakeholder: "Dan",
-      launchWindow: data.project.hard_deadline || "2026-01-31",
+      launchWindow: "Q1 2026",
       budgetType: "Fixed",
       dependency: null,
-      revenuePotential: "Medium"
+      revenuePotential: `$${data.financials.budget_total?.amount || 0}`
     };
   }
 
   private static mapTeam(resources: NotebookLMResource[]): TeamMember[] {
-    return resources.map((r, index) => ({
-      id: `imported_${index}`,
+    return resources.map(r => ({
+      id: r.id,
       name: r.name,
       role: r.role,
-      hourlyRate: r.hourly_rate?.amount || 0,
-      weeklyCapacity: r.available_hours_per_week || 40,
-      draftSpeed: 500, // Default words/hour
-      compileSpeed: 10, // Default pages/hour
-      chaosBuffer: 1.2
+      hourlyRate: r.cost_per_hour?.amount || 50,
+      weeklyCapacity: 40,
+      draftSpeed: 500,
+      compileSpeed: 1000,
+      chaosBuffer: 0.2
     }));
   }
 }
