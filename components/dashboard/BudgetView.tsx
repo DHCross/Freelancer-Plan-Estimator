@@ -95,7 +95,8 @@ export function BudgetView({ analysis, quarters, clientMode, onProjectUpdate }: 
       budgetType: template?.budgetType ?? "Custom",
       dependency: null,
       revenuePotential: "TBD",
-      estCost: (template?.estimatedHours ?? 100) * 20
+      estCost: (template?.estimatedHours ?? 100) * 20,
+      committedCost: 0
     };
     setItems(prev => [...prev, newProject]);
     if (onProjectUpdate) {

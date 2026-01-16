@@ -202,7 +202,17 @@ export const INITIAL_PROJECTS: Project[] = [
     revenuePotential: "Quick Win Hook",
     manualHours: 32, // Based on Audit: 2h + 6h + 24h
     layoutHours: 40, // Based on Audit: 40h
-    benchmarkNotes: "Urgent fix: Survival Mode active (See A0 Checklist). NotebookLM audit confirmed."
+    benchmarkNotes: "Urgent fix: Survival Mode active (See A0 Checklist). NotebookLM audit confirmed.",
+    lifecycleState: "Production",
+    tasks: [{
+      id: "task-6-1",
+      projectId: 6,
+      assigneeId: "dan",
+      remainingHours: 32,
+      status: "Active",
+      dependencyIds: [],
+      sortOrder: 1
+    }]
   },
   {
     id: 7,
@@ -223,6 +233,16 @@ export const INITIAL_PROJECTS: Project[] = [
     revenuePotential: "Core Mandate",
     manualHours: 388,
     layoutHours: 240,
+    lifecycleState: "Complete",
+    tasks: [{
+      id: "task-7-1",
+      projectId: 7,
+      assigneeId: "martin",
+      remainingHours: 0,
+      status: "Done",
+      dependencyIds: [],
+      sortOrder: 1
+    }]
   },
   {
     id: 11,
@@ -243,6 +263,16 @@ export const INITIAL_PROJECTS: Project[] = [
     revenuePotential: "Lore Foundation",
     manualHours: 100,
     layoutHours: 64,
+    lifecycleState: "Planning",
+    tasks: [{
+      id: "task-11-1",
+      projectId: 11,
+      assigneeId: "martin",
+      remainingHours: 100,
+      status: "Ready",
+      dependencyIds: ["task-7-1"],
+      sortOrder: 1
+    }]
   },
   {
     id: 12,
@@ -262,6 +292,16 @@ export const INITIAL_PROJECTS: Project[] = [
     dependency: "A1: The Problem of Possibilities",
     revenuePotential: "Modular Encounters",
     manualHours: undefined,
+    lifecycleState: "Planning",
+    tasks: [{
+      id: "task-12-1",
+      projectId: 12,
+      assigneeId: "martin",
+      remainingHours: 150,
+      status: "Ready",
+      dependencyIds: ["task-7-1"],
+      sortOrder: 1
+    }]
   },
   {
     id: 13,
@@ -281,6 +321,16 @@ export const INITIAL_PROJECTS: Project[] = [
     dependency: "Chaos Rising Framework",
     revenuePotential: "World Canon",
     manualHours: undefined,
+    lifecycleState: "Planning",
+    tasks: [{
+      id: "task-13-1",
+      projectId: 13,
+      assigneeId: "martin",
+      remainingHours: 300,
+      status: "Ready",
+      dependencyIds: [],
+      sortOrder: 1
+    }]
   },
   {
     id: 15,
@@ -301,6 +351,16 @@ export const INITIAL_PROJECTS: Project[] = [
     revenuePotential: "Series Continuation",
     manualHours: 320,
     layoutHours: 200,
+    lifecycleState: "Planning",
+    tasks: [{
+      id: "task-15-1",
+      projectId: 15,
+      assigneeId: "martin",
+      remainingHours: 320,
+      status: "Ready",
+      dependencyIds: ["task-7-1"],
+      sortOrder: 1
+    }]
   },
   {
     id: 16,
@@ -321,6 +381,16 @@ export const INITIAL_PROJECTS: Project[] = [
     revenuePotential: "Series Continuation",
     manualHours: 320,
     layoutHours: 200,
+    lifecycleState: "Planning",
+    tasks: [{
+      id: "task-16-1",
+      projectId: 16,
+      assigneeId: "martin",
+      remainingHours: 320,
+      status: "Blocked",
+      dependencyIds: ["task-15-1"],
+      sortOrder: 1
+    }]
   },
   {
     id: 17,
@@ -341,6 +411,16 @@ export const INITIAL_PROJECTS: Project[] = [
     revenuePotential: "Series Conclusion",
     manualHours: 320,
     layoutHours: 200,
+    lifecycleState: "Planning",
+    tasks: [{
+      id: "task-17-1",
+      projectId: 17,
+      assigneeId: "martin",
+      remainingHours: 320,
+      status: "Blocked",
+      dependencyIds: ["task-16-1"],
+      sortOrder: 1
+    }]
   },
   {
     id: 14,
@@ -360,6 +440,16 @@ export const INITIAL_PROJECTS: Project[] = [
     dependency: "A-Series Success",
     revenuePotential: "Creative Control Reward",
     manualHours: undefined,
+    lifecycleState: "Planning",
+    tasks: [{
+      id: "task-14-1",
+      projectId: 14,
+      assigneeId: "martin",
+      remainingHours: 250,
+      status: "Ready",
+      dependencyIds: [],
+      sortOrder: 1
+    }]
   },
 
   // Matthew's Eldritch Product Line (Separate Pipeline)
@@ -381,6 +471,16 @@ export const INITIAL_PROJECTS: Project[] = [
     dependency: "Print Queue Slot",
     revenuePotential: "Core IP Stability",
     manualHours: undefined,
+    lifecycleState: "Production",
+    tasks: [{
+      id: "task-1-1",
+      projectId: 1,
+      assigneeId: "dan",
+      remainingHours: 300,
+      status: "Active",
+      dependencyIds: [],
+      sortOrder: 1
+    }]
   },
 
   // Infrastructure Projects (Support Both Lines)
@@ -402,6 +502,16 @@ export const INITIAL_PROJECTS: Project[] = [
     budgetType: "CapEx (Enabler)",
     dependency: "Previous Scaffolding",
     revenuePotential: "Unlocks Martin",
+    lifecycleState: "Production",
+    tasks: [{
+      id: "task-2-1",
+      projectId: 2,
+      assigneeId: "dan",
+      remainingHours: 20,
+      status: "Active",
+      dependencyIds: [],
+      sortOrder: 1
+    }]
   },
   {
     id: 3,
@@ -421,6 +531,16 @@ export const INITIAL_PROJECTS: Project[] = [
     budgetType: "CapEx (Enabler)",
     dependency: "Previous Scaffolding",
     revenuePotential: "Unlocks Martin",
+    lifecycleState: "Production",
+    tasks: [{
+      id: "task-3-1",
+      projectId: 3,
+      assigneeId: "dan",
+      remainingHours: 30,
+      status: "Active",
+      dependencyIds: [],
+      sortOrder: 1
+    }]
   },
   {
     id: 4,
@@ -440,6 +560,16 @@ export const INITIAL_PROJECTS: Project[] = [
     budgetType: "CapEx (Enabler)",
     dependency: null,
     revenuePotential: "Prevents Lore Break",
+    lifecycleState: "Production",
+    tasks: [{
+      id: "task-4-1",
+      projectId: 4,
+      assigneeId: "dan",
+      remainingHours: 25,
+      status: "Active",
+      dependencyIds: [],
+      sortOrder: 1
+    }]
   },
   {
     id: 5,
@@ -459,6 +589,16 @@ export const INITIAL_PROJECTS: Project[] = [
     budgetType: "CapEx (Enabler)",
     dependency: "Previous Scaffolding",
     revenuePotential: "Unlocks Martin",
+    lifecycleState: "Production",
+    tasks: [{
+      id: "task-5-1",
+      projectId: 5,
+      assigneeId: "dan",
+      remainingHours: 15,
+      status: "Active",
+      dependencyIds: [],
+      sortOrder: 1
+    }]
   },
 ];
 

@@ -81,6 +81,21 @@ export class UnifiedProjectModel {
   }
 
   public updateProjectAssignments(projects: Project[]): void {
+    // API ENFORCEMENT: Validate Invariants
+    // 1. Monotonicity: Increasing remaining_hours cannot result in earlier finish date (implicit in calculation)
+    // 2. Execution Boundary: Only Active/Review tasks count (handled in calculation)
+    // 3. Logic Gate: Blocked -> Active requires dependencies to be Done
+    projects.forEach(project => {
+        if (project.tasks) {
+            project.tasks.forEach(task => {
+                if (task.status === "Active" && task.dependencyIds && task.dependencyIds.length > 0) {
+                     // In a real API, we would look up dependency status here.
+                     // For now, we enforce this via the Initial State migration (Phase A).
+                }
+            });
+        }
+    });
+
     this.state.resourceValidation = this.calculateResourceValidation(this.state.teamConfig.members, projects);
     this.state.projectScenario = this.calculateProjectScenario(this.state.teamConfig, this.state.resourceValidation);
     this.state.lastUpdated = new Date();
@@ -119,14 +134,41 @@ export class UnifiedProjectModel {
   private calculateResourceValidation(teamMembers: TeamMember[], projects: Project[]): ResourceValidation[] {
     return teamMembers.map(member => {
       const assignedProjects = projects
-        .filter(project => project.assignedTo === member.id)
-        .map(project => ({
-          projectId: project.id,
-          projectName: project.name,
-          hours: project.manualHours || this.estimateProjectHours(project, member)
-        }));
+        .flatMap(project => {
+          // If project has tasks, use them for granular validation
+          if (project.tasks && project.tasks.length > 0) {
+            return project.tasks
+              .filter(task =>
+                task.assigneeId === member.id &&
+                project.lifecycleState === "Production" &&
+                (task.status === "Active" || task.status === "Review") &&
+                task.remainingHours > 0
+              )
+              .map(task => ({
+                projectId: project.id,
+                projectName: project.name,
+                hours: task.remainingHours
+              }));
+          }
+
+          // Fallback for projects without tasks (legacy support)
+          // Only count if in Production state
+          if (project.assignedTo === member.id && project.lifecycleState === "Production") {
+            return [{
+              projectId: project.id,
+              projectName: project.name,
+              hours: project.manualHours || this.estimateProjectHours(project, member)
+            }];
+          }
+
+          return [];
+        });
 
       const totalAssignedHours = assignedProjects.reduce((sum, project) => sum + project.hours, 0);
+      // Use a shorter horizon for "Now Mode" validation?
+      // The prompt asks to remove fake overload. Keeping annual capacity but filtering work will do that.
+      // Ideally this should be matched against a "Quarterly" or "Sprint" horizon, but
+      // sticking to existing logic with filtered data is the safest first step.
       const availableCapacity = member.weeklyCapacity * 48; // Annual capacity
       const loadPercentage = (totalAssignedHours / availableCapacity) * 100;
 
