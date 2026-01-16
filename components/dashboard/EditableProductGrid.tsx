@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Save, X, AlertCircle, Trash2, Filter, ChevronDown } from "lucide-react";
+import { Save, X, AlertCircle, Trash2, Filter, ChevronDown, Play, AlertTriangle } from "lucide-react";
 import { Project, TeamMember } from "@/lib/types";
 import { useProducts } from "@/lib/ProductContext";
 import { PRODUCT_LINES } from "@/lib/constants";
@@ -46,6 +46,7 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
   const { products, updateProductField, saveProductChanges, discardProductChanges, getPendingChangesForProject, hasUnsavedChanges } =
     useProducts();
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [confirmProductionId, setConfirmProductionId] = useState<number | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [ownerFilter, setOwnerFilter] = useState<string>("all");
@@ -150,8 +151,53 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
     setEditingId(null);
   };
 
+  const initiateMoveToProduction = (projectId: number) => {
+    setConfirmProductionId(projectId);
+  };
+
+  const confirmMoveToProduction = async () => {
+    if (confirmProductionId) {
+      updateProductField(confirmProductionId, "internalStatus", "production");
+      await saveProductChanges(confirmProductionId);
+      setConfirmProductionId(null);
+    }
+  };
+
   return (
     <div className="space-y-4">
+      {/* Confirmation Modal */}
+      {confirmProductionId && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-start gap-4">
+              <div className="bg-blue-100 p-3 rounded-full flex-shrink-0">
+                <Play className="w-6 h-6 text-blue-600 ml-0.5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Begin Execution?</h3>
+                <p className="text-sm text-slate-600 mt-2">
+                  This will move the product to <strong>Production</strong>. Tasks will start consuming capacity and budget.
+                </p>
+                <div className="mt-6 flex items-center gap-3">
+                  <button
+                    onClick={confirmMoveToProduction}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm transition-colors"
+                  >
+                    Move to Production
+                  </button>
+                  <button
+                    onClick={() => setConfirmProductionId(null)}
+                    className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 font-medium text-sm transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Filter Bar */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3 flex-wrap">
@@ -396,14 +442,27 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
                   <td className={`px-4 ${isCompact ? "py-2" : "py-3"} text-center`}>
                     <span className="text-sm font-medium text-slate-900">{displayData.targetWords?.toLocaleString() || "—"}</span>
                   </td>
-                  <td className={`px-4 ${isCompact ? "py-2" : "py-3"} text-center`}>
+                  <td className={`px-4 ${isCompact ? "py-2" : "py-3"}`}>
                     {!isEditing ? (
-                      <button
-                        onClick={() => setEditingId(project.id)}
-                        className="inline-flex items-center gap-1 px-3 py-1 text-sm bg-teal-50 text-teal-700 rounded hover:bg-teal-100 transition-colors font-medium"
-                      >
-                        Edit
-                      </button>
+                      <div className="flex items-center justify-center gap-2">
+                        {displayData.lifecycleState !== "Production" &&
+                         displayData.lifecycleState !== "Complete" && (
+                          <button
+                            onClick={() => initiateMoveToProduction(project.id)}
+                            className="inline-flex items-center gap-1 px-2 py-1 text-xs bg-blue-50 text-blue-700 rounded border border-blue-200 hover:bg-blue-100 transition-colors font-medium whitespace-nowrap"
+                            title="Start execution"
+                          >
+                            <Play className="w-3 h-3 fill-current" />
+                            Move to Prod
+                          </button>
+                        )}
+                        <button
+                          onClick={() => setEditingId(project.id)}
+                          className="inline-flex items-center gap-1 px-3 py-1 text-sm bg-teal-50 text-teal-700 rounded hover:bg-teal-100 transition-colors font-medium"
+                        >
+                          Edit
+                        </button>
+                      </div>
                     ) : (
                       <div className="flex gap-2 justify-center">
                         <button
