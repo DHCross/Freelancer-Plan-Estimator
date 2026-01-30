@@ -29,15 +29,18 @@ export interface NotebookLMTask {
   start_latest: string | null;
   dependencies: string[];
   cost_rate: { currency: string; amount: number } | null;
+  complexity?: "low" | "medium" | "high";
   fixed_cost: { currency: string; amount: number } | null;
   confidence: number;
   sources: NotebookLMSource[];
 }
 
 export interface NotebookLMResource {
+  id: string;
   name: string;
   role: string;
   available_hours_per_week: number | null;
+  cost_per_hour?: { currency: string; amount: number } | null;
   hourly_rate: { currency: string; amount: number } | null;
 }
 
