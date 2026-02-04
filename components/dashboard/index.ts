@@ -26,6 +26,7 @@ export * from "./DeadlineEstimator";
 export * from "./CartographyPlanner";
 export * from "./DocumentWordCounter";
 export * from "./ArtBudgetView";
+export * from "./ArtOrderAssembler";
 export * from "./LayoutSafeDeadlineCalculator";
 export * from "./ProductionReadinessChecklist";
 export * from "./TeamHealthDashboard";

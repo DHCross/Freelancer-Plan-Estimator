@@ -20,6 +20,7 @@ import {
   Palette,
   Shield,
   Lock,
+  Pencil,
 } from "lucide-react";
 
 import {
@@ -56,6 +57,7 @@ import {
   DossierView,
   CartographyPlanner,
   ArtBudgetView,
+  ArtOrderAssembler,
   LayoutSafeDeadlineCalculator,
   ProductionReadinessChecklist,
   ProductLinesView,
@@ -122,6 +124,7 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
             description: "Illustrations, maps, and visual content",
             items: [
               { id: "art-budget", label: "Art Budget", icon: Palette },
+              { id: "art-orders", label: "Art Order Assembler", icon: Pencil },
               { id: "cartography", label: "Cartography", icon: MapIcon },
             ],
             defaultExpanded: false,
@@ -818,6 +821,10 @@ function DashboardPageContent() {
 
           {subView === "art-budget" && (
             <ArtBudgetView clientMode={isClientMode} />
+          )}
+
+          {subView === "art-orders" && (
+            <ArtOrderAssembler clientMode={isClientMode} />
           )}
 
           {subView === "cartography" && (
