@@ -18,7 +18,10 @@ interface ArtOrderAssemblerProps {
   clientMode?: boolean;
 }
 
-export function ArtOrderAssembler({ clientMode = false }: ArtOrderAssemblerProps) {
+export function ArtOrderAssembler({ 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  clientMode = false 
+}: ArtOrderAssemblerProps) {
   // Form state
   const [assetName, setAssetName] = useState("");
   const [artType, setArtType] = useState<ArtOrderType>("Full-page");
@@ -36,6 +39,7 @@ export function ArtOrderAssembler({ clientMode = false }: ArtOrderAssemblerProps
   // Saved orders
   const [savedOrders, setSavedOrders] = useState<ArtOrder[]>([]);
   const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
+  const [orderIdCounter, setOrderIdCounter] = useState(0);
 
   // Validation
   const validateField = useCallback((field: string, value: string): string | null => {
@@ -128,8 +132,24 @@ export function ArtOrderAssembler({ clientMode = false }: ArtOrderAssemblerProps
 
   const isValid = validationErrors.length === 0;
 
+  const handleClearForm = useCallback(() => {
+    setAssetName("");
+    setArtType("Full-page");
+    setLocation("");
+    setFocus("");
+    setAction("");
+    setLighting("");
+    setContrast("");
+    setPalette("");
+    setAtmosphere("");
+    setPresence("");
+    setTechnicalNotes("");
+    setReferenceImages("");
+    setEditingOrderId(null);
+  }, []);
+
   const currentOrder = useMemo((): ArtOrder => ({
-    id: editingOrderId || `order-${Date.now()}`,
+    id: editingOrderId || `order-${orderIdCounter}`,
     assetName,
     type: artType,
     location,
@@ -146,7 +166,7 @@ export function ArtOrderAssembler({ clientMode = false }: ArtOrderAssemblerProps
     referenceImages: referenceImages || undefined,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-  }), [editingOrderId, assetName, artType, location, focus, action, lighting, contrast, palette, atmosphere, presence, technicalNotes, referenceImages]);
+  }), [editingOrderId, orderIdCounter, assetName, artType, location, focus, action, lighting, contrast, palette, atmosphere, presence, technicalNotes, referenceImages]);
 
   const handleSaveOrder = useCallback(() => {
     if (!isValid) return;
@@ -160,27 +180,12 @@ export function ArtOrderAssembler({ clientMode = false }: ArtOrderAssemblerProps
     } else {
       // Add new order
       setSavedOrders(prev => [...prev, currentOrder]);
+      setOrderIdCounter(prev => prev + 1);
     }
     
     // Clear form
     handleClearForm();
-  }, [isValid, editingOrderId, currentOrder]);
-
-  const handleClearForm = useCallback(() => {
-    setAssetName("");
-    setArtType("Full-page");
-    setLocation("");
-    setFocus("");
-    setAction("");
-    setLighting("");
-    setContrast("");
-    setPalette("");
-    setAtmosphere("");
-    setPresence("");
-    setTechnicalNotes("");
-    setReferenceImages("");
-    setEditingOrderId(null);
-  }, []);
+  }, [isValid, editingOrderId, currentOrder, handleClearForm]);
 
   const handleEditOrder = useCallback((order: ArtOrder) => {
     setAssetName(order.assetName);
