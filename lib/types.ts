@@ -320,3 +320,43 @@ export interface CartographySummary {
   totalCartographyCost: number;
   mapCriticalPathDays: number;
 }
+
+// ============================================================================
+// ART ORDER ASSEMBLER TYPES
+// ============================================================================
+
+export type ArtOrderType = 
+  | "Cover" 
+  | "Full-page" 
+  | "Half-page" 
+  | "Spot" 
+  | "Portrait" 
+  | "Map"
+  | "Other";
+
+export interface ArtOrderMood {
+  lighting: string;
+  contrast: string;
+  palette: string;
+  atmosphere: string;
+  presence?: string;
+}
+
+export interface ArtOrder {
+  id: string;
+  assetName: string;
+  type: ArtOrderType;
+  location: string;
+  focus: string;
+  action: string;
+  mood: ArtOrderMood;
+  technicalNotes?: string;
+  referenceImages?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ArtOrderValidationError {
+  field: keyof ArtOrder | 'mood.lighting' | 'mood.contrast' | 'mood.palette' | 'mood.atmosphere';
+  message: string;
+}
