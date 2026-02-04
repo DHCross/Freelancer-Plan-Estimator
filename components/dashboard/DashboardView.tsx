@@ -7,7 +7,8 @@ import {
   DollarSign, 
   Target,
   Clock,
-  Briefcase
+  Briefcase,
+  Pencil
 } from "lucide-react";
 import { WriterLoad, DisplayProject } from "@/lib/types";
 import { formatNumber } from "@/lib/utils";
@@ -158,6 +159,15 @@ export function DashboardView({
               ? "Overview of project timelines and delivery confidence."
               : "Monitor team capacity, bottlenecks, and key milestones across all active work."}
           </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onNavigate?.("planning", "art-orders")}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium text-sm transition-colors"
+          >
+            <Pencil className="w-4 h-4 text-slate-500" />
+            Art Order Assembler
+          </button>
         </div>
       </div>
 

@@ -127,7 +127,7 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
               { id: "art-orders", label: "Art Order Assembler", icon: Pencil },
               { id: "cartography", label: "Cartography", icon: MapIcon },
             ],
-            defaultExpanded: false,
+            defaultExpanded: true,
           },
         ],
       };
@@ -739,6 +739,7 @@ function DashboardPageContent() {
               {subView === "budget" && "Budget & Timeline"}
               {subView === "methodology" && "How We Build"}
               {subView === "art-budget" && "Art Budget"}
+              {subView === "art-orders" && "Art Order Assembler"}
               {subView === "cartography" && "Cartography"}
             </span>
           </div>
