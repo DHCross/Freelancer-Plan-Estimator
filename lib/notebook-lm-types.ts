@@ -30,6 +30,7 @@ export interface NotebookLMTask {
   dependencies: string[];
   cost_rate: { currency: string; amount: number } | null;
   fixed_cost: { currency: string; amount: number } | null;
+  complexity?: "low" | "medium" | "high";
   confidence: number;
   sources: NotebookLMSource[];
 }
