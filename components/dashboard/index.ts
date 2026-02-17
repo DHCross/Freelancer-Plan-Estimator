@@ -40,3 +40,4 @@ export * from "./AlertBanner";
 export * from "./CollapsibleTeamCard";
 export * from "./Tooltip";
 export * from "./NotebookLMImporter";
+export * from "./WorkPackagePlanner";

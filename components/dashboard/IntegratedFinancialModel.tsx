@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import {
   DollarSign,
-  TrendingUp,
   Package,
   Truck,
   Scale,
@@ -18,7 +17,7 @@ import {
   DistributionChannelType,
 } from "@/lib/types";
 import { calculateRoi } from "@/lib/calculations";
-import { UnifiedProjectModel } from "@/lib/unified-project-model";
+import { useWorkGraph } from "@/lib/WorkGraphContext";
 
 const DEFAULT_CHANNELS: DistributionChannel[] = [
   {
@@ -57,11 +56,8 @@ interface IntegratedFinancialModelProps {
 }
 
 export function IntegratedFinancialModel({ clientMode = false, onNavigateToTeamBuilder }: IntegratedFinancialModelProps) {
-  const [unifiedModel] = useState(() => UnifiedProjectModel.getInstance());
-  const [scenario, setScenario] = useState(unifiedModel.getProjectScenario());
-  
-  // Development cost now comes from Team Builder via unified model
-  const devCostFromTeamBuilder = Math.round(scenario.validatedBudget);
+  // Pull cost from WorkGraph
+  const { totalDevelopmentCost } = useWorkGraph();
   
   const [msrp, setMsrp] = useState(40);
   const [printRun, setPrintRun] = useState<PrintRunConfig>({
@@ -73,18 +69,14 @@ export function IntegratedFinancialModel({ clientMode = false, onNavigateToTeamB
   });
   const [selectedChannelId, setSelectedChannelId] = useState<DistributionChannelType>("distributor_standard");
 
-  useEffect(() => {
-    setScenario(unifiedModel.getProjectScenario());
-  }, [unifiedModel]);
-
   const selectedChannel = useMemo(
     () => DEFAULT_CHANNELS.find((c) => c.id === selectedChannelId) || DEFAULT_CHANNELS[0],
     [selectedChannelId]
   );
 
   const roi = useMemo(
-    () => calculateRoi(devCostFromTeamBuilder, printRun, { msrp }, selectedChannel),
-    [devCostFromTeamBuilder, printRun, msrp, selectedChannel]
+    () => calculateRoi(totalDevelopmentCost, printRun, { msrp }, selectedChannel),
+    [totalDevelopmentCost, printRun, msrp, selectedChannel]
   );
 
   const formatCurrency = (val: number) =>
@@ -100,11 +92,9 @@ export function IntegratedFinancialModel({ clientMode = false, onNavigateToTeamB
       {/* Data Flow Indicator with Edit Button */}
       <div className="bg-slate-100 border border-slate-200 rounded-lg p-3 flex items-center justify-between">
         <div className="flex items-center justify-center gap-3 text-sm flex-1">
-          <span className="font-medium text-slate-600">Team Builder</span>
+          <span className="font-medium text-slate-600">Work Graph</span>
           <ArrowRight className="w-4 h-4 text-slate-400" />
-          <span className="font-medium text-slate-600">Resource Validation</span>
-          <ArrowRight className="w-4 h-4 text-slate-400" />
-          <span className="font-medium text-slate-600">Scenario Engine</span>
+          <span className="font-medium text-slate-600">Cost Aggregation</span>
           <ArrowRight className="w-4 h-4 text-slate-400" />
           <span className="font-bold text-emerald-600 bg-emerald-100 px-2 py-1 rounded">Financial Model</span>
         </div>
@@ -132,10 +122,10 @@ export function IntegratedFinancialModel({ clientMode = false, onNavigateToTeamB
               <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Auto-populated</span>
             </div>
             <div className="text-3xl font-bold text-blue-900 mb-2">
-              {formatCurrency(devCostFromTeamBuilder)}
+              {formatCurrency(totalDevelopmentCost)}
             </div>
             <p className="text-xs text-blue-600">
-              Pulled automatically from Team Builder&apos;s Total Project Cost
+              Derived from total assigned work packages in the Work Graph.
             </p>
           </div>
 
@@ -350,9 +340,8 @@ export function IntegratedFinancialModel({ clientMode = false, onNavigateToTeamB
               <span className="font-semibold text-slate-800">Integrated Data Flow</span>
             </div>
             <p>
-              Development Cost is automatically populated from the Team Builder&apos;s Total Project Cost 
-              (currently {formatCurrency(devCostFromTeamBuilder)}). This ensures ROI calculations 
-              reflect your actual team configuration and project scope.
+              Development Cost is now automatically derived from the Work Graph.
+              Every assigned Work Package contributes to this total ({formatCurrency(totalDevelopmentCost)}).
             </p>
           </div>
         </div>

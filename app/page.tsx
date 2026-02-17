@@ -83,6 +83,8 @@ import { EnhancedEstimatorTools } from "@/components/dashboard/EnhancedEstimator
 import { NotebookLMImporter } from "@/components/dashboard/NotebookLMImporter";
 import { DeadlineEstimator } from "@/components/dashboard/DeadlineEstimator";
 import { TeamLoadProvider, useTeamLoad } from "@/lib/TeamLoadContext";
+import { WorkGraphProvider } from "@/lib/WorkGraphContext";
+import { WorkPackagePlanner } from "@/components/dashboard/WorkPackagePlanner";
 
 // ============================================================================
 // SIDEBAR CONFIGURATION BY TAB
@@ -101,9 +103,9 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
             label: "Planning Tools",
             description: "Resource allocation and scheduling",
             items: [
+              { id: "work-packages", label: "Work Packages", icon: ClipboardList, description: "Core Work Graph" },
               { id: "integrated", label: "Resource Validation", icon: Gauge, description: "Team capacity & conflicts" },
               { id: "scenarios", label: "Scenario Engine", icon: Lightbulb, description: "What-if analysis" },
-              { id: "status", label: "Task Board", icon: ClipboardList, description: "Execution Kanban" },
             ],
             defaultExpanded: true,
           },
@@ -215,7 +217,7 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
 
 const DEFAULT_SUBVIEWS: Record<PrimaryTab, string> = {
   dashboard: "dashboard",
-  planning: "integrated",
+  planning: "work-packages",
   team: "team-overview",
   finance: "financial-model",
   reports: "dossier",
@@ -744,6 +746,10 @@ function DashboardPageContent() {
             </span>
           </div>
 
+          {subView === "work-packages" && (
+            <WorkPackagePlanner />
+          )}
+
           {subView === "methodology" && (
             <MethodologyView
               phases={PRODUCTION_PHASES}
@@ -1094,8 +1100,10 @@ function DashboardPageContent() {
 
 export default function DashboardPage() {
   return (
-    <TeamLoadProvider>
-      <DashboardPageContent />
-    </TeamLoadProvider>
+    <WorkGraphProvider>
+      <TeamLoadProvider>
+        <DashboardPageContent />
+      </TeamLoadProvider>
+    </WorkGraphProvider>
   );
 }

@@ -1,34 +1,50 @@
 "use client";
 
-import { Lock, AlertTriangle, HelpCircle, Edit2 } from "lucide-react";
+import { Lock, AlertTriangle, HelpCircle, Edit2, Wrench } from "lucide-react";
 import { WriterLoad } from "@/lib/types";
-import { useTeamLoad } from "@/lib/TeamLoadContext";
 import { formatNumber } from "@/lib/utils";
 import { Tooltip } from "./Tooltip";
-import { Wrench } from "lucide-react";
+import { useWorkGraph } from "@/lib/WorkGraphContext";
+import { useMemo } from "react";
 
 interface TeamPlannerProps {
-  writers: WriterLoad[];
+  // Legacy props kept for compatibility but largely ignored in favor of WorkGraph
+  writers?: WriterLoad[];
   clientMode?: boolean;
   onEditMember?: (memberId: string) => void;
   onNavigateToTeamBuilder?: () => void;
 }
 
-export function TeamPlanner({ writers, clientMode = false, onEditMember, onNavigateToTeamBuilder }: TeamPlannerProps) {
+export function TeamPlanner({ writers: legacyWriters, clientMode = false, onEditMember, onNavigateToTeamBuilder }: TeamPlannerProps) {
 
-  const { getTeamTotalHours, teamLoads } = useTeamLoad();
+  const { teamMembers, getPersonLoad, workPackages } = useWorkGraph();
+
+  // Compute load based on WorkGraph
+  const teamLoadStats = useMemo(() => {
+    return teamMembers.map(member => {
+        const totalHours = getPersonLoad(member.id);
+        const annualCapacity = member.weeklyCapacity * 48; // 48 weeks
+        const percent = annualCapacity > 0 ? Math.round((totalHours / annualCapacity) * 100) : 0;
+
+        // Find assigned packages
+        const assignedPackages = workPackages.filter(wp => wp.assignedPersonId === member.id);
+
+        return {
+            ...member,
+            totalHours,
+            percent,
+            annualCapacity,
+            packages: assignedPackages
+        };
+    });
+  }, [teamMembers, getPersonLoad, workPackages]);
+
   // Find the highest overloaded person for the warning banner
-  const mostOverloaded = writers.reduce((max, writer) => {
-    const injected = getTeamTotalHours(writer.id);
-    const percent = writer.annualCapacity ? ((writer.totalHours + injected) / writer.annualCapacity) * 100 : 0;
-    const maxPercent = max.annualCapacity ? (max.totalHours / max.annualCapacity) * 100 : 0;
-    return percent > maxPercent ? writer : max;
-  }, writers[0]);
+  const mostOverloaded = teamLoadStats.reduce((max, member) => {
+    return member.percent > max.percent ? member : max;
+  }, teamLoadStats[0]);
   
-  const mostOverloadedPercent = mostOverloaded?.annualCapacity 
-    ? Math.round((mostOverloaded.totalHours / mostOverloaded.annualCapacity) * 100) 
-    : 0;
-  const hasBottleneck = mostOverloadedPercent > 100;
+  const hasBottleneck = mostOverloaded?.percent > 100;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -84,24 +100,19 @@ export function TeamPlanner({ writers, clientMode = false, onEditMember, onNavig
               )}
             </div>
             <p className="text-sm text-red-700 mt-1">
-              <strong>{mostOverloaded.name}</strong> is at <strong>{mostOverloadedPercent}%</strong> capacity 
+              <strong>{mostOverloaded.name}</strong> is at <strong>{mostOverloaded.percent}%</strong> capacity
               ({formatNumber(mostOverloaded.totalHours)}h assigned vs {formatNumber(mostOverloaded.annualCapacity)}h available annually).
             </p>
             <p className="text-xs text-red-600 mt-2">
-              <strong>Impact:</strong> Projects will take {Math.round(mostOverloadedPercent / 100)}x longer than planned, 
-              or require redistributing {formatNumber(mostOverloaded.totalHours - mostOverloaded.annualCapacity)}h to other team members.
+              <strong>Impact:</strong> Projects will take {Math.round(mostOverloaded.percent / 100)}x longer than planned.
             </p>
           </div>
         </div>
       )}
 
       <div className="grid md:grid-cols-3 gap-6">
-        {writers.map((writer) => {
-          const injected = getTeamTotalHours(writer.id);
-          const percent = writer.annualCapacity
-            ? Math.round(((writer.totalHours + injected) / writer.annualCapacity) * 100)
-            : 0;
-          const isOver = writer.totalHours > writer.annualCapacity;
+        {teamLoadStats.map((member) => {
+          const isOver = member.percent > 100;
           const statusClass = isOver
             ? clientMode
               ? "border-amber-500"
@@ -115,7 +126,7 @@ export function TeamPlanner({ writers, clientMode = false, onEditMember, onNavig
 
           return (
             <div
-              key={writer.id}
+              key={member.id}
               className={`bg-white p-6 rounded-xl shadow-sm border-t-4 ${statusClass} relative`}
             >
               {isOver && (
@@ -131,19 +142,19 @@ export function TeamPlanner({ writers, clientMode = false, onEditMember, onNavig
               )}
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h4 className="text-lg font-bold text-slate-900">{writer.name}</h4>
+                  <h4 className="text-lg font-bold text-slate-900">{member.name}</h4>
                   <p className="text-xs uppercase tracking-wide text-slate-500">
-                    {writer.role}
+                    {member.role}
                   </p>
                 </div>
                 <div className={`text-xl font-bold ${isOver ? "text-red-600" : "text-slate-700"}`}>
-                  {percent}%
+                  {member.percent}%
                 </div>
               </div>
               <div className="h-2 bg-slate-100 rounded-full overflow-hidden mb-4">
                 <div
                   className={`h-full ${barColor}`}
-                  style={{ width: `${Math.min(percent, 100)}%` }}
+                  style={{ width: `${Math.min(member.percent, 100)}%` }}
                 />
               </div>
               
@@ -152,7 +163,7 @@ export function TeamPlanner({ writers, clientMode = false, onEditMember, onNavig
                 <>
                   {onEditMember ? (
                     <button
-                      onClick={() => onEditMember(writer.id)}
+                      onClick={() => onEditMember(member.id)}
                       className="w-full mb-4 flex items-center justify-center gap-2 px-3 py-2 bg-slate-100 hover:bg-indigo-100 text-slate-700 hover:text-indigo-700 text-sm font-medium rounded-lg border border-slate-200 hover:border-indigo-300 transition-all duration-200"
                     >
                       <Edit2 className="w-4 h-4" />
@@ -171,48 +182,19 @@ export function TeamPlanner({ writers, clientMode = false, onEditMember, onNavig
               )}
 
               <div className="space-y-2">
-                {writer.projects.map((project) => (
+                {member.packages.map((wp) => (
                   <div
-                    key={project.id}
-                    className={`text-sm border-l-2 pl-2 py-1 ${
-                      project.launchWindow.includes("Deadline")
-                        ? "border-indigo-500 bg-indigo-50"
-                        : "border-slate-200"
-                    }`}
+                    key={wp.id}
+                    className="text-sm border-l-2 pl-2 py-1 border-slate-200"
                   >
                     <div className="font-medium text-slate-700 flex justify-between">
-                      <span>{project.name}</span>
-                      {project.launchWindow.includes("Deadline") && (
-                        <Lock className="w-3 h-3 text-indigo-500" />
-                      )}
+                      <span>{wp.title}</span>
                     </div>
                     <div className="text-xs text-slate-400">
-                          {formatNumber(Math.round(project.calculatedHours))}h • {project.launchWindow}
+                          {formatNumber(Math.round(wp.estimatedHours))}h • {wp.endDate || "Unscheduled"}
                     </div>
                   </div>
                 ))}
-                {/* Injected hours from Product Builder with role breakdown */}
-                {injected > 0 && (
-                  <div className="text-xs bg-indigo-50 border border-indigo-200 rounded p-2 mt-2">
-                    <div className="font-semibold text-indigo-900">
-                      +{formatNumber(injected)}h from Product Builder
-                    </div>
-                    {(() => {
-                      const loads = teamLoads.get(writer.id) || [];
-                      const roleBreakdown = loads.reduce((acc, load) => {
-                        const role = load.primaryRole || "Unassigned";
-                        acc[role] = (acc[role] || 0) + load.additionalHours;
-                        return acc;
-                      }, {} as Record<string, number>);
-                      return Object.entries(roleBreakdown).map(([role, hours]) => (
-                        <div key={role} className="text-indigo-700 flex justify-between">
-                          <span>{role}:</span>
-                          <span>{formatNumber(hours)}h</span>
-                        </div>
-                      ));
-                    })()}
-                  </div>
-                )}
               </div>
             </div>
           );
