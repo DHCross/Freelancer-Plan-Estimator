@@ -432,6 +432,7 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
                         onClick={() => handleDuplicateMember(member)}
                         className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
                         title="Duplicate member"
+                        aria-label="Duplicate member"
                       >
                         <Copy className="w-4 h-4" />
                       </button>
