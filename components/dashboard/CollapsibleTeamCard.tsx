@@ -34,7 +34,6 @@ export function CollapsibleTeamCard({
     // the project inside the unified model to simulate the immediate re-balancing.
 
     const model = UnifiedProjectModel.getInstance();
-    const currentState = model.getState();
 
     // We need to find the project this task belongs to in the original source
     // to correctly update the tasks list.
