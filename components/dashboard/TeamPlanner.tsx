@@ -98,6 +98,7 @@ export function TeamPlanner({ writers, clientMode = false, onEditMember, onNavig
       <div className="grid md:grid-cols-3 gap-6">
         {writers.map((writer) => {
           const injected = getTeamTotalHours(writer.id);
+          const totalWithInjected = writer.totalHours + injected;
 
           // Compute Breakdowns
           const totalConceptual = writer.projects.reduce((sum, p) =>
@@ -110,12 +111,16 @@ export function TeamPlanner({ writers, clientMode = false, onEditMember, onNavig
 
           // Is this just a conceptual backlog?
           // We consider it a conceptual backlog if they are overloaded, but their non-conceptual hours are under capacity.
-          const isConceptualBacklog = writer.totalHours > writer.annualCapacity && (totalProcessing + totalExecution) <= writer.annualCapacity;
+          const isConceptualBacklog = writer.annualCapacity
+            ? totalWithInjected > writer.annualCapacity && (totalProcessing + totalExecution) <= writer.annualCapacity
+            : false;
 
           const percent = writer.annualCapacity
-            ? Math.round(((writer.totalHours + injected) / writer.annualCapacity) * 100)
+            ? Math.round((totalWithInjected / writer.annualCapacity) * 100)
             : 0;
-          const isOver = writer.totalHours > writer.annualCapacity && !isConceptualBacklog;
+          const isOver = writer.annualCapacity
+            ? totalWithInjected > writer.annualCapacity && !isConceptualBacklog
+            : false;
 
           const statusClass = isOver
             ? clientMode
