@@ -74,6 +74,7 @@ interface TeamConfigType {
   projectSize: number;
   timeline: number;
   coordinationOverhead: number;
+  frictionCoefficient: number;
 }
 
 export function TeamConfiguration({ clientMode = false }: { clientMode?: boolean }) {
@@ -82,6 +83,7 @@ export function TeamConfiguration({ clientMode = false }: { clientMode?: boolean
     projectSize: 50000,
     timeline: 6,
     coordinationOverhead: 0.15,
+    frictionCoefficient: 1.0,
   }));
   const [isLoading, setIsLoading] = useState(false);
   const [validation, setValidation] = useState(() => validateForm(teamConfig, {
@@ -117,7 +119,9 @@ export function TeamConfiguration({ clientMode = false }: { clientMode?: boolean
 
     // Coordination overhead (meetings increase with team size)
     const totalPeople = team.reduce((sum, member) => sum + member.quantity, 0);
-    const coordinationOverhead = totalPeople > 3 ? 0.15 : 0.10; // 15% vs 10% overhead
+    // Apply friction coefficient to the base coordination overhead
+    const baseOverhead = totalPeople > 3 ? 0.15 : 0.10;
+    const coordinationOverhead = baseOverhead * teamConfig.frictionCoefficient;
 
     const adjustedTimeline = monthsNeeded * (1 + coordinationOverhead);
     const adjustedCost = totalProjectCost * (1 + coordinationOverhead);
@@ -267,6 +271,23 @@ export function TeamConfiguration({ clientMode = false }: { clientMode?: boolean
             {validation.warnings.timeline && (
               <FieldFeedback warning={validation.warnings.timeline} />
             )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
+              Environmental Friction (Risk Buffer)
+            </label>
+            <select
+              value={teamConfig.frictionCoefficient}
+              onChange={(e) => updateProjectParameter('frictionCoefficient', parseFloat(e.target.value))}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg transition-all duration-200 hover:border-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 disabled:opacity-50"
+              disabled={isLoading}
+            >
+              <option value={1.0}>Standard / Low Friction (1.0x)</option>
+              <option value={1.5}>Complex Creative Blocks (1.5x)</option>
+              <option value={2.0}>Rapid Administrative Shifts (2.0x)</option>
+            </select>
+            <p className="text-xs text-slate-500 mt-1">Dynamically adjusts coordination overhead based on environmental friction.</p>
           </div>
 
           {/* Metrics Display */}

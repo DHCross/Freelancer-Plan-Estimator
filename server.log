@@ -2,18 +2,23 @@
 > hoskbrew-dashboard@0.1.0 dev
 > next dev
 
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
    ▲ Next.js 16.0.10 (Turbopack)
    - Local:         http://localhost:3000
    - Network:       http://192.168.0.2:3000
 
  ✓ Starting...
-Attention: Next.js now collects completely anonymous telemetry regarding usage.
-This information is used to shape Next.js' roadmap and prioritize features.
-You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
-https://nextjs.org/telemetry
-
- ✓ Ready in 1018ms
+ ✓ Ready in 1061ms
  ○ Compiling / ...
- GET / 200 in 7.8s (compile: 7.0s, render: 804ms)
- GET / 200 in 98ms (compile: 6ms, render: 92ms)
- GET / 200 in 297ms (compile: 86ms, render: 211ms)
+ GET / 200 in 8.3s (compile: 7.4s, render: 869ms)
+ GET / 200 in 109ms (compile: 6ms, render: 103ms)
+ GET / 200 in 86ms (compile: 4ms, render: 82ms)
+ GET / 200 in 87ms (compile: 4ms, render: 83ms)
+ GET / 200 in 96ms (compile: 5ms, render: 91ms)
+ GET / 200 in 92ms (compile: 5ms, render: 87ms)
+ GET / 200 in 90ms (compile: 4ms, render: 86ms)
+ GET / 200 in 79ms (compile: 4ms, render: 75ms)
+ GET / 200 in 95ms (compile: 6ms, render: 90ms)
+ GET / 200 in 81ms (compile: 4ms, render: 77ms)
+ GET / 200 in 153ms (compile: 6ms, render: 148ms)
+ GET / 200 in 1114ms (compile: 669ms, render: 445ms)

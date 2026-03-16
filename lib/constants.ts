@@ -472,15 +472,38 @@ export const INITIAL_PROJECTS: Project[] = [
     revenuePotential: "Core IP Stability",
     manualHours: undefined,
     lifecycleState: "Production",
-    tasks: [{
-      id: "task-1-1",
-      projectId: 1,
-      assigneeId: "dan",
-      remainingHours: 300,
-      status: "Active",
-      dependencyIds: [],
-      sortOrder: 1
-    }]
+    tasks: [
+      {
+        id: "task-1-1",
+        projectId: 1,
+        name: "Phase 1: Drafting",
+        assigneeId: "dan",
+        remainingHours: 50,
+        status: "Active",
+        dependencyIds: [],
+        sortOrder: 1
+      },
+      {
+        id: "task-1-2",
+        projectId: 1,
+        name: "Phase 2: System Stress-Testing",
+        assigneeId: "dan",
+        remainingHours: 150,
+        status: "Ready",
+        dependencyIds: ["task-1-1"],
+        sortOrder: 2
+      },
+      {
+        id: "task-1-3",
+        projectId: 1,
+        name: "Phase 3: Layout",
+        assigneeId: "dan",
+        remainingHours: 100,
+        status: "Blocked",
+        dependencyIds: ["task-1-2"],
+        sortOrder: 3
+      }
+    ]
   },
 
   // Infrastructure Projects (Support Both Lines)
@@ -491,10 +514,10 @@ export const INITIAL_PROJECTS: Project[] = [
     clientType: "System Reliability",
     targetWords: 5000,
     manualHours: 20,
-    assignedTo: "dan",
+    assignedTo: "matthew",
     internalStatus: "Critical",
     clientStatus: "High Priority",
-    stakeholder: "Dan",
+    stakeholder: "Matthew",
     launchWindow: "Q1 2026",
     targetDate: undefined,
     displayDate: "Q1 2026",
@@ -506,9 +529,69 @@ export const INITIAL_PROJECTS: Project[] = [
     tasks: [{
       id: "task-2-1",
       projectId: 2,
-      assigneeId: "dan",
+      assigneeId: "matthew",
       remainingHours: 20,
       status: "Active",
+      dependencyIds: [],
+      sortOrder: 1
+    }]
+  },
+  {
+    id: 991,
+    name: "Shadow Capacity: Systemic Guidance & Review",
+    type: "Corporate Mandate",
+    clientType: "Strategic Priority",
+    targetWords: 0,
+    manualHours: 120, // 20 hours/week for 6 weeks
+    assignedTo: "martin",
+    internalStatus: "Planning",
+    clientStatus: "Planned",
+    stakeholder: "Martin",
+    launchWindow: "Ongoing",
+    targetDate: undefined,
+    displayDate: "Ongoing Support",
+    isLocked: false,
+    budgetType: "CapEx (Enabler)",
+    dependency: "None",
+    revenuePotential: "Scalability Unlocked",
+    lifecycleState: "Planning",
+    tasks: [{
+      id: "task-shadow-1",
+      projectId: 991,
+      name: "Creative Direction Support",
+      assigneeId: "martin",
+      remainingHours: 120,
+      status: "Ready",
+      dependencyIds: [],
+      sortOrder: 1
+    }]
+  },
+  {
+    id: 992,
+    name: "Shadow Capacity: Pipeline Facilitation",
+    type: "Corporate Mandate",
+    clientType: "Strategic Priority",
+    targetWords: 0,
+    manualHours: 80, // ~13 hours/week for 6 weeks
+    assignedTo: "matthew",
+    internalStatus: "Planning",
+    clientStatus: "Planned",
+    stakeholder: "Matthew",
+    launchWindow: "Ongoing",
+    targetDate: undefined,
+    displayDate: "Ongoing Support",
+    isLocked: false,
+    budgetType: "CapEx (Enabler)",
+    dependency: "None",
+    revenuePotential: "Scalability Unlocked",
+    lifecycleState: "Planning",
+    tasks: [{
+      id: "task-shadow-2",
+      projectId: 992,
+      name: "Production Pipeline Support",
+      assigneeId: "matthew",
+      remainingHours: 80,
+      status: "Ready",
       dependencyIds: [],
       sortOrder: 1
     }]
@@ -578,10 +661,10 @@ export const INITIAL_PROJECTS: Project[] = [
     clientType: "System Reliability",
     targetWords: 8000,
     manualHours: 15,
-    assignedTo: "dan",
+    assignedTo: "martin",
     internalStatus: "Priority",
     clientStatus: "Planned",
-    stakeholder: "Dan",
+    stakeholder: "Martin",
     launchWindow: "Q1 2026",
     targetDate: undefined,
     displayDate: "Q1 2026",
@@ -593,7 +676,7 @@ export const INITIAL_PROJECTS: Project[] = [
     tasks: [{
       id: "task-5-1",
       projectId: 5,
-      assigneeId: "dan",
+      assigneeId: "martin",
       remainingHours: 15,
       status: "Active",
       dependencyIds: [],

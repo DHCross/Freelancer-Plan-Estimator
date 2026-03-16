@@ -6,6 +6,7 @@ export type TaskStatus = "Blocked" | "Ready" | "Active" | "Review" | "Done";
 export interface ExecutionTask {
   id: string;
   projectId: number;
+  name?: string;
   assigneeId: string;
   remainingHours: number;
   status: TaskStatus;
