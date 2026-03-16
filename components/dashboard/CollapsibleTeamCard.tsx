@@ -38,29 +38,33 @@ export function CollapsibleTeamCard({
 
     // We need to find the project this task belongs to in the original source
     // to correctly update the tasks list.
-    const allProjects = member.projects; // In a real app, this should be the global project list
-    const projectIndex = allProjects.findIndex(p => p.tasks?.some(t => t.id === taskA.id));
+    const allProjects = currentState.projects ?? [];
+    const projectIndex = allProjects.findIndex((p: any) => p.tasks?.some((t: any) => t.id === taskA.id));
 
     if (projectIndex >= 0) {
       const project = allProjects[projectIndex];
-      if (project.tasks) {
-        // Find and replace Task A (it now has reduced hours and is Conceptual)
-        const taskAIndex = project.tasks.findIndex(t => t.id === taskA.id);
-        if (taskAIndex >= 0) {
-          project.tasks[taskAIndex] = taskA;
-        }
+      const existingTasks = project.tasks ?? [];
 
-        // Add Task B
-        project.tasks.push(taskB);
+      // Replace Task A (it now has reduced hours and is Conceptual)
+      const updatedTasks = existingTasks.map((t: any) =>
+        t.id === taskA.id ? taskA : t
+      );
 
-        // Force an update to the global model to trigger recalculations
-        model.updateProjectAssignments(allProjects);
+      // Add Task B as a new task
+      const finalTasks = [...updatedTasks, taskB];
 
-        // Note: For React to instantly reflect this without a full global context provider
-        // wrapped around the dashboard, you would typically rely on the parent component
-        // re-rendering. Since this is a demo environment, logging it is acceptable,
-        // but the model update above ensures if other components pull from the model, it is correct.
-      }
+      // Build a new projects array with the updated project to avoid in-place mutation
+      const updatedProjects = allProjects.map((p: any, idx: number) =>
+        idx === projectIndex ? { ...p, tasks: finalTasks } : p
+      );
+
+      // Force an update to the global model to trigger recalculations
+      model.updateProjectAssignments(updatedProjects);
+
+      // Note: For React to instantly reflect this without a full global context provider
+      // wrapped around the dashboard, you would typically rely on the parent component
+      // re-rendering. Since this is a demo environment, logging it is acceptable,
+      // but the model update above ensures if other components pull from the model, it is correct.
     }
 
     console.log(`Split task ${taskA.id}. Task B assigned to ${taskB.assigneeId}`);
