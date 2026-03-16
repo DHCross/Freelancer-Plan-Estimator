@@ -304,6 +304,7 @@ export function DashboardView({
         
         <TeamGrid
           members={writers}
+          allProjects={analysis}
           clientMode={clientMode}
           getInjectedHours={getInjectedHours}
         />
