@@ -51,6 +51,17 @@ const DEFAULT_CHANNELS: DistributionChannel[] = [
   },
 ];
 
+// Extend ROI Result to support multiple channels
+export interface HybridRoiResult {
+  netRevenue: number;
+  totalRevenue: number;
+  totalCogs: number;
+  grossMargin: number;
+  netProfit: number;
+  breakEvenUnits: number;
+  roiPercent: number;
+}
+
 interface IntegratedFinancialModelProps {
   clientMode?: boolean;
   onNavigateToTeamBuilder?: () => void;
@@ -72,6 +83,18 @@ export function IntegratedFinancialModel({ clientMode = false, onNavigateToTeamB
     tariffPercent: 0,
   });
   const [selectedChannelId, setSelectedChannelId] = useState<DistributionChannelType>("distributor_standard");
+  const [isHybrid, setIsHybrid] = useState(false);
+  const [hybridAllocations, setHybridAllocations] = useState<Record<string, number>>({
+    distributor_standard: 60,
+    kickstarter: 30,
+    direct: 10,
+    distributor_hybrid: 0,
+  });
+
+  const [isValueInKindEnabled, setIsValueInKindEnabled] = useState(false);
+
+  // Assume "Template System Overhaul" and similar tasks represent ~25% of dev costs as a systemic investment
+  const SYSTEMIC_INVESTMENT_RATIO = 0.25;
 
   useEffect(() => {
     setScenario(unifiedModel.getProjectScenario());
@@ -82,10 +105,62 @@ export function IntegratedFinancialModel({ clientMode = false, onNavigateToTeamB
     [selectedChannelId]
   );
 
-  const roi = useMemo(
-    () => calculateRoi(devCostFromTeamBuilder, printRun, { msrp }, selectedChannel),
-    [devCostFromTeamBuilder, printRun, msrp, selectedChannel]
-  );
+  const roi = useMemo(() => {
+    const adjustedDevCost = isValueInKindEnabled
+      ? devCostFromTeamBuilder * (1 - SYSTEMIC_INVESTMENT_RATIO)
+      : devCostFromTeamBuilder;
+
+    if (!isHybrid) {
+      const singleRoi = calculateRoi(adjustedDevCost, printRun, { msrp }, selectedChannel);
+      return {
+        ...singleRoi,
+        netRevenue: singleRoi.netRevenuePerUnit * printRun.quantity,
+        adjustedDevCost
+      };
+    }
+
+    // Calculate Hybrid ROI
+    let totalRevenue = 0;
+    let totalCogs = 0;
+
+    // Total percentages should equal 100%
+    const totalAlloc = Object.values(hybridAllocations).reduce((a, b) => a + b, 0);
+    const normalizationFactor = totalAlloc > 0 ? 100 / totalAlloc : 1;
+
+    DEFAULT_CHANNELS.forEach(channel => {
+      const allocPct = (hybridAllocations[channel.id] || 0) * normalizationFactor;
+      const channelQty = Math.round(printRun.quantity * (allocPct / 100));
+
+      if (channelQty > 0) {
+        // Run single calc for this channel's quantity
+        const channelConfig = { ...printRun, quantity: channelQty };
+        const channelRoi = calculateRoi(0, channelConfig, { msrp }, channel);
+
+        totalRevenue += channelRoi.totalRevenue;
+        totalCogs += channelRoi.totalCogs;
+      }
+    });
+
+    const grossMargin = totalRevenue - totalCogs;
+    const netProfit = grossMargin - adjustedDevCost;
+
+    // Approximate blended per unit revenue
+    const blendedNetRevenuePerUnit = printRun.quantity > 0 ? (totalRevenue - totalCogs) / printRun.quantity : 0;
+    const breakEvenUnits = blendedNetRevenuePerUnit > 0 ? Math.ceil(adjustedDevCost / blendedNetRevenuePerUnit) : Number.POSITIVE_INFINITY;
+    const roiPercent = adjustedDevCost > 0 ? (netProfit / adjustedDevCost) * 100 : 0;
+
+    return {
+      netRevenue: totalRevenue - totalCogs,
+      netRevenuePerUnit: blendedNetRevenuePerUnit,
+      totalRevenue,
+      totalCogs,
+      grossMargin,
+      netProfit,
+      breakEvenUnits,
+      roiPercent,
+      adjustedDevCost
+    };
+  }, [devCostFromTeamBuilder, printRun, msrp, selectedChannel, isHybrid, hybridAllocations, isValueInKindEnabled]);
 
   const formatCurrency = (val: number) =>
     new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(val);
@@ -131,11 +206,48 @@ export function IntegratedFinancialModel({ clientMode = false, onNavigateToTeamB
               </h3>
               <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Auto-populated</span>
             </div>
-            <div className="text-3xl font-bold text-blue-900 mb-2">
-              {formatCurrency(devCostFromTeamBuilder)}
+
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm font-medium text-slate-600">Value-in-Kind Calibration</span>
+              <button
+                onClick={() => setIsValueInKindEnabled(!isValueInKindEnabled)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  isValueInKindEnabled ? 'bg-emerald-600' : 'bg-slate-300'
+                }`}
+                title="Treat infrastructure/system updates as investments rather than line-item expenses"
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    isValueInKindEnabled ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
             </div>
-            <p className="text-xs text-blue-600">
-              Pulled automatically from Team Builder&apos;s Total Project Cost
+
+            {isValueInKindEnabled ? (
+              <div className="space-y-1 mb-2">
+                <div className="flex items-center justify-between text-sm text-slate-500 line-through">
+                  <span>Gross Cost</span>
+                  <span>{formatCurrency(devCostFromTeamBuilder)}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm text-emerald-600 font-medium">
+                  <span>Systemic Investment ({SYSTEMIC_INVESTMENT_RATIO * 100}%)</span>
+                  <span>-{formatCurrency(devCostFromTeamBuilder * SYSTEMIC_INVESTMENT_RATIO)}</span>
+                </div>
+                <div className="text-3xl font-bold text-blue-900 pt-2 border-t border-blue-200/50">
+                  {formatCurrency((roi as any).adjustedDevCost)}
+                </div>
+              </div>
+            ) : (
+              <div className="text-3xl font-bold text-blue-900 mb-2">
+                {formatCurrency(devCostFromTeamBuilder)}
+              </div>
+            )}
+
+            <p className="text-xs text-blue-600 mt-2">
+              {isValueInKindEnabled
+                ? "Shifting focus to Systemic Gain: offsetting structural investments (e.g. templates) from unit economics."
+                : "Pulled automatically from Team Builder's Total Project Cost."}
             </p>
           </div>
 
@@ -226,48 +338,101 @@ export function IntegratedFinancialModel({ clientMode = false, onNavigateToTeamB
         {/* Channel Selection & Results */}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-              <Truck className="w-5 h-5 text-blue-600" />
-              Distribution Channel
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {DEFAULT_CHANNELS.map((channel) => (
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
+                <Truck className="w-5 h-5 text-blue-600" />
+                Distribution Channel
+              </h3>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-slate-600">Hybrid Launch</span>
                 <button
-                  key={channel.id}
-                  onClick={() => setSelectedChannelId(channel.id)}
-                  className={`flex flex-col items-start p-4 rounded-xl border transition-all ${
-                    selectedChannelId === channel.id
-                      ? "bg-blue-50 border-blue-500 ring-1 ring-blue-500"
-                      : "bg-white border-slate-200 hover:border-slate-300"
+                  onClick={() => setIsHybrid(!isHybrid)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    isHybrid ? 'bg-indigo-600' : 'bg-slate-300'
                   }`}
                 >
-                  <span className={`font-semibold ${selectedChannelId === channel.id ? "text-blue-900" : "text-slate-700"}`}>
-                    {channel.label}
-                  </span>
-                  <div className="mt-2 text-xs space-y-1 text-slate-500">
-                    <div className="flex justify-between w-full gap-4">
-                      <span>Discount:</span>
-                      <span className="font-mono font-medium">{channel.discountPercent}%</span>
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      isHybrid ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                  />
+                </button>
+              </div>
+            </div>
+
+            {!isHybrid ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {DEFAULT_CHANNELS.map((channel) => (
+                  <button
+                    key={channel.id}
+                    onClick={() => setSelectedChannelId(channel.id)}
+                    className={`flex flex-col items-start p-4 rounded-xl border transition-all ${
+                      selectedChannelId === channel.id
+                        ? "bg-blue-50 border-blue-500 ring-1 ring-blue-500"
+                        : "bg-white border-slate-200 hover:border-slate-300"
+                    }`}
+                  >
+                    <span className={`font-semibold ${selectedChannelId === channel.id ? "text-blue-900" : "text-slate-700"}`}>
+                      {channel.label}
+                    </span>
+                    <div className="mt-2 text-xs space-y-1 text-slate-500">
+                      <div className="flex justify-between w-full gap-4">
+                        <span>Discount:</span>
+                        <span className="font-mono font-medium">{channel.discountPercent}%</span>
+                      </div>
+                      <div className="flex justify-between w-full gap-4">
+                        <span>Platform Fee:</span>
+                        <span className="font-mono font-medium">{channel.platformFeePercent}%</span>
+                      </div>
+                      <div className="flex justify-between w-full gap-4">
+                        <span>Fulfillment:</span>
+                        <span className="font-mono font-medium">${channel.fulfillmentFeePerUnit.toFixed(2)}/unit</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between w-full gap-4">
-                      <span>Platform Fee:</span>
-                      <span className="font-mono font-medium">{channel.platformFeePercent}%</span>
-                    </div>
-                    <div className="flex justify-between w-full gap-4">
-                      <span>Fulfillment:</span>
-                      <span className="font-mono font-medium">${channel.fulfillmentFeePerUnit.toFixed(2)}/unit</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="bg-indigo-50 border border-indigo-200 p-4 rounded-xl text-sm text-indigo-800">
+                  <p>Allocate your print run across multiple channels to model hybrid strategies (e.g., fulfilling Kickstarter backers while placing units in standard distribution).</p>
+                </div>
+
+                {DEFAULT_CHANNELS.map(channel => (
+                  <div key={channel.id} className="flex items-center gap-4">
+                    <label className="flex-1 text-sm font-medium text-slate-700">{channel.label}</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={hybridAllocations[channel.id] || 0}
+                        onChange={(e) => setHybridAllocations(prev => ({ ...prev, [channel.id]: Number(e.target.value) }))}
+                        className="w-32"
+                      />
+                      <span className="w-12 text-right font-mono text-sm">{hybridAllocations[channel.id] || 0}%</span>
                     </div>
                   </div>
-                </button>
-              ))}
-            </div>
+                ))}
+
+                <div className="pt-2 border-t border-slate-200">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="font-medium text-slate-700">Total Allocation:</span>
+                    <span className={`font-mono font-bold ${Object.values(hybridAllocations).reduce((a,b)=>a+b,0) === 100 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                      {Object.values(hybridAllocations).reduce((a,b)=>a+b,0)}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Unit Economics Card */}
             <div className="bg-slate-900 text-slate-100 rounded-xl p-6 shadow-lg">
-              <h4 className="text-sm uppercase tracking-wider text-slate-400 mb-4">Unit Economics</h4>
+              <h4 className="text-sm uppercase tracking-wider text-slate-400 mb-4">
+                {isHybrid ? 'Blended Unit Economics' : 'Unit Economics'}
+              </h4>
 
               <div className="space-y-4">
                 <div className="flex justify-between items-end border-b border-slate-700 pb-2">
@@ -275,10 +440,12 @@ export function IntegratedFinancialModel({ clientMode = false, onNavigateToTeamB
                   <span className="font-mono text-lg">{formatCurrency(msrp)}</span>
                 </div>
 
-                <div className="flex justify-between items-end text-rose-400 text-sm">
-                  <span>Channel Cut ({selectedChannel.discountPercent}%)</span>
-                  <span className="font-mono">-{formatCurrency(msrp * (selectedChannel.discountPercent / 100))}</span>
-                </div>
+                {!isHybrid && (
+                  <div className="flex justify-between items-end text-rose-400 text-sm">
+                    <span>Channel Cut ({selectedChannel.discountPercent}%)</span>
+                    <span className="font-mono">-{formatCurrency(msrp * (selectedChannel.discountPercent / 100))}</span>
+                  </div>
+                )}
 
                 <div className="flex justify-between items-end text-rose-400 text-sm">
                   <span>COGS (Print/Ship/Fees)</span>

@@ -23,7 +23,8 @@ export class DataIngestionService {
         targetTimeline: data.milestones.length * 7, // Rough estimate if days missing
         totalCost: data.financials.budget_total?.amount || 0,
         feasible: !data.schedule.urgent,
-        coordinationOverhead: 0.15 // Default 15%
+        coordinationOverhead: 0.15, // Default 15%
+        frictionCoefficient: 1.0
       },
       resourceValidation: [], // Would require recalculation logic
       projectScenario: {

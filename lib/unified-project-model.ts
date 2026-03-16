@@ -8,6 +8,7 @@ export interface TeamConfiguration {
   totalCost: number;
   feasible: boolean;
   coordinationOverhead: number;
+  frictionCoefficient: number;
 }
 
 export interface ResourceValidation {
@@ -73,8 +74,8 @@ export class UnifiedProjectModel {
     return { ...this.state };
   }
 
-  public updateTeamConfiguration(teamMembers: TeamMember[], projectSize: number, targetTimeline: number): void {
-    this.state.teamConfig = this.calculateTeamConfiguration(teamMembers, projectSize, targetTimeline);
+  public updateTeamConfiguration(teamMembers: TeamMember[], projectSize: number, targetTimeline: number, frictionCoefficient: number = 1.0): void {
+    this.state.teamConfig = this.calculateTeamConfiguration(teamMembers, projectSize, targetTimeline, frictionCoefficient);
     this.state.resourceValidation = this.calculateResourceValidation(teamMembers, INITIAL_PROJECTS);
     this.state.projectScenario = this.calculateProjectScenario(this.state.teamConfig, this.state.resourceValidation);
     this.state.lastUpdated = new Date();
@@ -101,7 +102,7 @@ export class UnifiedProjectModel {
     this.state.lastUpdated = new Date();
   }
 
-  private calculateTeamConfiguration(teamMembers: TeamMember[], projectSize: number, targetTimeline: number): TeamConfiguration {
+  private calculateTeamConfiguration(teamMembers: TeamMember[], projectSize: number, targetTimeline: number, frictionCoefficient: number = 1.0): TeamConfiguration {
     const totalWeeklyCost = teamMembers.reduce((sum, member) => 
       sum + (member.hourlyRate * member.weeklyCapacity), 0
     );
@@ -118,7 +119,8 @@ export class UnifiedProjectModel {
     const monthsNeeded = weeksNeeded / 4.33;
 
     // Coordination overhead increases with team size
-    const coordinationOverhead = teamMembers.length > 3 ? 0.15 : 0.10;
+    const baseOverhead = teamMembers.length > 3 ? 0.15 : 0.10;
+    const coordinationOverhead = baseOverhead * frictionCoefficient;
     const adjustedCost = totalCost * (1 + coordinationOverhead);
 
     return {
@@ -127,7 +129,8 @@ export class UnifiedProjectModel {
       targetTimeline,
       totalCost: adjustedCost,
       feasible: monthsNeeded <= targetTimeline,
-      coordinationOverhead
+      coordinationOverhead,
+      frictionCoefficient
     };
   }
 
