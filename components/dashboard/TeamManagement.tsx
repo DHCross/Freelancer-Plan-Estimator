@@ -419,25 +419,25 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
                       </div>
                     </div>
 
-                    {/* Action Buttons - Hidden on hover by default */}
-                    <div className="flex items-center gap-1 opacity-0 hover:opacity-100 transition-opacity">
+                    {/* Action Buttons - Always visible for discoverability */}
+                    <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleEditMember(member)}
-                        className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
-                        title="Edit member"
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition text-sm font-medium"
                       >
                         <Edit2 className="w-4 h-4" />
+                        Edit
                       </button>
                       <button
                         onClick={() => handleDuplicateMember(member)}
-                        className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
+                        className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
                         title="Duplicate member"
                       >
                         <Copy className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDeleteMember(member.id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                        className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
                         title="Delete member"
                       >
                         <Trash2 className="w-4 h-4" />
