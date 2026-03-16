@@ -1,10 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, Lock, HelpCircle } from "lucide-react";
-import { WriterLoad } from "@/lib/types";
+import { ChevronDown, Lock, HelpCircle, Split } from "lucide-react";
+import { WriterLoad, ExecutionTask } from "@/lib/types";
 import { formatNumber } from "@/lib/utils";
 import { Tooltip } from "./Tooltip";
+import { LaborSplitModal } from "./LaborSplitModal";
+import { TEAM_ROSTER } from "@/lib/constants";
+import { UnifiedProjectModel } from "@/lib/unified-project-model";
 
 interface CollapsibleTeamCardProps {
   member: WriterLoad;
@@ -22,6 +25,49 @@ export function CollapsibleTeamCard({
   maxVisibleProjects = 2,
 }: CollapsibleTeamCardProps) {
   const [expanded, setExpanded] = useState(initialExpanded);
+  const [taskToSplit, setTaskToSplit] = useState<ExecutionTask | null>(null);
+
+  const handleSaveSplit = (taskA: ExecutionTask, taskB: ExecutionTask) => {
+    // In a real application, you would dispatch an action here or use a Context
+    // to update the global INITIAL_PROJECTS or the database.
+    // Since we are mocking the frontend, we will mutate the local instance of
+    // the project inside the unified model to simulate the immediate re-balancing.
+
+    const model = UnifiedProjectModel.getInstance();
+    const currentState = model.getState();
+
+    // We need to find the project this task belongs to in the original source
+    // to correctly update the tasks list.
+    const allProjects = member.projects; // In a real app, this should be the global project list
+    const projectIndex = allProjects.findIndex(p => p.tasks?.some(t => t.id === taskA.id));
+
+    if (projectIndex >= 0) {
+      const project = allProjects[projectIndex];
+      if (project.tasks) {
+        // Find and replace Task A (it now has reduced hours and is Conceptual)
+        const taskAIndex = project.tasks.findIndex(t => t.id === taskA.id);
+        if (taskAIndex >= 0) {
+          project.tasks[taskAIndex] = taskA;
+        }
+
+        // Add Task B
+        project.tasks.push(taskB);
+
+        // Force an update to the global model to trigger recalculations
+        model.updateProjectAssignments(allProjects);
+
+        // Note: For React to instantly reflect this without a full global context provider
+        // wrapped around the dashboard, you would typically rely on the parent component
+        // re-rendering. Since this is a demo environment, logging it is acceptable,
+        // but the model update above ensures if other components pull from the model, it is correct.
+      }
+    }
+
+    console.log(`Split task ${taskA.id}. Task B assigned to ${taskB.assigneeId}`);
+
+    // We clear the modal
+    setTaskToSplit(null);
+  };
 
   // Use committedHours for the gauge to reflect "Now Mode"
   const displayHours = member.committedHours + injectedHours;
@@ -51,8 +97,15 @@ export function CollapsibleTeamCard({
 
   // Calculate stats for "Assigned vs Executing"
   const executingCount = member.projects.filter(p => p.lifecycleState === "Production").length;
-  // Note: displayHours is derived from committedHours which should only include active execution logic
-  // if the backend is strict.
+
+  // Calculate Breakdown
+  const totalConceptual = member.projects.reduce((sum, p) =>
+    sum + (p.tasks?.filter(t => t.assigneeId === member.id && t.laborCategory === 'Conceptual_Raw').reduce((s, t) => s + t.remainingHours, 0) || 0)
+  , 0);
+  const totalProcessing = member.projects.reduce((sum, p) =>
+    sum + (p.tasks?.filter(t => t.assigneeId === member.id && t.laborCategory === 'Systemic_Processing').reduce((s, t) => s + t.remainingHours, 0) || 0)
+  , 0);
+  const totalExecution = displayHours - totalConceptual - totalProcessing;
 
   return (
     <div
@@ -108,8 +161,31 @@ export function CollapsibleTeamCard({
         {/* Quick Stats - Updated Language */}
         <div className="flex items-center gap-4 mt-3 text-xs text-slate-500">
           <span>{member.projects.length} assigned · {executingCount} executing</span>
-          <span className="font-medium">{formatNumber(displayHours)}h executing / {formatNumber(member.annualCapacity)}h available</span>
+          <span className="font-medium">{formatNumber(displayHours)}h Total / {formatNumber(member.annualCapacity)}h Capacity</span>
         </div>
+
+        {/* Labor Category Breakdown */}
+        {displayHours > 0 && (
+          <div className="mt-2 text-xs flex items-center gap-2 flex-wrap border-t border-slate-100 pt-2">
+            <span className="text-slate-500 font-medium whitespace-nowrap">{formatNumber(displayHours)}h Total</span>
+            <span className="text-slate-300">|</span>
+            {totalConceptual > 0 && (
+              <span className="text-indigo-600 whitespace-nowrap">{formatNumber(totalConceptual)}h Conceptual</span>
+            )}
+            {totalProcessing > 0 && (
+              <>
+                {totalConceptual > 0 && <span className="text-slate-300">|</span>}
+                <span className="text-emerald-600 whitespace-nowrap">{formatNumber(totalProcessing)}h Processing</span>
+              </>
+            )}
+            {totalExecution > 0 && (
+              <>
+                {(totalConceptual > 0 || totalProcessing > 0) && <span className="text-slate-300">|</span>}
+                <span className="text-slate-600 whitespace-nowrap">{formatNumber(totalExecution)}h Execution</span>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Projects List */}
@@ -118,6 +194,9 @@ export function CollapsibleTeamCard({
           {visibleProjects.map((project) => {
             const isExecuting = project.lifecycleState === "Production";
             const opacityClass = isExecuting ? "" : "opacity-60 grayscale";
+
+            // If the project has explicit ExecutionTasks assigned to this member, display them inside the project block
+            const memberTasks = project.tasks?.filter(t => t.assigneeId === member.id) || [];
 
             return (
               <div
@@ -150,9 +229,34 @@ export function CollapsibleTeamCard({
                     </span>
                   )}
                 </div>
-                <div className="text-xs text-slate-400 mt-0.5">
-                  {project.displayDate || project.launchWindow}
-                </div>
+
+                {/* Task-Level details (allows splitting right from the team card) */}
+                {memberTasks.length > 0 ? (
+                  <div className="mt-2 pl-4 border-l-2 border-slate-200 space-y-1">
+                    {memberTasks.map(task => (
+                      <div key={task.id} className="flex items-center justify-between text-xs group">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className={`w-1.5 h-1.5 rounded-full ${task.laborCategory === 'Conceptual_Raw' ? 'bg-indigo-400' : task.laborCategory === 'Systemic_Processing' ? 'bg-emerald-400' : 'bg-slate-300'}`} />
+                          <span className="text-slate-600 truncate">{task.name || `Task ${task.id}`}</span>
+                          <span className="text-slate-400 ml-1">({task.remainingHours}h)</span>
+                        </div>
+                        {!clientMode && (
+                          <button
+                            onClick={() => setTaskToSplit(task)}
+                            className="p-1 text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-indigo-50 rounded"
+                            title="Split Task by Labor Type"
+                          >
+                            <Split className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-xs text-slate-400 mt-0.5">
+                    {project.displayDate || project.launchWindow}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -185,6 +289,16 @@ export function CollapsibleTeamCard({
           </div>
         )}
       </div>
+
+      {taskToSplit && (
+        <LaborSplitModal
+          task={taskToSplit}
+          teamMembers={TEAM_ROSTER}
+          isOpen={!!taskToSplit}
+          onClose={() => setTaskToSplit(null)}
+          onSave={handleSaveSplit}
+        />
+      )}
     </div>
   );
 }

@@ -2,6 +2,7 @@ export type Stakeholder = "Dan" | "Martin" | "Matthew";
 
 export type LifecycleState = "Backlog" | "Planning" | "Production" | "Complete" | "Archived";
 export type TaskStatus = "Blocked" | "Ready" | "Active" | "Review" | "Done";
+export type LaborCategory = "Conceptual_Raw" | "Systemic_Processing" | "Standard_Execution";
 
 export interface ExecutionTask {
   id: string;
@@ -10,6 +11,7 @@ export interface ExecutionTask {
   assigneeId: string;
   remainingHours: number;
   status: TaskStatus;
+  laborCategory?: LaborCategory;
   dependencyIds: string[];
   sortOrder: number;
 }

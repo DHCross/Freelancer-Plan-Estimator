@@ -15,9 +15,13 @@ export interface ResourceValidation {
   teamMemberId: string;
   teamMemberName: string;
   totalAssignedHours: number;
+  conceptualHours: number;
+  processingHours: number;
+  executionHours: number;
   availableCapacity: number;
   loadPercentage: number;
   isOverloaded: boolean;
+  isConceptualBacklog: boolean;
   assignedProjects: Array<{
     projectId: number;
     projectName: string;
@@ -135,53 +139,109 @@ export class UnifiedProjectModel {
   }
 
   private calculateResourceValidation(teamMembers: TeamMember[], projects: Project[]): ResourceValidation[] {
+    // PASS 1: Calculate raw hard load (Execution + Processing) to identify starved members
+    const rawLoads = new Map<string, number>();
+    projects.forEach(project => {
+      if (project.tasks && project.lifecycleState === "Production") {
+        project.tasks.forEach(task => {
+          if ((task.status === "Active" || task.status === "Review") && task.remainingHours > 0) {
+            if (task.laborCategory !== "Conceptual_Raw") {
+              rawLoads.set(task.assigneeId, (rawLoads.get(task.assigneeId) || 0) + task.remainingHours);
+            }
+          }
+        });
+      } else if (project.lifecycleState === "Production" && project.assignedTo) {
+          const teamMember = teamMembers.find(m => m.id === project.assignedTo);
+          if (teamMember) {
+              const fallbackHours = project.manualHours || this.estimateProjectHours(project, teamMember);
+              rawLoads.set(project.assignedTo, (rawLoads.get(project.assignedTo) || 0) + fallbackHours);
+          }
+      }
+    });
+
+    const isAssigneeStarved = (assigneeId: string) => {
+        const member = teamMembers.find(m => m.id === assigneeId);
+        if (!member) return false;
+        const availableCapacity = member.weeklyCapacity * 48;
+        return (rawLoads.get(assigneeId) || 0) > availableCapacity;
+    };
+
     return teamMembers.map(member => {
+      let conceptualHours = 0;
+      let processingHours = 0;
+      let executionHours = 0;
+      let activeBlockingConceptualHours = 0;
+
       const assignedProjects = projects
         .flatMap(project => {
-          // If project has tasks, use them for granular validation
           if (project.tasks && project.tasks.length > 0) {
-            return project.tasks
-              .filter(task =>
+            const memberTasks = project.tasks.filter(task =>
                 task.assigneeId === member.id &&
                 project.lifecycleState === "Production" &&
                 (task.status === "Active" || task.status === "Review") &&
                 task.remainingHours > 0
-              )
-              .map(task => ({
-                projectId: project.id,
-                projectName: project.name,
-                hours: task.remainingHours
-              }));
+              );
+
+            memberTasks.forEach(task => {
+                if (task.laborCategory === "Conceptual_Raw") {
+                  conceptualHours += task.remainingHours;
+
+                  // Check if any dependent processing task is starved
+                  const dependentTasks = project.tasks!.filter(t => t.dependencyIds?.includes(task.id) && t.laborCategory === "Systemic_Processing");
+                  const isBlockingStarved = dependentTasks.some(t => isAssigneeStarved(t.assigneeId));
+
+                  if (isBlockingStarved) {
+                      activeBlockingConceptualHours += task.remainingHours;
+                  }
+                } else if (task.laborCategory === "Systemic_Processing") {
+                  processingHours += task.remainingHours;
+                } else {
+                  executionHours += task.remainingHours;
+                }
+            });
+
+            return memberTasks.map(task => ({
+              projectId: project.id,
+              projectName: project.name,
+              hours: task.remainingHours
+            }));
           }
 
           // Fallback for projects without tasks (legacy support)
-          // Only count if in Production state
           if (project.assignedTo === member.id && project.lifecycleState === "Production") {
+            const fallbackHours = project.manualHours || this.estimateProjectHours(project, member);
+            executionHours += fallbackHours; // default legacy to execution
             return [{
               projectId: project.id,
               projectName: project.name,
-              hours: project.manualHours || this.estimateProjectHours(project, member)
+              hours: fallbackHours
             }];
           }
 
           return [];
         });
 
-      const totalAssignedHours = assignedProjects.reduce((sum, project) => sum + project.hours, 0);
-      // Use a shorter horizon for "Now Mode" validation?
-      // The prompt asks to remove fake overload. Keeping annual capacity but filtering work will do that.
-      // Ideally this should be matched against a "Quarterly" or "Sprint" horizon, but
-      // sticking to existing logic with filtered data is the safest first step.
+      const totalAssignedHours = conceptualHours + processingHours + executionHours;
       const availableCapacity = member.weeklyCapacity * 48; // Annual capacity
+
+      const hardBlockLoad = executionHours + processingHours + activeBlockingConceptualHours;
+
       const loadPercentage = (totalAssignedHours / availableCapacity) * 100;
+
+      const isOverloaded = hardBlockLoad > availableCapacity;
+      const isConceptualBacklog = !isOverloaded && totalAssignedHours > availableCapacity;
 
       return {
         teamMemberId: member.id,
         teamMemberName: member.name,
         totalAssignedHours,
+        conceptualHours,
+        processingHours,
+        executionHours,
         availableCapacity,
         loadPercentage,
-        isOverloaded: totalAssignedHours > availableCapacity,
+        isOverloaded,
+        isConceptualBacklog,
         assignedProjects
       };
     });
@@ -222,23 +282,29 @@ export class UnifiedProjectModel {
     );
 
     // Calculate timeline based on bottleneck
-    const bottleneckMultiplier = bottleneck.isOverloaded ? 
-      (bottleneck.loadPercentage / 100) : 1.0;
+    let bottleneckMultiplier = 1.0;
+    if (bottleneck.isOverloaded) {
+      bottleneckMultiplier = ((bottleneck.executionHours + bottleneck.processingHours) / bottleneck.availableCapacity);
+      if (bottleneckMultiplier < 1.0) bottleneckMultiplier = 1.2; // Floor it above 1 if overloaded due to conceptual blocking
+    }
     
     const validatedTimeline = Math.ceil(teamConfig.targetTimeline * bottleneckMultiplier);
 
     // Identify bottlenecks
     const bottlenecks: string[] = [];
     if (bottleneck.isOverloaded) {
-      bottlenecks.push(`Critical: ${bottleneck.teamMemberName} is ${Math.round(bottleneck.loadPercentage)}% overloaded`);
+      bottlenecks.push(`Critical: ${bottleneck.teamMemberName} is ${Math.round((bottleneck.executionHours + bottleneck.processingHours) / bottleneck.availableCapacity * 100)}% overloaded on execution/processing`);
+    } else if (bottleneck.isConceptualBacklog) {
+      bottlenecks.push(`Conceptual Backlog: ${bottleneck.teamMemberName} has high conceptual load but execution is unblocked`);
     }
+
     if (validatedBudget > teamConfig.targetTimeline * 10000) { // Rough budget check
       bottlenecks.push("Budget exceeds typical project parameters");
     }
 
     // Risk assessment
     let riskLevel: "low" | "medium" | "high" = "low";
-    if (bottlenecks.length >= 2) riskLevel = "high";
+    if (bottlenecks.some(b => b.startsWith("Critical"))) riskLevel = "high";
     else if (bottlenecks.length >= 1) riskLevel = "medium";
 
     return {
@@ -247,7 +313,7 @@ export class UnifiedProjectModel {
       validatedBudget,
       validatedTimeline,
       bottlenecks,
-      feasible: bottlenecks.length === 0,
+      feasible: !bottlenecks.some(b => b.startsWith("Critical")),
       riskLevel
     };
   }

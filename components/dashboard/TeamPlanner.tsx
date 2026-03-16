@@ -98,35 +98,56 @@ export function TeamPlanner({ writers, clientMode = false, onEditMember, onNavig
       <div className="grid md:grid-cols-3 gap-6">
         {writers.map((writer) => {
           const injected = getTeamTotalHours(writer.id);
+
+          // Compute Breakdowns
+          const totalConceptual = writer.projects.reduce((sum, p) =>
+            sum + (p.tasks?.filter(t => t.assigneeId === writer.id && t.laborCategory === 'Conceptual_Raw').reduce((s, t) => s + t.remainingHours, 0) || 0)
+          , 0);
+          const totalProcessing = writer.projects.reduce((sum, p) =>
+            sum + (p.tasks?.filter(t => t.assigneeId === writer.id && t.laborCategory === 'Systemic_Processing').reduce((s, t) => s + t.remainingHours, 0) || 0)
+          , 0);
+          const totalExecution = writer.totalHours - totalConceptual - totalProcessing;
+
+          // Is this just a conceptual backlog?
+          // We consider it a conceptual backlog if they are overloaded, but their non-conceptual hours are under capacity.
+          const isConceptualBacklog = writer.totalHours > writer.annualCapacity && (totalProcessing + totalExecution) <= writer.annualCapacity;
+
           const percent = writer.annualCapacity
             ? Math.round(((writer.totalHours + injected) / writer.annualCapacity) * 100)
             : 0;
-          const isOver = writer.totalHours > writer.annualCapacity;
+          const isOver = writer.totalHours > writer.annualCapacity && !isConceptualBacklog;
+
           const statusClass = isOver
             ? clientMode
               ? "border-amber-500"
               : "border-red-600"
-            : "border-emerald-500";
+            : isConceptualBacklog
+              ? "border-indigo-400"
+              : "border-emerald-500";
           const barColor = isOver
             ? clientMode
               ? "bg-amber-500"
               : "bg-red-600"
-            : "bg-emerald-500";
+            : isConceptualBacklog
+              ? "bg-indigo-400"
+              : "bg-emerald-500";
 
           return (
             <div
               key={writer.id}
               className={`bg-white p-6 rounded-xl shadow-sm border-t-4 ${statusClass} relative`}
             >
-              {isOver && (
+              {(isOver || isConceptualBacklog) && (
                 <div
                   className={`absolute top-0 right-0 text-[10px] font-bold px-2 py-1 uppercase ${
-                    clientMode
-                      ? "bg-amber-100 text-amber-700"
-                      : "bg-red-100 text-red-600"
+                    isConceptualBacklog
+                      ? "bg-indigo-100 text-indigo-700"
+                      : clientMode
+                        ? "bg-amber-100 text-amber-700"
+                        : "bg-red-100 text-red-600"
                   }`}
                 >
-                  {clientMode ? "High Load" : "Bottleneck"}
+                  {isConceptualBacklog ? "Conceptual Backlog" : clientMode ? "High Load" : "Critical Bottleneck"}
                 </div>
               )}
               <div className="flex justify-between items-start mb-4">
@@ -140,13 +161,29 @@ export function TeamPlanner({ writers, clientMode = false, onEditMember, onNavig
                   {percent}%
                 </div>
               </div>
-              <div className="h-2 bg-slate-100 rounded-full overflow-hidden mb-4">
+              <div className="h-2 bg-slate-100 rounded-full overflow-hidden mb-2">
                 <div
                   className={`h-full ${barColor}`}
                   style={{ width: `${Math.min(percent, 100)}%` }}
                 />
               </div>
               
+              {/* Labor Category Breakdown */}
+              {writer.totalHours > 0 && (
+                <div className="mb-4 text-[10px] flex flex-wrap gap-1.5 justify-center bg-slate-50 p-1.5 rounded-lg border border-slate-100">
+                  <span className="font-semibold text-slate-600">{formatNumber(writer.totalHours)}h Total</span>
+                  {totalConceptual > 0 && (
+                    <span className="text-indigo-600 border-l border-slate-200 pl-1.5">{formatNumber(totalConceptual)}h Conceptual</span>
+                  )}
+                  {totalProcessing > 0 && (
+                    <span className="text-emerald-600 border-l border-slate-200 pl-1.5">{formatNumber(totalProcessing)}h Processing</span>
+                  )}
+                  {totalExecution > 0 && (
+                    <span className="text-slate-500 border-l border-slate-200 pl-1.5">{formatNumber(totalExecution)}h Execution</span>
+                  )}
+                </div>
+              )}
+
               {/* Edit Details Button */}
               {!clientMode && (
                 <>
