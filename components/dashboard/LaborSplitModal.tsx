@@ -19,8 +19,24 @@ export function LaborSplitModal({ task, teamMembers, isOpen, onClose, onSave }: 
   if (!isOpen) return null;
 
   const handleSave = () => {
-    const conceptualHours = Math.round((task.remainingHours * splitPercent) / 100);
-    const processingHours = task.remainingHours - conceptualHours;
+    const totalHours = task.remainingHours;
+    let conceptualHours = Math.round((totalHours * splitPercent) / 100);
+    let processingHours = totalHours - conceptualHours;
+
+    // Prevent creating 0-hour tasks. For very small totals, block the split entirely.
+    if (totalHours < 2 && (conceptualHours === 0 || processingHours === 0)) {
+      window.alert("Cannot split a task with so few remaining hours. Please adjust the hours or split percentage.");
+      return;
+    }
+
+    // Clamp so both tasks have at least 1 hour when possible.
+    if (conceptualHours === 0) {
+      conceptualHours = 1;
+      processingHours = totalHours - 1;
+    } else if (processingHours === 0) {
+      processingHours = 1;
+      conceptualHours = totalHours - 1;
+    }
 
     const taskA: ExecutionTask = {
       ...task,
