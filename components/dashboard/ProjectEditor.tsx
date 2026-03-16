@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Edit3, Save, X, Split } from "lucide-react";
 import { Project, ExecutionTask } from "@/lib/types";
 import { LaborSplitModal } from "./LaborSplitModal";
 import { TEAM_ROSTER } from "@/lib/constants";
-import { UnifiedProjectModel } from "@/lib/unified-project-model";
 
 interface ProjectEditorProps {
   project: Project;
@@ -33,14 +32,8 @@ export function ProjectEditor({ project, onUpdate, clientMode = false }: Project
     updatedTasks.push(taskB);
 
     onUpdate("tasks", updatedTasks);
-
-    // Notify unified model to recalculate
-    const model = UnifiedProjectModel.getInstance();
-    const currentState = model.getState();
-    const currentProjects = currentState.resourceValidation.flatMap(rv => rv.assignedProjects);
-    // Note: A full implementation would update the global project list.
-    // Here we're assuming the parent component handling `onUpdate` will push this to the global state
-    // and re-trigger a UnifiedProjectModel.updateProjectAssignments.
+    // Any global model/state updates based on the new task list should be
+    // handled by the parent component that responds to `onUpdate`.
   };
 
   const handleEdit = () => {
