@@ -439,6 +439,7 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
                         onClick={() => handleDeleteMember(member.id)}
                         className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
                         title="Delete member"
+                        aria-label="Delete member"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
