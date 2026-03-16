@@ -22,7 +22,7 @@ export interface ResourceValidation {
   loadPercentage: number;
   isOverloaded: boolean;
   isConceptualBacklog: boolean;
-  activeBlockingConceptualHours?: number;
+  activeBlockingConceptualHours: number;
   assignedProjects: Array<{
     projectId: number;
     projectName: string;
