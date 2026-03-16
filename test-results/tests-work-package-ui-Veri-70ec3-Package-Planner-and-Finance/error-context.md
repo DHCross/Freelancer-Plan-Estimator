@@ -1,0 +1,195 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - generic [ref=e7]:
+            - paragraph [ref=e8]: Hoskbrew Strategic Board
+            - heading "Production Engine" [level=1] [ref=e9]
+          - generic [ref=e10]:
+            - button "Search projects, people, or reports… K" [ref=e11]:
+              - img [ref=e12]
+              - generic [ref=e15]: Search projects, people, or reports…
+              - generic [ref=e16]:
+                - img [ref=e17]
+                - text: K
+            - button "Switch to client mode" [ref=e20]:
+              - generic [ref=e21]:
+                - img [ref=e22]
+                - generic [ref=e27]: Internal
+              - generic [ref=e28]:
+                - img [ref=e29]
+                - generic [ref=e32]: Client
+            - generic [ref=e33]:
+              - button "Export" [ref=e34]:
+                - img [ref=e35]
+                - generic [ref=e38]: Export
+              - generic "Import dashboard data" [ref=e39] [cursor=pointer]:
+                - img [ref=e40]
+                - generic [ref=e43]: Import
+        - navigation [ref=e44]:
+          - button "Dashboard" [ref=e45]:
+            - img [ref=e46]
+            - text: Dashboard
+          - button "Planning" [ref=e51]:
+            - img [ref=e52]
+            - text: Planning
+          - button "Team" [ref=e54]:
+            - img [ref=e55]
+            - text: Team
+          - button "Finance" [ref=e60]:
+            - img [ref=e61]
+            - text: Finance
+          - button "Reports" [ref=e63]:
+            - img [ref=e64]
+            - text: Reports
+    - main [ref=e68]:
+      - generic [ref=e70]:
+        - generic [ref=e71]:
+          - generic [ref=e72]:
+            - generic [ref=e73]:
+              - heading "Production Health" [level=2] [ref=e74]
+              - generic [ref=e75]: "Mode: Production (Active work only)"
+            - paragraph [ref=e76]: Monitor team capacity, bottlenecks, and key milestones across all active work.
+          - button "Art Order Assembler" [ref=e78]:
+            - img [ref=e79]
+            - text: Art Order Assembler
+        - generic [ref=e82]:
+          - button "Team Capacity 20% All members healthy · View full team load →" [ref=e83]:
+            - generic [ref=e84] [cursor=pointer]:
+              - generic [ref=e85]:
+                - generic [ref=e86]:
+                  - paragraph [ref=e87]: Team Capacity
+                  - paragraph [ref=e88]: 20%
+                  - paragraph [ref=e89]: All members healthy · View full team load →
+                - img [ref=e91]
+              - img [ref=e97]
+          - button "Next Deadline — No scheduled deadlines" [ref=e99]:
+            - generic [ref=e100] [cursor=pointer]:
+              - generic [ref=e101]:
+                - generic [ref=e102]:
+                  - paragraph [ref=e103]: Next Deadline
+                  - paragraph [ref=e104]: —
+                  - paragraph [ref=e105]: No scheduled deadlines
+                - img [ref=e107]
+              - img [ref=e110]
+          - button "Total Exposure $10,128 Committed budget · Open financial model →" [ref=e112]:
+            - generic [ref=e113] [cursor=pointer]:
+              - generic [ref=e114]:
+                - generic [ref=e115]:
+                  - paragraph [ref=e116]: Total Exposure
+                  - paragraph [ref=e117]: $10,128
+                  - paragraph [ref=e118]: Committed budget · Open financial model →
+                - img [ref=e120]
+              - img [ref=e123]
+          - button "Active Projects 6 6 in production · View all products →" [ref=e125]:
+            - generic [ref=e126] [cursor=pointer]:
+              - generic [ref=e127]:
+                - generic [ref=e128]:
+                  - paragraph [ref=e129]: Active Projects
+                  - paragraph [ref=e130]: "6"
+                  - paragraph [ref=e131]: 6 in production · View all products →
+                - img [ref=e133]
+              - img [ref=e138]
+        - generic [ref=e140]:
+          - generic [ref=e141]:
+            - generic [ref=e142]:
+              - heading "Team Load Overview" [level=3] [ref=e143]
+              - paragraph [ref=e144]: Capacity utilization and project assignments per contributor.
+            - button "Open Full Team View →" [ref=e145]
+          - generic [ref=e146]:
+            - generic [ref=e147]:
+              - generic [ref=e148]:
+                - generic [ref=e149]:
+                  - generic [ref=e150]:
+                    - heading "Dan Cross" [level=4] [ref=e152]
+                    - paragraph [ref=e154]: Creative Infrastructure Lead / Setting Expert
+                  - generic [ref=e155]:
+                    - generic [ref=e156]: 44%
+                    - button [ref=e158]:
+                      - img [ref=e159]
+                - generic [ref=e164]:
+                  - generic [ref=e165]: 6 assigned · 6 executing
+                  - generic [ref=e166]: 422h executing / 960h available
+              - generic [ref=e167]:
+                - generic [ref=e168]:
+                  - generic [ref=e169]:
+                    - generic [ref=e170]:
+                      - generic [ref=e171]:
+                        - img [ref=e172]
+                        - generic [ref=e175]: "A0: Caravan's End"
+                      - generic [ref=e176]: 32h
+                    - generic [ref=e177]: Jan 31st (Hard)
+                  - generic [ref=e178]:
+                    - generic [ref=e179]:
+                      - generic [ref=e180]:
+                        - img [ref=e181]
+                        - generic [ref=e184]: "Eldritch 2E: Curses to Prose"
+                      - generic [ref=e185]: 345h
+                    - generic [ref=e186]: Dec 22 Deadline
+                - button "Show all 6 assignments" [ref=e187]:
+                  - generic [ref=e188]: Show all 6 assignments
+                  - img [ref=e189]
+            - generic [ref=e191]:
+              - generic [ref=e192]:
+                - generic [ref=e193]:
+                  - generic [ref=e194]:
+                    - heading "Martin" [level=4] [ref=e196]
+                    - paragraph [ref=e198]: Visionary Lead / Creative Engine / Primary Author
+                  - generic [ref=e199]:
+                    - generic [ref=e200]: 0%
+                    - button [ref=e202]:
+                      - img [ref=e203]
+                - generic [ref=e206]:
+                  - generic [ref=e207]: 8 assigned · 0 executing
+                  - generic [ref=e208]: 0h executing / 720h available
+              - generic [ref=e209]:
+                - generic [ref=e210]:
+                  - generic [ref=e211]:
+                    - generic [ref=e212]:
+                      - generic [ref=e213]:
+                        - generic [ref=e214]: "A1: The Problem of Possibilities (Complete)"
+                        - generic [ref=e215]: Complete
+                      - generic [ref=e216]: —
+                    - generic [ref=e217]: End of May
+                  - generic [ref=e218]:
+                    - generic [ref=e219]:
+                      - generic [ref=e220]:
+                        - generic [ref=e221]: Players Guide for Chaos Rising
+                        - generic [ref=e222]: Planning
+                      - generic [ref=e223]: —
+                    - generic [ref=e224]: End of March
+                - button "Show all 8 assignments" [ref=e225]:
+                  - generic [ref=e226]: Show all 8 assignments
+                  - img [ref=e227]
+            - generic [ref=e230]:
+              - generic [ref=e231]:
+                - generic [ref=e232]:
+                  - heading "Matthew" [level=4] [ref=e234]
+                  - paragraph [ref=e236]: Project Manager / Production Lead
+                - generic [ref=e237]:
+                  - generic [ref=e238]: 0%
+                  - button [ref=e240]:
+                    - img [ref=e241]
+              - generic [ref=e244]:
+                - generic [ref=e245]: 0 assigned · 0 executing
+                - generic [ref=e246]: 0h executing / 480h available
+        - generic [ref=e248]:
+          - generic [ref=e249]:
+            - generic [ref=e250]:
+              - img [ref=e252]
+              - heading "Upcoming Milestones" [level=4] [ref=e255]
+            - button "View full timeline →" [ref=e256]
+          - generic [ref=e257]:
+            - 'button "Eldritch 2E: Curses to Prose Dec 22 Deadline" [ref=e258]':
+              - generic [ref=e261]: "Eldritch 2E: Curses to Prose"
+              - generic [ref=e262]: Dec 22 Deadline
+            - 'button "A0: Caravan''s End Jan 31st (Hard)" [ref=e263]':
+              - generic [ref=e266]: "A0: Caravan's End"
+              - generic [ref=e267]: Jan 31st (Hard)
+  - button "Open Next.js Dev Tools" [ref=e273] [cursor=pointer]:
+    - img [ref=e274]
+```
