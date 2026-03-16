@@ -249,6 +249,7 @@ export class UnifiedProjectModel {
         loadPercentage,
         isOverloaded,
         isConceptualBacklog,
+        activeBlockingConceptualHours,
         assignedProjects
       };
     });
