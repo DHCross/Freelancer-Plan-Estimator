@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Edit3, Save, X } from "lucide-react";
-import { Project } from "@/lib/types";
+import { Edit3, Save, X, Split } from "lucide-react";
+import { Project, ExecutionTask } from "@/lib/types";
+import { LaborSplitModal } from "./LaborSplitModal";
+import { TEAM_ROSTER } from "@/lib/constants";
 
 interface ProjectEditorProps {
   project: Project;
@@ -13,6 +15,26 @@ interface ProjectEditorProps {
 export function ProjectEditor({ project, onUpdate, clientMode = false }: ProjectEditorProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValues, setEditValues] = useState<Partial<Project>>({});
+
+  const [taskToSplit, setTaskToSplit] = useState<ExecutionTask | null>(null);
+
+  const handleSplitTask = (task: ExecutionTask) => {
+    setTaskToSplit(task);
+  };
+
+  const handleSaveSplit = (taskA: ExecutionTask, taskB: ExecutionTask) => {
+    if (!project.tasks) return;
+
+    // Replace the original task with Task A, and append Task B
+    const updatedTasks = project.tasks.map(t =>
+      t.id === taskA.id ? taskA : t
+    );
+    updatedTasks.push(taskB);
+
+    onUpdate("tasks", updatedTasks);
+    // Any global model/state updates based on the new task list should be
+    // handled by the parent component that responds to `onUpdate`.
+  };
 
   const handleEdit = () => {
     setEditValues({
@@ -160,6 +182,49 @@ export function ProjectEditor({ project, onUpdate, clientMode = false }: Project
             />
           </div>
         </div>
+      )}
+
+      {/* Execution Tasks Section */}
+      {project.tasks && project.tasks.length > 0 && (
+        <div className="mt-6 pt-4 border-t border-slate-100">
+          <h5 className="text-sm font-semibold text-slate-900 mb-3">Execution Tasks</h5>
+          <div className="space-y-2">
+            {project.tasks.map(task => (
+              <div key={task.id} className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm">
+                <div>
+                  <div className="font-medium text-slate-800">{task.name || `Task ${task.id}`}</div>
+                  <div className="text-xs text-slate-500 flex gap-3 mt-1">
+                    <span>Assignee: {TEAM_ROSTER.find(m => m.id === task.assigneeId)?.name || task.assigneeId}</span>
+                    <span>Category: {task.laborCategory?.replace("_", " ") || "Standard"}</span>
+                    {task.dependencyIds && task.dependencyIds.length > 0 && (
+                      <span className="text-amber-600">Depends on: {task.dependencyIds.join(", ")}</span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="font-semibold text-slate-700">{task.remainingHours}h</div>
+                  <button
+                    onClick={() => handleSplitTask(task)}
+                    className="p-1.5 text-indigo-600 hover:bg-indigo-100 rounded transition-colors"
+                    title="Split by Labor Type"
+                  >
+                    <Split className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {taskToSplit && (
+        <LaborSplitModal
+          task={taskToSplit}
+          teamMembers={TEAM_ROSTER}
+          isOpen={!!taskToSplit}
+          onClose={() => setTaskToSplit(null)}
+          onSave={handleSaveSplit}
+        />
       )}
     </div>
   );
