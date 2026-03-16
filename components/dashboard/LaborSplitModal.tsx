@@ -14,7 +14,7 @@ interface LaborSplitModalProps {
 
 export function LaborSplitModal({ task, teamMembers, isOpen, onClose, onSave }: LaborSplitModalProps) {
   const [splitPercent, setSplitPercent] = useState(20); // 20% Conceptual, 80% Processing
-  const [assigneeIdB, setAssigneeIdB] = useState<string>("");
+  const [assigneeIdB, setAssigneeIdB] = useState<string>(task.assigneeId ?? "");
 
   if (!isOpen) return null;
 
@@ -49,7 +49,7 @@ export function LaborSplitModal({ task, teamMembers, isOpen, onClose, onSave }: 
       id: `${task.id}-split-${Date.now()}`,
       projectId: task.projectId,
       name: task.name ? `${task.name} (Processing)` : "Systemic Processing",
-      assigneeId: assigneeIdB,
+      assigneeId: assigneeIdB || task.assigneeId || "",
       remainingHours: processingHours,
       status: "Blocked", // Starts blocked until Conceptual is Done
       laborCategory: "Systemic_Processing",
