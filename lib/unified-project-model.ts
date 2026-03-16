@@ -290,8 +290,14 @@ export class UnifiedProjectModel {
     // Calculate timeline based on bottleneck
     let bottleneckMultiplier = 1.0;
     if (bottleneck.isOverloaded) {
-      bottleneckMultiplier = ((bottleneck.executionHours + bottleneck.processingHours) / bottleneck.availableCapacity);
-      if (bottleneckMultiplier < 1.0) bottleneckMultiplier = 1.2; // Floor it above 1 if overloaded due to conceptual blocking
+      const hardBlockLoad =
+        bottleneck.executionHours +
+        bottleneck.processingHours +
+        (bottleneck.activeBlockingConceptualHours ?? 0);
+      if (bottleneck.availableCapacity > 0) {
+        bottleneckMultiplier = hardBlockLoad / bottleneck.availableCapacity;
+        if (bottleneckMultiplier < 1.0) bottleneckMultiplier = 1.0;
+      }
     }
     
     const validatedTimeline = Math.ceil(teamConfig.targetTimeline * bottleneckMultiplier);
@@ -299,7 +305,15 @@ export class UnifiedProjectModel {
     // Identify bottlenecks
     const bottlenecks: string[] = [];
     if (bottleneck.isOverloaded) {
-      bottlenecks.push(`Critical: ${bottleneck.teamMemberName} is ${Math.round((bottleneck.executionHours + bottleneck.processingHours) / bottleneck.availableCapacity * 100)}% overloaded on execution/processing`);
+      const hardBlockLoad =
+        bottleneck.executionHours +
+        bottleneck.processingHours +
+        (bottleneck.activeBlockingConceptualHours ?? 0);
+      const hardBlockLoadPercentage =
+        bottleneck.availableCapacity > 0
+          ? Math.round((hardBlockLoad / bottleneck.availableCapacity) * 100)
+          : 0;
+      bottlenecks.push(`Critical: ${bottleneck.teamMemberName} is ${hardBlockLoadPercentage}% overloaded on combined execution/processing/conceptual load`);
     } else if (bottleneck.isConceptualBacklog) {
       bottlenecks.push(`Conceptual Backlog: ${bottleneck.teamMemberName} has high conceptual load but execution is unblocked`);
     }
