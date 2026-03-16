@@ -2,15 +2,16 @@
 
 import { useState } from "react";
 import { ChevronDown, Lock, HelpCircle, Split } from "lucide-react";
-import { WriterLoad, ExecutionTask } from "@/lib/types";
+import { WriterLoad, ExecutionTask, Project } from "@/lib/types";
 import { formatNumber } from "@/lib/utils";
 import { Tooltip } from "./Tooltip";
 import { LaborSplitModal } from "./LaborSplitModal";
-import { TEAM_ROSTER } from "@/lib/constants";
+import { TEAM_ROSTER, INITIAL_PROJECTS } from "@/lib/constants";
 import { UnifiedProjectModel } from "@/lib/unified-project-model";
 
 interface CollapsibleTeamCardProps {
   member: WriterLoad;
+  allProjects?: Project[];
   clientMode?: boolean;
   injectedHours?: number;
   initialExpanded?: boolean;
@@ -19,6 +20,7 @@ interface CollapsibleTeamCardProps {
 
 export function CollapsibleTeamCard({
   member,
+  allProjects = INITIAL_PROJECTS,
   clientMode = false,
   injectedHours = 0,
   initialExpanded = false,
@@ -37,7 +39,6 @@ export function CollapsibleTeamCard({
 
     // We need to find the project this task belongs to in the original source
     // to correctly update the tasks list.
-    const allProjects = currentState.projects ?? [];
     const projectIndex = allProjects.findIndex((p: any) => p.tasks?.some((t: any) => t.id === taskA.id));
 
     if (projectIndex >= 0) {
@@ -308,17 +309,19 @@ export function CollapsibleTeamCard({
 
 interface TeamGridProps {
   members: WriterLoad[];
+  allProjects?: Project[];
   clientMode?: boolean;
   getInjectedHours?: (memberId: string) => number;
 }
 
-export function TeamGrid({ members, clientMode = false, getInjectedHours }: TeamGridProps) {
+export function TeamGrid({ members, allProjects, clientMode = false, getInjectedHours }: TeamGridProps) {
   return (
     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
       {members.map((member) => (
         <CollapsibleTeamCard
           key={member.id}
           member={member}
+          allProjects={allProjects}
           clientMode={clientMode}
           injectedHours={getInjectedHours?.(member.id)}
         />
