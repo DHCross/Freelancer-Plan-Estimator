@@ -142,7 +142,7 @@ export class UnifiedProjectModel {
     // PASS 1: Calculate raw hard load (Execution + Processing) to identify starved members
     const rawLoads = new Map<string, number>();
     projects.forEach(project => {
-      if (project.tasks && project.lifecycleState === "Production") {
+      if (project.tasks && project.tasks.length > 0 && project.lifecycleState === "Production") {
         project.tasks.forEach(task => {
           if ((task.status === "Active" || task.status === "Review") && task.remainingHours > 0) {
             if (task.laborCategory !== "Conceptual_Raw") {
