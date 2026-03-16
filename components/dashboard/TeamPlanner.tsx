@@ -107,7 +107,13 @@ export function TeamPlanner({ writers, clientMode = false, onEditMember, onNavig
           const totalProcessing = writer.projects.reduce((sum, p) =>
             sum + (p.tasks?.filter(t => t.assigneeId === writer.id && t.laborCategory === 'Systemic_Processing').reduce((s, t) => s + t.remainingHours, 0) || 0)
           , 0);
-          const totalExecution = writer.totalHours - totalConceptual - totalProcessing;
+          const totalExecution = writer.projects.reduce((sum, p) =>
+            sum + (p.tasks?.filter(t =>
+              t.assigneeId === writer.id &&
+              t.laborCategory !== 'Conceptual_Raw' &&
+              t.laborCategory !== 'Systemic_Processing'
+            ).reduce((s, t) => s + t.remainingHours, 0) || 0)
+          , 0);
 
           // Is this just a conceptual backlog?
           // We consider it a conceptual backlog if they are overloaded, but their non-conceptual hours are under capacity.
