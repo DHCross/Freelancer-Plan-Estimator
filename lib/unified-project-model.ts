@@ -186,8 +186,14 @@ export class UnifiedProjectModel {
                 if (task.laborCategory === "Conceptual_Raw") {
                   conceptualHours += task.remainingHours;
 
-                  // Check if any dependent processing task is starved
-                  const dependentTasks = project.tasks!.filter(t => t.dependencyIds?.includes(task.id) && t.laborCategory === "Systemic_Processing");
+                  // Check if any pending dependent processing task is starved
+                  const dependentTasks = project.tasks!.filter(
+                    t =>
+                      t.laborCategory === "Systemic_Processing" &&
+                      t.dependencyIds?.includes(task.id) &&
+                      t.remainingHours > 0 &&
+                      t.status !== "Done"
+                  );
                   const isBlockingStarved = dependentTasks.some(t => isAssigneeStarved(t.assigneeId));
 
                   if (isBlockingStarved) {
