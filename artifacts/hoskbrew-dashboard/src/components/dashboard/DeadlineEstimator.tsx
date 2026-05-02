@@ -174,7 +174,7 @@ export function DeadlineEstimator({
               <span className="text-sm text-slate-500 whitespace-nowrap">hrs / week</span>
             </div>
             <p className="text-xs text-slate-500 mt-1">
-              Adjusting this overrides the team member&apos;s default capacity for this calculation only.
+              Adjusting this overrides your default capacity for this calculation only.
             </p>
           </div>
         </div>

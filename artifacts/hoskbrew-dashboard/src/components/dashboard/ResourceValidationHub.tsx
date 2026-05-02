@@ -81,7 +81,7 @@ export function ResourceValidationHub({ clientMode = false, onReassignProjects, 
             </div>
             <div>
               <h3 className="text-xl font-bold text-emerald-900">Validated Timeline: {scenario.validatedTimeline} months</h3>
-              <p className="text-sm text-emerald-700">Updated timeline reflects staffing and capacity constraints; no action required from you.</p>
+              <p className="text-sm text-emerald-700">Updated timeline reflects your capacity constraints; no action required from you.</p>
             </div>
           </div>
           

@@ -240,7 +240,7 @@ export function EmployeeEstimateReport({ projects, metrics, teamRoster, clientMo
                   onChange={(e) => handleTeamMemberSelect(e.target.value)}
                   className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm appearance-none cursor-pointer transition-all duration-200 hover:border-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
                 >
-                  <option value="">Select team member...</option>
+                  <option value="">Select client...</option>
                   {teamRoster.map((member) => (
                     <option key={member.id} value={member.id}>
                       {member.name} ({member.role})

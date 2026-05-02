@@ -54,6 +54,7 @@ export interface Project {
   lifecycleState?: LifecycleState;
   tasks?: ExecutionTask[];
   rateType?: "per-word" | "flat-fee" | "hourly";
+  rateAmount?: number; // explicit per-word rate ($/word) or flat-fee amount ($), depending on rateType
   invoiceStatus?: "not-invoiced" | "invoiced" | "paid";
 }
 

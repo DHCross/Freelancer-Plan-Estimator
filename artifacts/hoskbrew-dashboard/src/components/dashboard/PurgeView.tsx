@@ -35,7 +35,7 @@ export function PurgeView({ ghostCapacity }: PurgeViewProps) {
           </h4>
           <p className="text-sm text-slate-600 mb-4">
             You are now the <strong>Institutional Archivist</strong>. Without scaffolding, the
-            Core series cannot launch and corporate deadlines slip.
+            Core series cannot launch and client deadlines slip.
           </p>
           <div className="space-y-3 text-sm">
             <div className="p-3 bg-emerald-50 border border-emerald-100 rounded text-emerald-800">

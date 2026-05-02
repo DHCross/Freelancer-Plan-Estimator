@@ -177,7 +177,7 @@ export function EnhancedEstimatorTools({
             Update Product Record
           </button>
           <p className="text-xs text-emerald-700 mt-2">
-            This will save the estimated hours ({estimatorResult.hours}h) and update team member load automatically.
+            This will save the estimated hours ({estimatorResult.hours}h) and update your workload automatically.
           </p>
         </div>
       )}

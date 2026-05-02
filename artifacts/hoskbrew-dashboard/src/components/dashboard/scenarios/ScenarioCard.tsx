@@ -123,7 +123,7 @@ export function ScenarioCard({
     const recommendations: string[] = [];
     if (currentConfig.budget < totalCost) recommendations.push(`Increase budget to $${Math.round(totalCost).toLocaleString()} or reduce scope`);
     if (currentConfig.timeline < requiredMonths) recommendations.push(`Extend timeline to ${requiredMonths} months or increase team size`);
-    if (currentConfig.complexity === "complex" && currentConfig.teamSize < 3) recommendations.push("Add team members or reduce complexity");
+    if (currentConfig.complexity === "complex" && currentConfig.teamSize < 3) recommendations.push("Reduce project complexity or break into smaller deliverables");
     if (riskLevel === "high") recommendations.push("Consider reducing scope or increasing both budget and timeline");
 
     return {

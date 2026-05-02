@@ -287,7 +287,7 @@ This estimate is provided in good faith based on current project understanding a
 
 ---
 
-_This estimate was generated using the Production Engine Estimator. For questions or clarifications, please contact ${employeeName}._
+_This estimate was generated using the Freelance Forge Estimator. For questions or clarifications, please contact ${employeeName}._
 `);
 
   return sections.join("\n");

@@ -52,7 +52,7 @@ export function EfficiencyView({
           </div>
           <div className="space-y-4">
             <label className="block text-sm">
-              <span className="text-slate-500">Internal hourly rate</span>
+              <span className="text-slate-500">Your hourly rate</span>
               <input
                 type="number"
                 className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2"
@@ -85,7 +85,7 @@ export function EfficiencyView({
           </div>
           <div className="grid grid-cols-2 gap-4 mt-6">
             <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
-              <p className="text-xs uppercase text-slate-500">Internal cost / word</p>
+              <p className="text-xs uppercase text-slate-500">Your cost / word</p>
               <p className="text-2xl font-bold text-slate-900">{defense.myCostPerWord.toFixed(3)}$</p>
             </div>
             <div className={`rounded-xl p-4 border ${defense.savingsPercent > 0 ? "bg-emerald-50 border-emerald-100" : "bg-slate-50 border-slate-200"}`}>
@@ -124,7 +124,7 @@ export function EfficiencyView({
               <p className="text-xs uppercase tracking-[0.2em] text-slate-400">External annual cost</p>
               <p className="text-2xl font-bold">{formatCurrency(200000)}</p>
             </div>
-            <span className="text-xs text-emerald-300">vs. $20/hr Production Engine</span>
+            <span className="text-xs text-emerald-300">vs. $20/hr studio rate benchmark</span>
           </div>
         </div>
       </div>

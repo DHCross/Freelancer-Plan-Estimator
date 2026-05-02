@@ -40,7 +40,7 @@ export function InstitutionalArchiveView({ ghostCapacity }: InstitutionalArchive
           Your Role: Institutional Archivist
         </h3>
         <p className="text-slate-300 mb-4">
-          Without scaffolding, the Core series cannot launch and corporate deadlines slip. You are the sole guardian of production continuity.
+          Without scaffolding, the Core series cannot launch and client deadlines slip. You are the sole guardian of production continuity.
         </p>
         <div className="grid md:grid-cols-3 gap-4">
           <div className="bg-slate-700 p-4 rounded-lg">

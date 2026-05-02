@@ -115,7 +115,7 @@ function generateCapacityAnalysisSection(analysis: ReturnType<typeof calculateCa
   } = analysis;
 
   const gapDescription = isOverallocated
-    ? `**Gap:** Short ${formatNumber(Math.abs(hourGap))} hours (${weeklyGap.toFixed(1)} hrs/week) — roughly a third teammate at halftime.`
+    ? `**Gap:** Short ${formatNumber(Math.abs(hourGap))} hours (${weeklyGap.toFixed(1)} hrs/week) — consider deferring lower-priority projects.`
     : `**Surplus:** ${formatNumber(Math.abs(hourGap))} hours of slack capacity.`;
 
   const cleanFixes = [

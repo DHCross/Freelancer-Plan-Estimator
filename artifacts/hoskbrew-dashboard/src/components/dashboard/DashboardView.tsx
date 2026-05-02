@@ -165,10 +165,15 @@ export function DashboardView({
       const hourlyRate = client?.hourlyRate ?? 0;
       let projectTotal = 0;
       if (p.rateType === "per-word") {
-        projectTotal = (p.targetWords || 0) * TTRPG_PER_WORD_RATE / 12;
+        // Use explicit per-word rate if set, otherwise fall back to TTRPG standard
+        const perWordRate = p.rateAmount ?? TTRPG_PER_WORD_RATE;
+        projectTotal = (p.targetWords || 0) * perWordRate / 12;
+      } else if (p.rateType === "flat-fee") {
+        // Use explicit flat-fee amount if set, otherwise estimate from hours × rate / 12
+        projectTotal = p.rateAmount != null ? p.rateAmount / 12 : ((p.manualHours || 0) * hourlyRate) / 12;
       } else {
-        // "hourly" or "flat-fee" (flat-fee uses manualHours × rate as best available proxy)
-        projectTotal = ((p.manualHours || 0) * hourlyRate) / 12;
+        // "hourly" — hours × rate / 12
+        projectTotal = ((p.manualHours || 0) * (p.rateAmount ?? hourlyRate)) / 12;
       }
       if (p.invoiceStatus === "paid") {
         earned += projectTotal;
@@ -303,12 +308,12 @@ export function DashboardView({
         <MetricCard
           title="Active Clients"
           value={(() => {
-            const active = new Set(analysis.filter(p => p.lifecycleState === "Production").map(p => p.stakeholder));
+            const active = new Set(analysis.filter(p => p.lifecycleState === "Production").map(p => p.assignedTo).filter(Boolean));
             return active.size > 0 ? active.size.toString() : "0";
           })()}
           subtitle={(() => {
             const prodProjects = analysis.filter(p => p.lifecycleState === "Production");
-            const activeClients = new Set(prodProjects.map(p => p.stakeholder)).size;
+            const activeClients = new Set(prodProjects.map(p => p.assignedTo).filter(Boolean)).size;
             return activeClients > 0
               ? `${prodProjects.length} project${prodProjects.length === 1 ? "" : "s"} across ${activeClients} client${activeClients === 1 ? "" : "s"} · View clients →`
               : "No projects in production yet";

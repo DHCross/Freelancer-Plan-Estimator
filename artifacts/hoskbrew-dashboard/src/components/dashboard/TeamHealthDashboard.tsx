@@ -48,10 +48,10 @@ export function TeamHealthDashboard({ writers, projects, teamRoster }: TeamHealt
     <div className="space-y-6">
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Team Health</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Capacity Health</p>
           <h2 className="text-2xl font-bold text-slate-900">Live Bottlenecks & Deadlines</h2>
           <p className="text-sm text-slate-600 max-w-2xl mt-2">
-            Focus on present risk: overloaded people, locked corporate dates, and where to re-route work before deadlines slip.
+            Focus on present risk: overloaded projects, locked client deadlines, and where to adjust scope before delivery slips.
           </p>
         </div>
         <div className="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2">
@@ -118,7 +118,7 @@ export function TeamHealthDashboard({ writers, projects, teamRoster }: TeamHealt
           <Gauge className="w-4 h-4" />
           <span className="font-semibold">Where to shift work</span>
         </div>
-        <p className="text-sm text-slate-600 mb-3">Match high-load owners to lower-load teammates before scheduling new work.</p>
+        <p className="text-sm text-slate-600 mb-3">Review overloaded clients and defer or descope projects before scheduling new work.</p>
         <div className="grid md:grid-cols-3 gap-3">
           {overloads.map((writer) => (
             <div key={writer.id} className="p-3 rounded-lg border border-slate-100 bg-slate-50">
