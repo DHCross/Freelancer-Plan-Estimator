@@ -1,0 +1,31 @@
+kind = "slides"
+previewPath = "/hoskbrew-pitch-deck/"
+title = "Hoskbrew Production Engine — Pitch Deck"
+version = "1.0.0"
+id = "artifacts/hoskbrew-pitch-deck"
+router = "path"
+
+[[integratedSkills]]
+name = "slides"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/hoskbrew-pitch-deck/" ]
+localPort = 20518
+
+[services.development]
+run = "pnpm --filter @workspace/hoskbrew-pitch-deck run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/hoskbrew-pitch-deck", "run", "build" ]
+publicDir = "artifacts/hoskbrew-pitch-deck/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "20518"
+BASE_PATH = "/hoskbrew-pitch-deck/"

@@ -1,0 +1,66 @@
+[
+  {
+    "id": "a1b2c3d4-0001-4e5f-8a9b-c0d1e2f30001",
+    "position": 1,
+    "filepath": "src/pages/slides/Slide1Title.tsx",
+    "title": "Production Engine",
+    "description": "Title slide — Hoskbrew Production Engine",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0002-4e5f-8a9b-c0d1e2f30002",
+    "position": 2,
+    "filepath": "src/pages/slides/Slide2Problem.tsx",
+    "title": "The Problem",
+    "description": "Production teams lose weeks to coordination gaps",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0003-4e5f-8a9b-c0d1e2f30003",
+    "position": 3,
+    "filepath": "src/pages/slides/Slide3Solution.tsx",
+    "title": "The Solution",
+    "description": "One dashboard for every project, team member, and deadline",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0004-4e5f-8a9b-c0d1e2f30004",
+    "position": 4,
+    "filepath": "src/pages/slides/Slide4Features.tsx",
+    "title": "Key Features",
+    "description": "Team capacity, project tracking, budget planning, and reports",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0005-4e5f-8a9b-c0d1e2f30005",
+    "position": 5,
+    "filepath": "src/pages/slides/Slide5Modes.tsx",
+    "title": "Two Modes",
+    "description": "Internal full visibility vs. client stakeholder view",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0006-4e5f-8a9b-c0d1e2f30006",
+    "position": 6,
+    "filepath": "src/pages/slides/Slide6Workflows.tsx",
+    "title": "Core Workflows",
+    "description": "Dashboard, Planning, Team, Finance, and Reports",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0007-4e5f-8a9b-c0d1e2f30007",
+    "position": 7,
+    "filepath": "src/pages/slides/Slide7Pipeline.tsx",
+    "title": "Active Pipeline",
+    "description": "Chaos Rising, Eldritch 2E, and Infrastructure product lines",
+    "speakerNotes": ""
+  },
+  {
+    "id": "a1b2c3d4-0008-4e5f-8a9b-c0d1e2f30008",
+    "position": 8,
+    "filepath": "src/pages/slides/Slide8Closing.tsx",
+    "title": "Closing",
+    "description": "Hoskbrew Strategic Board — Production Engine summary",
+    "speakerNotes": ""
+  }
+]
