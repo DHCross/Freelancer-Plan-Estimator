@@ -129,15 +129,15 @@ export function ProjectEditor({ project, onUpdate, clientMode = false }: Project
           </div>
           
           <div>
-            <label className="block text-xs font-medium text-slate-700 mb-1">Assigned To</label>
+            <label className="block text-xs font-medium text-slate-700 mb-1">Client</label>
             <select
               value={editValues.assignedTo || ""}
               onChange={(e) => handleFieldChange("assignedTo", e.target.value)}
               className="w-full px-2 py-1 text-sm border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500"
             >
-              <option value="dan">Alex</option>
-              <option value="martin">Jordan</option>
-              <option value="matthew">Sam</option>
+              <option value="ironforge">Ironforge Games</option>
+              <option value="thornwood">Thornwood Press</option>
+              <option value="questcraft">QuestCraft Creative</option>
             </select>
           </div>
           

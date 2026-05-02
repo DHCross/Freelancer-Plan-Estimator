@@ -35,12 +35,12 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
   const [supportWeeklyHours, setSupportWeeklyHours] = useState(18);
   const [primaryWeeklyHours, setPrimaryWeeklyHours] = useState(30);
   const [workingWeeksPerYear, setWorkingWeeksPerYear] = useState(48);
-  const [narrativeLead, setNarrativeLead] = useState("Jordan");
-  const [systemsLead, setSystemsLead] = useState("Alex");
-  const [productionArbiter, setProductionArbiter] = useState("Alex");
-  const [finalEditor, setFinalEditor] = useState("Alex");
+  const [narrativeLead, setNarrativeLead] = useState("Me");
+  const [systemsLead, setSystemsLead] = useState("Me");
+  const [productionArbiter, setProductionArbiter] = useState("Me");
+  const [finalEditor, setFinalEditor] = useState("Me");
   const [assetCoordinator, setAssetCoordinator] = useState("TBD");
-  const [projectManagerRole, setProjectManagerRole] = useState("Alex");
+  const [projectManagerRole, setProjectManagerRole] = useState("Me");
   const [marketPreset, setMarketPreset] = useState<ArtDensityPreset>("osr");
   const [showMarketComparison, setShowMarketComparison] = useState(true);
 
@@ -153,11 +153,11 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
       sizeKB: estimatedSize,
       generationTime: '2 seconds',
       sections: [
-        'Strategic Priorities',
-        'Release Calendar', 
-        'Quarterly Execution Path',
-        'Budget & Resourcing',
-        'Action Items'
+        'Project Overview',
+        'Project Timeline',
+        'Delivery Schedule',
+        'Cost Estimate',
+        'Next Steps'
       ]
     };
   }, [reportTitle, reportSubtitle]);
@@ -243,15 +243,15 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Professional Export</p>
             <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
               <FileText className="w-5 h-5 text-indigo-600" />
-              Production Plan Report
+              Project Proposal Generator
             </h2>
             <p className="text-sm text-slate-600 max-w-2xl mt-2">
-              Generate a professional production plan report matching the format you sent to the lead author. Export as Markdown, HTML, or print to PDF.
+              Generate a professional project proposal or cost estimate to share with clients. Export as Markdown, HTML, or print to PDF.
             </p>
           </div>
 
           <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-4">
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Team Capacity Reality</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">My Capacity</p>
 
             <div className="grid grid-cols-3 gap-3">
               <label className="block">
@@ -403,8 +403,8 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
           </div>
 
           <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-4">
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Art Budget (A1 Manuscript Reality)</p>
-            <p className="text-xs text-slate-500">Audited from A1: Problem of Possibilities 4.1.25 — corrected from previous 38-piece assumption</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Art Budget Estimate</p>
+            <p className="text-xs text-slate-500">Adjust piece counts to match your project's art requirements.</p>
             
             <div className="grid grid-cols-3 gap-3">
               <label className="block">

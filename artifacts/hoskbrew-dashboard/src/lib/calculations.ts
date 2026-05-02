@@ -276,9 +276,6 @@ export function computePaceScenario({
 
 export function getDefaultDraftSpeedForRole(roleId?: string | null): number {
   if (!roleId) return 175;
-  const key = roleId.toLowerCase();
-  if (key === "alex" || key === "dan") return 200;
-  if (key === "martin") return 150;
   return 175;
 }
 

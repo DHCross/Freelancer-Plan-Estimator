@@ -24,10 +24,10 @@ export function EmployeeEstimateReport({ projects, metrics, teamRoster, clientMo
   const [generatedMarkdown, setGeneratedMarkdown] = useState("");
 
   // Employee info
-  const [employeeName, setEmployeeName] = useState("Alex Rivera");
-  const [employeeRole, setEmployeeRole] = useState("Creative Infrastructure Lead");
-  const [recipientName, setRecipientName] = useState("Jordan");
-  const [recipientTitle, setRecipientTitle] = useState("Marketing & Creative Strategy Lead");
+  const [employeeName, setEmployeeName] = useState("");
+  const [employeeRole, setEmployeeRole] = useState("Freelance Writer");
+  const [recipientName, setRecipientName] = useState("");
+  const [recipientTitle, setRecipientTitle] = useState("Publisher / Editor");
 
   // Project selection
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(() => {

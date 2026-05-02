@@ -255,31 +255,36 @@ export function DashboardView({
         />
 
         <MetricCard
-          title="Total Exposure"
-          value={hasActiveExecution && totalBudgetExposure > 0 ? `$${formatNumber(totalBudgetExposure)}` : "—"}
+          title="Monthly Income"
+          value={writers.length > 0 ? `$${formatNumber(Math.round(writers.reduce((sum, w) => sum + w.hourlyRate * w.weeklyCapacity * 4.3, 0)))}` : "—"}
           subtitle={
-            !hasActiveExecution
-              ? "No committed budget until execution begins."
-              : totalBudgetExposure > 0
-              ? "Committed budget · Open financial model →"
-              : "No committed budget"
+            writers.length === 0
+              ? "Add clients to see income projection"
+              : hasActiveExecution
+              ? "Projected from active client rates · View clients →"
+              : "Projected from client rates · No active work yet"
           }
           icon={DollarSign}
-          status={hasActiveExecution && totalBudgetExposure > 50000 ? "warning" : "healthy"}
-          onClick={() => onNavigate?.("finance", "financial-model")}
+          status="healthy"
+          onClick={() => onNavigate?.("team", "team-overview")}
         />
 
         <MetricCard
-          title={clientMode ? "Delivery Confidence" : "Active Projects"}
-          value={clientMode ? "High" : analysis.filter(p => p.lifecycleState === "Production").length.toString()}
-          subtitle={
-            clientMode
-              ? "Based on current team allocation"
-              : `${analysis.filter(p => p.lifecycleState === "Production").length} in production · View all products →`
-          }
+          title="Active Clients"
+          value={(() => {
+            const active = new Set(analysis.filter(p => p.lifecycleState === "Production").map(p => p.stakeholder));
+            return active.size > 0 ? active.size.toString() : "0";
+          })()}
+          subtitle={(() => {
+            const prodProjects = analysis.filter(p => p.lifecycleState === "Production");
+            const activeClients = new Set(prodProjects.map(p => p.stakeholder)).size;
+            return activeClients > 0
+              ? `${prodProjects.length} project${prodProjects.length === 1 ? "" : "s"} across ${activeClients} client${activeClients === 1 ? "" : "s"} · View clients →`
+              : "No projects in production yet";
+          })()}
           icon={Target}
           status="healthy"
-          onClick={() => onNavigate?.("planning", "products")}
+          onClick={() => onNavigate?.("team", "team-overview")}
         />
       </MetricStrip>
 

@@ -86,10 +86,10 @@ export function BudgetView({ analysis, quarters, clientMode, onProjectUpdate }: 
       clientType: "Internal",
       targetWords: template?.targetWords ?? 25000,
       total: template?.estimatedHours ?? 100,
-      assignedTo: "dan",
+      assignedTo: "ironforge",
       internalStatus: "Planning",
-      clientStatus: "Internal",
-      stakeholder: "Alex",
+      clientStatus: "In Progress",
+      stakeholder: "Ironforge Games",
       launchWindow: targetQuarter ?? "Q2 2026",
       displayDate: targetQuarter ?? "Q2 2026",
       budgetType: template?.budgetType ?? "Custom",
@@ -233,11 +233,11 @@ export function BudgetView({ analysis, quarters, clientMode, onProjectUpdate }: 
           <div>
             <h3 className="text-xl font-bold flex items-center gap-2 mb-1">
               <DollarSign className="w-6 h-6 text-green-400" />
-              {clientMode ? "2026 Budget Roadmap" : "Internal Cost Controller"}
+              {clientMode ? "Project Timeline" : "Budget Planner"}
             </h3>
             <p className="text-slate-300 text-sm opacity-80">
               {clientMode
-                ? "Projected capital requirements aligned with launch windows."
+                ? "Project schedule and budget overview by quarter."
                 : "Adjust hours, risk buffers, and timing below to hit target budget."}
             </p>
           </div>
@@ -650,9 +650,9 @@ export function BudgetView({ analysis, quarters, clientMode, onProjectUpdate }: 
                                       onChange={e => updateItem(item.id, "assignedTo", e.target.value)}
                                       className="w-full text-xs p-1 border rounded focus:ring-1 focus:ring-indigo-500"
                                     >
-                                      <option value="dan">Alex</option>
-                                      <option value="martin">Jordan</option>
-                                      <option value="matthew">Sam</option>
+                                      <option value="ironforge">Ironforge Games</option>
+                                      <option value="thornwood">Thornwood Press</option>
+                                      <option value="questcraft">QuestCraft Creative</option>
                                     </select>
                                   </div>
                                   <div>

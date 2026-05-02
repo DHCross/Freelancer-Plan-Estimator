@@ -163,24 +163,24 @@ function generateRoleOwnershipAnalysis(roles: ReportConfig['roleOwnership'], hea
 
 ### Explicit Role Coverage
 
-**1. Creative Lead / Setting Architect — ${narrativeLead || "Jordan"}**
+**1. Creative Lead / Setting Architect — ${narrativeLead || "Me"}**
 - Primary narrative authoring
 - Tone, theme, and scene conception
 - Module-level storytelling momentum
 
-**2. Systems & Structure Lead — ${systemsLead || "Alex"}**
+**2. Systems & Structure Lead — ${systemsLead || "Me"}**
 - Rules translation & system fluency
 - Structural consistency across books
 - Layout-aware writing and editorial hygiene
 - Long-horizon continuity thinking
 
-**3. Production Arbiter — ${productionArbiter || "Alex"}**
+**3. Production Arbiter — ${productionArbiter || "Me"}**
 - Final calls on scope cuts
 - Priority conflict resolution
 - "Good enough" threshold decisions
 - Completion sign-off authority
 
-**4. Final Editor & Integrator — ${finalEditor || "Alex"}**
+**4. Final Editor & Integrator — ${finalEditor || "Me"}**
 - Editorial enforcement phase
 - Cross-project consistency
 - Layout integration oversight
@@ -191,7 +191,7 @@ function generateRoleOwnershipAnalysis(roles: ReportConfig['roleOwnership'], hea
 - Layout question triage
 - External creator liaison
 
-**6. Project Manager / Throughput Guardian — ${projectManager || "Dan"}**
+**6. Project Manager / Throughput Guardian — ${projectManager || "Me"}**
 - Calendar vs reality monitoring
 - Early slippage detection
 - Capacity bottleneck identification
@@ -218,11 +218,11 @@ function generateRoleOwnershipAnalysis(roles: ReportConfig['roleOwnership'], hea
 
 | Decision Area | Primary Authority | Backup Authority | Escalation |
 |---------------|-------------------|------------------|------------|
-| Narrative Content | ${narrativeLead || "Jordan"} | ${systemsLead || "Alex"} | Joint discussion |
-| Rules & Systems | ${systemsLead || "Alex"} | ${narrativeLead || "Jordan"} | ${productionArbiter || "Alex"} final call |
-| Scope & Priority | ${productionArbiter || "Alex"} | ${narrativeLead || "Jordan"} | Joint discussion |
-| Editorial Quality | ${finalEditor || "Alex"} | ${narrativeLead || "Jordan"} | ${productionArbiter || "Alex"} final call |
-| Asset Integration | ${assetCoordinator || "TBD"} | ${finalEditor || "Alex"} | ${projectManager || "Dan"} escalation |
+| Narrative Content | ${narrativeLead || "Me"} | ${systemsLead || "Me"} | Direct decision |
+| Rules & Systems | ${systemsLead || "Me"} | ${narrativeLead || "Me"} | ${productionArbiter || "Me"} final call |
+| Scope & Priority | ${productionArbiter || "Me"} | ${narrativeLead || "Me"} | Direct decision |
+| Editorial Quality | ${finalEditor || "Me"} | ${narrativeLead || "Me"} | ${productionArbiter || "Me"} final call |
+| Asset Integration | ${assetCoordinator || "TBD"} | ${finalEditor || "Me"} | ${projectManager || "Me"} escalation |
 
 ---
 `;
@@ -339,32 +339,28 @@ ${subtitle || ""}
 ---
 `);
 
-  // Strategic Priorities
-  sections.push(`${nextHeading("Strategic Priorities")}
+  // Project Overview
+  sections.push(`${nextHeading("Project Overview")}
 
-### Primary Deliverable
-The Core Series Adventure Path (A02013A4) represents the core publishing initiative for the year.
+### Scope
+This proposal covers the projects and deliverables detailed in the release calendar below.
 
-### Release Window
-The target for A1: The Problem of Possibilities is late Q2 (May–June print and distribution window).
+### Delivery Model
+All writing, editing, and production work will be completed to agreed word-count, format, and quality standards within the stated timelines.
 
-### Operational Continuity
-Layout and asset integration will remain centralized to ensure consistency in styling, pacing, formatting, and data reliability.
-
-### Manufacturing Model
-Primary print strategy will use domestic offset printing (runs in 1k–2k units) to secure competitive per-unit cost and maintain margin strength.
+### Quality Standards
+Deliverables will follow TTRPG industry conventions for layout-ready manuscripts, consistent formatting, and editorial hygiene.
 
 ---
 `);
 
-  // Release Calendar
-  sections.push(`${nextHeading("Release Calendar")}
+  // Project Timeline
+  sections.push(`${nextHeading("Project Timeline")}
 
 | Title | Format | Target Date | Notes |
 |-------|--------|-------------|-------|`);
 
   projects
-    .filter(p => p.stakeholder === "Jordan" || p.name.toLowerCase().includes("a0") || p.name.toLowerCase().includes("a1") || p.name.toLowerCase().includes("a2") || p.name.toLowerCase().includes("a3") || p.name.toLowerCase().includes("a4") || p.name.toLowerCase().includes("player") || p.name.toLowerCase().includes("world setting"))
     .sort((a, b) => {
       const dateA = a.targetDate || a.displayDate || a.launchWindow || "";
       const dateB = b.targetDate || b.displayDate || b.launchWindow || "";
@@ -429,12 +425,12 @@ Primary print strategy will use domestic offset printing (runs in 1k–2k units)
   sections.push(`---
 `);
 
-  // Budget & Resourcing
-  sections.push(`${nextHeading("Budget & Resourcing (A1-Centered)")}
+  // Budget & Cost Estimate
+  sections.push(`${nextHeading("Budget & Cost Estimate")}
 
 **Recommended investment range:** ${formatCurrency(calculatedInvestmentRange.low)}–${formatCurrency(calculatedInvestmentRange.high)}
 
-### Art Asset Breakdown (A1 Manuscript Reality - ${calculatedArtBudget.totalPieces} pieces total):
+### Art Asset Breakdown (${calculatedArtBudget.totalPieces} pieces total):
 
 | Category | Count | Classification | Allocation |
 |----------|-------|----------------|------------|
@@ -513,19 +509,19 @@ ${generateCapacityAnalysisSection(capacityAnalysis)}
     sections.push(generateRoleOwnershipAnalysis(config.roleOwnership, getRomanNumeral(sectionIndex++)));
   }
 
-  // Immediate Action Items
-  sections.push(`${nextHeading("Immediate Action Items")}
+  // Next Steps
+  sections.push(`${nextHeading("Next Steps")}
 
-To maintain Q2 release readiness:
+To proceed with this project:
 
-### 1. Approve art staffing and send contracts
-Secures availability and begins scheduling window.
+### 1. Review and approve this proposal
+Confirm scope, timeline, and investment range before work begins.
 
-### 2. Initiate commissioning and sketch review sequence
-Expected execution window: 6–8 weeks.
+### 2. Sign contract and confirm first milestone
+Secures the start date and establishes the delivery schedule.
 
-### 3. Confirm layout readiness and asset transfer timing
-Final files should be routed mid-April for uninterrupted layout flow.
+### 3. First draft delivery
+Writing and/or editing work begins per the agreed schedule.
 
 ---
 `);
@@ -533,7 +529,7 @@ Final files should be routed mid-April for uninterrupted layout flow.
   // Footer
   sections.push(`${nextHeading("Summary")}
 
-This plan forms the baseline working schedule, financial model, and operational sequencing for full execution of the Core Series cycle in 2026. Additional downstream planning—as marketing timing, distribution routing, and sales cadence—is available upon request.
+This proposal outlines the project scope, timeline, and cost estimate. Additional detail on specific deliverables, revision rounds, or milestone breakdowns is available upon request.
 
 ---
 

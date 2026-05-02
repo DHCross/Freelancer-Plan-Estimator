@@ -45,9 +45,8 @@ export function analyzeCapacityGap(): CapacityAnalysis {
 
 export function identifyCriticalDependencies(): CriticalDependency[] {
   const criticalProjects = INITIAL_PROJECTS.filter(project => 
-    project.isLocked || 
-    project.stakeholder === "Sam" ||
-    (project.stakeholder === "Jordan" && project.internalStatus === "Critical")
+    project.isLocked ||
+    project.internalStatus === "Critical"
   );
 
   return criticalProjects.map(project => ({
@@ -55,7 +54,7 @@ export function identifyCriticalDependencies(): CriticalDependency[] {
     projectName: project.name,
     stakeholder: project.stakeholder,
     deadline: project.displayDate || project.launchWindow || "TBD",
-    riskLevel: project.isLocked ? "critical" : project.stakeholder === "Sam" ? "critical" : "high",
+    riskLevel: project.isLocked ? "critical" : "high",
     missingCapabilities: getMissingCapabilities(project),
   }));
 }
@@ -63,17 +62,16 @@ export function identifyCriticalDependencies(): CriticalDependency[] {
 function getMissingCapabilities(project: Project): string[] {
   const missing: string[] = [];
   
-  // Based on fired staff capabilities
   if (project.type.includes("Adventure") || project.type.includes("Sourcebook")) {
-    missing.push("Writing/Editing (Jon's expertise)");
+    missing.push("Writing / Editing capacity");
   }
   
   if (project.type.includes("Large Adventure") || project.type.includes("Battle Maps")) {
-    missing.push("Art Coordination (Derek's visual standards)");
+    missing.push("Art coordination");
   }
   
   if (project.manualHours || project.layoutHours) {
-    missing.push("Production Pipeline Management (Randy's oversight)");
+    missing.push("Layout / production pipeline");
   }
   
   return missing;
@@ -83,45 +81,45 @@ export function generateReallocationStrategy(): ReallocationStrategy[] {
   return [
     {
       priority: 1,
-      action: "Protect core IP deadline",
-      assignee: "Alex Rivera",
+      action: "Protect locked deadline project",
+      assignee: "Me",
       hoursReallocated: 20,
-      impact: "Matthew's Core IP revenue protection - non-negotiable",
+      impact: "Client-committed revenue — non-negotiable",
     },
     {
       priority: 2,
-      action: "Maintain A1 production calendar",
-      assignee: "Jordan",
+      action: "Maintain production calendar",
+      assignee: "Me",
       hoursReallocated: 15,
-      impact: "Without admin backbone, A1 launch fails",
+      impact: "Keeps launch schedule intact",
     },
     {
       priority: 3,
-      action: "Document Jon's technical style guide",
-      assignee: "Alex Rivera",
+      action: "Document style guide and editorial standards",
+      assignee: "Me",
       hoursReallocated: 10,
-      impact: "Prevents editorial standards loss",
+      impact: "Preserves quality consistency across projects",
     },
     {
       priority: 4,
-      action: "Capture Derek's art coordination standards",
-      assignee: "Jordan",
+      action: "Capture art coordination workflow",
+      assignee: "Me",
       hoursReallocated: 5,
-      impact: "Maintains visual consistency for core series",
+      impact: "Maintains visual consistency for series",
     },
     {
       priority: 5,
-      action: "Preserve Randy's production pipeline methods",
-      assignee: "Sam",
+      action: "Document production pipeline methods",
+      assignee: "Me",
       hoursReallocated: 5,
       impact: "Timeline management continuity",
     },
     {
       priority: 6,
-      action: "Create scalable scaffolding systems",
-      assignee: "Alex Rivera",
+      action: "Create reusable project scaffolding",
+      assignee: "Me",
       hoursReallocated: 15,
-      impact: "Enables future team expansion",
+      impact: "Reduces setup time on future projects",
     },
   ];
 }
