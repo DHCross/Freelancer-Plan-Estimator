@@ -4,14 +4,23 @@
 
 pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
 
+This project is the **Hoskbrew Production Engine** — a comprehensive project management dashboard for a creative/publishing team. It tracks projects, team capacity, budgets, timelines, and reporting.
+
+## Artifacts
+
+- `artifacts/hoskbrew-dashboard` — Main web app (React + Vite), served at `/`. Purely frontend, all data in localStorage. Ported from Next.js/Vercel.
+- `artifacts/api-server` — Express API server (currently unused by the dashboard, available for future backend features)
+- `artifacts/mockup-sandbox` — Design sandbox (internal tooling)
+
 ## Stack
 
 - **Monorepo tool**: pnpm workspaces
 - **Node.js version**: 24
 - **Package manager**: pnpm
 - **TypeScript version**: 5.9
+- **Frontend**: React + Vite (Tailwind CSS v4, wouter routing)
 - **API framework**: Express 5
-- **Database**: PostgreSQL + Drizzle ORM
+- **Database**: PostgreSQL + Drizzle ORM (not currently used by dashboard)
 - **Validation**: Zod (`zod/v4`), `drizzle-zod`
 - **API codegen**: Orval (from OpenAPI spec)
 - **Build**: esbuild (CJS bundle)
