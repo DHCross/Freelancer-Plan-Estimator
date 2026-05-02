@@ -149,15 +149,15 @@ export function DashboardView({
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <h2 className="text-2xl font-bold text-slate-900">Production Health</h2>
+            <h2 className="text-2xl font-bold text-slate-900">My Dashboard</h2>
             <div className="px-3 py-1 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-800 text-xs font-semibold uppercase tracking-wide">
-              Mode: Production (Active work only)
+              Active Work Only
             </div>
           </div>
           <p className="text-slate-600 mt-1">
             {clientMode
               ? "Overview of project timelines and delivery confidence."
-              : "Monitor team capacity, bottlenecks, and key milestones across all active work."}
+              : "Monitor your capacity, upcoming deadlines, and active client workload."}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -175,8 +175,8 @@ export function DashboardView({
       {showOnboarding && !clientMode && (
         <AlertBanner
           severity="info"
-          title="Understanding Production Health"
-          description="This dashboard shows what is actively burning time and money. Planning work appears elsewhere and does not affect capacity."
+          title="Welcome to Freelance Forge"
+          description="This dashboard shows your active projects and client workload. Planning items don't consume capacity or budget until you move them to Production."
           dismissible
           onDismiss={handleDismissOnboarding}
         />
@@ -186,12 +186,12 @@ export function DashboardView({
       {!hasActiveExecution && !clientMode && (
         <AlertBanner
           severity="info"
-          title="Nothing is in Production yet."
-          description="Planning and Backlog items do not consume capacity, budget, or deadlines. Move a product to Production to begin execution."
+          title="No active projects yet."
+          description="Planning items don't consume capacity or deadlines. Move a project to Production when you start work on it."
           icon={<Briefcase className="w-5 h-5 text-blue-600" />}
           actions={[
             {
-              label: "Move a product to Production",
+              label: "View my projects",
               onClick: () => onNavigate?.("planning", "products"),
               primary: true
             }
@@ -215,14 +215,14 @@ export function DashboardView({
       {/* Key Metrics Strip */}
       <MetricStrip>
         <MetricCard
-          title="Team Capacity"
+          title="My Capacity"
           value={hasActiveExecution ? `${teamMetrics.overallLoad}%` : "0%"}
           subtitle={
             !hasActiveExecution
               ? "No active work consuming capacity"
               : teamMetrics.bottleneckCount > 0
-              ? `${teamMetrics.bottleneckCount} ${teamMetrics.bottleneckCount === 1 ? "bottleneck" : "bottlenecks"} · View full team load →`
-              : "All members healthy · View full team load →"
+              ? `${teamMetrics.bottleneckCount} over-capacity client${teamMetrics.bottleneckCount === 1 ? "" : "s"} · View client load →`
+              : "All clients within capacity · View client load →"
           }
           icon={Users}
           status={!hasActiveExecution ? "healthy" : capacityStatus}
@@ -287,18 +287,18 @@ export function DashboardView({
       <div>
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-lg font-semibold text-slate-900">Team Load Overview</h3>
+            <h3 className="text-lg font-semibold text-slate-900">Client Load Overview</h3>
             <p className="text-sm text-slate-500">
               {clientMode 
-                ? "Current allocation across team members."
-                : "Capacity utilization and project assignments per contributor."}
+                ? "Current time allocation across active clients."
+                : "Capacity utilisation and project assignments per client."}
             </p>
           </div>
           <button
             onClick={() => onNavigate?.("team", "team-overview")}
             className="text-sm text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors"
           >
-            Open Full Team View →
+            Open Full Client View →
           </button>
         </div>
         

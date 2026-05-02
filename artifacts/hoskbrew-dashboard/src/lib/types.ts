@@ -1,4 +1,4 @@
-export type Stakeholder = "Alex" | "Jordan" | "Sam";
+export type Stakeholder = string;
 
 export type LifecycleState = "Backlog" | "Planning" | "Production" | "Complete" | "Archived";
 export type TaskStatus = "Blocked" | "Ready" | "Active" | "Review" | "Done";

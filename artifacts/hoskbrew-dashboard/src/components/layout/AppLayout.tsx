@@ -37,7 +37,7 @@ interface AppLayoutProps {
 const PRIMARY_TABS: { id: PrimaryTab; label: string; icon: typeof LayoutDashboard }[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "planning", label: "Planning", icon: Calendar },
-  { id: "team", label: "Team", icon: Users },
+  { id: "team", label: "Clients", icon: Users },
   { id: "finance", label: "Finance", icon: DollarSign },
   { id: "reports", label: "Reports", icon: FileText },
 ];
@@ -91,10 +91,10 @@ export function AppLayout({
                 </button>
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-medium">
-                    Studio Strategic Board
+                    Freelance Forge
                   </p>
                   <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-                    Production Engine
+                    My Dashboard
                   </h1>
                 </div>
               </div>

@@ -13,7 +13,28 @@ This project is **Freelance Forge** — a business management suite for independ
 - `artifacts/api-server` — Express API server (currently unused by the dashboard, available for future backend features)
 - `artifacts/mockup-sandbox` — Design sandbox (internal tooling)
 
-> Note: artifact directory names use legacy paths and are intentionally kept as-is (renaming requires a full workspace migration).
+> Note: artifact directory names use legacy paths (`artifacts/hoskbrew-dashboard`, `artifacts/hoskbrew-pitch-deck`) and are intentionally kept as-is (renaming requires a full workspace migration).
+
+## App Identity
+
+The app is repositioned as a **solo freelancer** tool, not a multi-person studio dashboard. Key concepts:
+
+- **"Team" → "Clients"**: The team roster records represent publisher/client contacts. `TeamMember.id` is a client slug (e.g. `"ironforge"`), `name` is the company name.
+- **3 default clients**: Ironforge Games (orange), Thornwood Press (blue), QuestCraft Creative (green)
+- **6-7 default projects**: Realistic TTRPG freelance work (adventure modules, sourcebooks, supplements) linked to the 3 clients via `assignedTo` (client ID) and `stakeholder` (client display name)
+- **Stakeholder type**: Changed from `"Alex" | "Jordan" | "Sam"` union to `string` to support arbitrary client names
+- **Capacity model**: Each client record's `weeklyCapacity` = hours/week I dedicate to that client; the capacity utilisation shows how much of my allocated time each client is using
+- **localStorage keys**: Still prefixed `studio_*` (intentional — changing them would clear existing users' data)
+
+## Tab Structure
+
+| Tab | Purpose |
+|---|---|
+| Dashboard | Active project health, capacity, next deadline |
+| Planning | Product roadmap, budgets, integrations |
+| Clients | Client management (formerly "Team") |
+| Finance | ROI & print run calculator, rate calculator |
+| Reports | Dossier, deadline estimator, project proposal |
 
 ## Stack
 

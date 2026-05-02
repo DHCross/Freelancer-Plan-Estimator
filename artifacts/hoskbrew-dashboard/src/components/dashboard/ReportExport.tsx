@@ -17,9 +17,9 @@ interface ReportExportProps {
 
 export function ReportExport({ projects, metrics, teamRoster, clientMode = false }: ReportExportProps) {
   const [copied, setCopied] = useState(false);
-  const [reportTitle, setReportTitle] = useState("2026 Core Series Integrated Production Plan");
+  const [reportTitle, setReportTitle] = useState("Project Proposal");
   const [generatedHTML, setGeneratedHTML] = useState("");
-  const [reportSubtitle, setReportSubtitle] = useState("Based on the Core Series Project Dossier, the following roadmap outlines the publishing strategy, sequencing, and production execution for fiscal year 2026. A1 remains the anchor deliverable and sets the production cadence for all supporting modules.");
+  const [reportSubtitle, setReportSubtitle] = useState("This proposal outlines the scope, timeline, and cost estimate for the project. Prepared by your freelancer for client review.");
   // A1 Manuscript Reality Baseline (audited from A1: Problem of Possibilities 4.1.25)
   const [regionalMaps, setRegionalMaps] = useState(A1_ART_BASELINE.regionalMaps);
   const [encounterMaps, setEncounterMaps] = useState(A1_ART_BASELINE.encounterMaps);
@@ -255,7 +255,7 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
 
             <div className="grid grid-cols-3 gap-3">
               <label className="block">
-                <span className="text-xs font-medium text-slate-600">Dan hrs/week</span>
+                <span className="text-xs font-medium text-slate-600">My hrs/week</span>
                 <input
                   type="number"
                   value={supportWeeklyHours}

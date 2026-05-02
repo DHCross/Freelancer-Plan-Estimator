@@ -137,19 +137,19 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
         sections: [
           {
             id: "team-overview",
-            label: "Team Overview",
+            label: "Clients",
             items: [
               { 
                 id: "team-overview", 
-                label: "Who Does What", 
+                label: "Client Overview", 
                 icon: Users,
                 badge: bottleneckCount > 0 ? bottleneckCount.toString() : undefined,
                 badgeColor: "red" as const,
               },
-              { id: "teambuilder", label: "Team Builder", icon: Wrench },
+              { id: "teambuilder", label: "Client Details", icon: Wrench },
               { 
                 id: "team-health", 
-                label: "Team Health", 
+                label: "Capacity Health", 
                 icon: isClientMode ? AlertTriangle : Ghost,
               },
             ],
@@ -172,10 +172,10 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
         sections: [
           {
             id: "financial",
-            label: "Financial Analysis",
+            label: "Income & Rates",
             items: [
-              { id: "financial-model", label: "Financial Model", icon: DollarSign },
-              { id: "cost-savings", label: "Cost Savings", icon: Calculator },
+              { id: "financial-model", label: "ROI & Print Run", icon: DollarSign },
+              { id: "cost-savings", label: "Rate Calculator", icon: Calculator },
             ],
             defaultExpanded: true,
           },
@@ -190,13 +190,13 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
             label: "Reports & Exports",
             description: "Client-ready outputs and retrospectives",
             items: [
-              { id: "dossier", label: "Dossier", icon: BookOpen },
+              { id: "dossier", label: "Project Dossier", icon: BookOpen },
               { id: "deadline-estimator", label: "Deadline Estimator", icon: Calendar },
               { id: "layout-safe", label: "Layout-Safe Calculator", icon: Shield },
-              { id: "production-readiness", label: "Production Readiness Checklist", icon: Lock },
-              { id: "a0-survival", label: "A0: Survival Checklist", icon: AlertTriangle },
-              { id: "martin-workload", label: "Lead Author: Workload Brief", icon: Users },
-              { id: "export-report", label: "Export Report", icon: FileText },
+              { id: "production-readiness", label: "Production Checklist", icon: Lock },
+              { id: "a0-survival", label: "Quick-Start Checklist", icon: AlertTriangle },
+              { id: "martin-workload", label: "Workload Brief", icon: Users },
+              { id: "export-report", label: "Project Proposal", icon: FileText },
               { id: "lessons-learned", label: "Lessons Learned", icon: Lightbulb },
             ],
             defaultExpanded: true,
@@ -227,24 +227,24 @@ const DEFAULT_SUBVIEWS: Record<PrimaryTab, string> = {
 
 const DEFAULT_ESTIMATION_BUCKETS: EstimationBucketEntry[] = [
   {
-    id: "example-a1-jordan-writing",
-    projectName: "A1: Core Release Finish",
-    activity: "Draft new scenes (Jordan)",
+    id: "example-shattered-vaults-writing",
+    projectName: "Shattered Vaults: Adventure Module",
+    activity: "First draft — dungeon section",
     roleLabel: "Writing",
-    teamMemberId: "martin",
-    teamMemberName: "Jordan",
-    hours: 120,
-    days: 30,
+    teamMemberId: "ironforge",
+    teamMemberName: "Ironforge Games",
+    hours: 80,
+    days: 20,
   },
   {
-    id: "example-a1-alex-editing",
-    projectName: "A1: Core Release Finish",
-    activity: "Development edit pass (Alex)",
-    roleLabel: "Editing",
-    teamMemberId: "dan",
-    teamMemberName: "Alex",
-    hours: 40,
-    days: 10,
+    id: "example-ranger-guide-writing",
+    projectName: "Ranger's Field Guide: Player Supplement",
+    activity: "Player options chapter",
+    roleLabel: "Writing",
+    teamMemberId: "thornwood",
+    teamMemberName: "Thornwood Press",
+    hours: 30,
+    days: 8,
   },
 ];
 
@@ -354,13 +354,13 @@ function DashboardPageContent() {
   const [marketPerWord, setMarketPerWord] = useState(0.08);
 
   const [estimatorInputs, setEstimatorInputs] = useState({
-    activity: "A1: Draft new section",
-    totalWords: 20000,
-    draftSpeed: 400,
-    bufferPercent: 30,
+    activity: "First draft — new chapter",
+    totalWords: 10000,
+    draftSpeed: 300,
+    bufferPercent: 20,
     dailyHours: 4,
-    teamMemberId: "martin",
-    projectName: "A1: Core Release Finish",
+    teamMemberId: "ironforge",
+    projectName: "Shattered Vaults: Adventure Module",
     roleLabel: "Writing",
   });
   const [estimatorResult, setEstimatorResult] = useState<EstimatorResult | null>(null);
@@ -539,7 +539,7 @@ function DashboardPageContent() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `studio-dashboard-${new Date().toISOString().split("T")[0]}.json`;
+    a.download = `freelance-forge-${new Date().toISOString().split("T")[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -674,10 +674,10 @@ function DashboardPageContent() {
           className="bg-slate-900 border border-slate-800 rounded-2xl p-8 w-full max-w-sm space-y-6 shadow-2xl"
         >
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Studio Access</p>
-            <h1 className="text-2xl font-bold mt-2">Enter the production passcode</h1>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Freelance Forge</p>
+            <h1 className="text-2xl font-bold mt-2">Enter your passcode</h1>
             <p className="text-sm text-slate-400 mt-1">
-              This dashboard contains sensitive staffing and budget data.
+              Your projects, rates, and client data — locked and private.
             </p>
           </div>
           <label className="block text-sm font-medium text-slate-200">
@@ -841,12 +841,12 @@ function DashboardPageContent() {
         <div className={contentClass}>
           {/* Breadcrumb */}
           <div className="text-sm text-slate-500 mb-4">
-            <span>Team</span>
+            <span>Clients</span>
             <span className="mx-2">›</span>
             <span className="text-slate-900 font-medium">
-              {subView === "team-overview" && "Who Does What"}
-              {subView === "teambuilder" && "Team Builder"}
-              {subView === "team-health" && "Team Health"}
+              {subView === "team-overview" && "Client Overview"}
+              {subView === "teambuilder" && "Client Details"}
+              {subView === "team-health" && "Capacity Health"}
               {subView === "estimator-tools" && "Estimator Tools"}
               {subView === "my-estimate" && "My Estimate"}
             </span>
@@ -961,8 +961,8 @@ function DashboardPageContent() {
             <span>Finance</span>
             <span className="mx-2">›</span>
             <span className="text-slate-900 font-medium">
-              {subView === "financial-model" && "Financial Model"}
-              {subView === "cost-savings" && "Cost Savings"}
+              {subView === "financial-model" && "ROI & Print Run"}
+              {subView === "cost-savings" && "Rate Calculator"}
             </span>
           </div>
 
@@ -995,11 +995,13 @@ function DashboardPageContent() {
             <span>Reports</span>
             <span className="mx-2">›</span>
             <span className="text-slate-900 font-medium">
-              {subView === "dossier" && "Dossier"}
+              {subView === "dossier" && "Project Dossier"}
               {subView === "deadline-estimator" && "Deadline Estimator"}
               {subView === "layout-safe" && "Layout-Safe Calculator"}
-              {subView === "production-readiness" && "Production Readiness"}
-              {subView === "export-report" && "Export Report"}
+              {subView === "production-readiness" && "Production Checklist"}
+              {subView === "a0-survival" && "Quick-Start Checklist"}
+              {subView === "martin-workload" && "Workload Brief"}
+              {subView === "export-report" && "Project Proposal"}
               {subView === "lessons-learned" && "Lessons Learned"}
             </span>
           </div>

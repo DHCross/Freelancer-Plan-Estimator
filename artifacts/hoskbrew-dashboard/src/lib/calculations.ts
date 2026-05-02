@@ -131,26 +131,21 @@ export function calculateProjectAnalysis(
 export function calculateStakeholderDemand(
   analysis: ProjectAnalysis[]
 ): StakeholderDemand[] {
-  const load: Record<string, number> = { Jordan: 0, Sam: 0, Alex: 0 };
+  const load: Record<string, number> = {};
 
   analysis.forEach((project) => {
+    if (!load[project.stakeholder]) load[project.stakeholder] = 0;
     load[project.stakeholder] += project.total;
   });
-
-  const labelMap: Record<string, { internal: string; client: string }> = {
-    Jordan: { internal: "Jordan's Demand", client: "Core Series Initiative" },
-    Sam: { internal: "Sam's Demand", client: "Core IP Initiative" },
-    Alex: { internal: "Alex (Architecture)", client: "Production Engine" },
-  };
 
   return Object.entries(load).map(([stakeholderKey, hours]) => {
     const key = stakeholderKey as Stakeholder;
     return {
       stakeholder: key,
-      internalLabel: labelMap[stakeholderKey]?.internal ?? stakeholderKey,
-      clientLabel: labelMap[stakeholderKey]?.client ?? stakeholderKey,
+      internalLabel: stakeholderKey,
+      clientLabel: stakeholderKey,
       hours,
-      fill: STAKEHOLDER_COLORS[key],
+      fill: STAKEHOLDER_COLORS[stakeholderKey] ?? "#94a3b8",
     };
   });
 }

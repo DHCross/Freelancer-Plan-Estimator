@@ -58,7 +58,7 @@ export function ProductListingView({ teamRoster, onNavigateToProductLines }: Pro
     <div className="space-y-6 relative">
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex items-center justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Studio Strategic Roadmap</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">My Projects</p>
           <h2 className="text-2xl font-bold text-slate-900">Product Listing</h2>
           <p className="text-sm text-slate-600 mt-2 max-w-2xl">
             Manage all products in development. Edit names, descriptions, owners, statuses, and launch windows directly in the grid.

@@ -125,10 +125,10 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `team-config-${new Date().toISOString().split('T')[0]}.csv`;
+    a.download = `client-roster-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
-    showToast('✅ Team configuration exported');
+    showToast('✅ Client roster exported');
   };
 
   const handleRoleTemplateSelect = (roleName: string) => {
@@ -175,7 +175,7 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
 
     if (isAddingNew) {
       onUpdateTeamMembers([...teamMembers, normalized]);
-      showToast(`✅ ${normalized.name} added to team`);
+      showToast(`✅ ${normalized.name} added to clients`);
     } else {
       onUpdateTeamMembers(teamMembers.map(m => m.id === normalized.id ? normalized : m));
       showToast(`✅ ${normalized.name} updated`);
@@ -187,9 +187,9 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
 
   const handleDeleteMember = (memberId: string) => {
     const member = teamMembers.find(m => m.id === memberId);
-    if (confirm(`Remove ${member?.name} from the team?`)) {
+    if (confirm(`Remove ${member?.name} as a client?`)) {
       onUpdateTeamMembers(teamMembers.filter(m => m.id !== memberId));
-      showToast(`✅ ${member?.name} removed from team`);
+      showToast(`✅ ${member?.name} removed from clients`);
     }
   };
 
@@ -222,13 +222,13 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex items-center justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-            {clientMode ? "Team Capacity" : "Team Configuration"}
+            {clientMode ? "Client Overview" : "Client Management"}
           </p>
-          <h2 className="text-2xl font-bold text-slate-900">Team Member Management</h2>
+          <h2 className="text-2xl font-bold text-slate-900">My Clients</h2>
           <p className="text-sm text-slate-600 mt-2 max-w-2xl">
             {clientMode
-              ? "View team member capabilities and availability."
-              : "Add, edit, and manage team member profiles for accurate project estimation."}
+              ? "View active clients and current capacity allocation."
+              : "Add, edit, and manage your client contacts for accurate project estimation and income tracking."}
           </p>
         </div>
         <Users className="w-10 h-10 text-indigo-500" />
@@ -238,19 +238,19 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
       {!clientMode && teamMembers.length > 0 && (
         <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-2xl p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="border-r border-indigo-200 pr-4 sm:pr-6">
-            <p className="text-xs font-semibold text-indigo-600 uppercase tracking-[0.1em] mb-1">Total Monthly Cost</p>
+            <p className="text-xs font-semibold text-indigo-600 uppercase tracking-[0.1em] mb-1">Monthly Revenue</p>
             <p className="text-2xl font-bold text-slate-900">${Math.round(teamStats.totalMonthly).toLocaleString()}</p>
           </div>
           <div className="border-r border-indigo-200 pr-4 sm:pr-6">
-            <p className="text-xs font-semibold text-indigo-600 uppercase tracking-[0.1em] mb-1">Active Members</p>
+            <p className="text-xs font-semibold text-indigo-600 uppercase tracking-[0.1em] mb-1">Active Clients</p>
             <p className="text-2xl font-bold text-slate-900">{teamStats.activeMembers}</p>
           </div>
           <div className="border-r border-indigo-200 pr-4 sm:pr-6">
-            <p className="text-xs font-semibold text-indigo-600 uppercase tracking-[0.1em] mb-1">Weekly Capacity</p>
+            <p className="text-xs font-semibold text-indigo-600 uppercase tracking-[0.1em] mb-1">Words/Week Output</p>
             <p className="text-2xl font-bold text-slate-900">{Math.round(teamStats.totalCapacity).toLocaleString()}w/wk</p>
           </div>
           <div>
-            <p className="text-xs font-semibold text-indigo-600 uppercase tracking-[0.1em] mb-1">Weekly Cost</p>
+            <p className="text-xs font-semibold text-indigo-600 uppercase tracking-[0.1em] mb-1">Weekly Earnings</p>
             <p className="text-2xl font-bold text-slate-900">${Math.round(teamStats.totalWeeklyCost).toLocaleString()}</p>
           </div>
         </div>
@@ -259,7 +259,7 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
       {!clientMode && (
         <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-6">
           <div className="flex items-center justify-between flex-wrap gap-3">
-            <h3 className="text-lg font-semibold text-slate-900">Team Roster</h3>
+            <h3 className="text-lg font-semibold text-slate-900">Client Roster</h3>
             <div className="flex items-center gap-2">
               <button
                 onClick={handleExportConfig}
@@ -273,7 +273,7 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
                 className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition"
               >
                 <Plus className="w-4 h-4" />
-                Add Team Member
+                Add Client
               </button>
             </div>
           </div>
@@ -461,7 +461,7 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
                         className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
                         value={editingMember.name}
                         onChange={(e) => handleFieldChange("name", e.target.value)}
-                        placeholder="Enter team member name"
+                        placeholder="Enter client or company name"
                       />
                     </div>
                     <div className="lg:col-span-2">
@@ -472,7 +472,7 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
                           className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
                           value={editingMember.role}
                           onChange={(e) => handleFieldChange("role", e.target.value)}
-                          placeholder="e.g., Lead Writer, Editor, Designer"
+                          placeholder="e.g., Adventure modules, Sourcebooks, Crowdfunding"
                         />
                         <select
                           className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
