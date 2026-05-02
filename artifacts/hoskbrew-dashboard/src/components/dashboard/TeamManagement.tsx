@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Users, Plus, Edit2, Trash2, Save, X, Info, GripVertical, Copy, Download, DollarSign, Clock, PenTool, Shield, BarChart3, ChevronDown } from "lucide-react";
-import { TeamMember } from "@/lib/types";
+import { TeamMember, Project } from "@/lib/types";
 import { ROLE_TEMPLATES } from "@/lib/constants";
 
 interface TeamManagementProps {
@@ -10,6 +10,7 @@ interface TeamManagementProps {
   onUpdateTeamMembers: (members: TeamMember[]) => void;
   clientMode?: boolean;
   initialEditMemberId?: string | null;
+  projects?: Project[];
 }
 
 interface Toast {
@@ -18,7 +19,7 @@ interface Toast {
   type: 'success' | 'error';
 }
 
-export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = false, initialEditMemberId = null }: TeamManagementProps) {
+export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = false, initialEditMemberId = null, projects = [] }: TeamManagementProps) {
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [draggedId, setDraggedId] = useState<string | null>(null);
@@ -442,6 +443,17 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
                         {member.notes && (
                           <p className="text-xs text-slate-400 mt-1 italic">{member.notes}</p>
                         )}
+                        {(() => {
+                          const clientProjects = projects.filter(p => p.assignedTo === member.id);
+                          const activeCount = clientProjects.filter(p => p.lifecycleState === "Production").length;
+                          const lifetimeRevenue = clientProjects.reduce((sum, p) => sum + (p.manualHours || 0) * member.hourlyRate, 0);
+                          return clientProjects.length > 0 ? (
+                            <div className="flex gap-3 mt-2 text-xs">
+                              <span className="text-indigo-600 font-medium">{activeCount} active / {clientProjects.length} total project{clientProjects.length === 1 ? "" : "s"}</span>
+                              <span className="text-emerald-600 font-medium">${Math.round(lifetimeRevenue).toLocaleString()} projected</span>
+                            </div>
+                          ) : null;
+                        })()}
                       </div>
                     </div>
 
@@ -652,7 +664,7 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
                   <li>When adding a member, start typing a role name or select from the dropdown</li>
                   <li>Click a template option to auto-fill all metrics for that role</li>
                   <li>Customize the values afterward if needed</li>
-                  <li>Reference rates from the Studio Operating Charter</li>
+                  <li>Reference rates from your client agreements</li>
                 </ul>
               </div>
             </details>

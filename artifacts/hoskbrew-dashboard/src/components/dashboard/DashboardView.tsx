@@ -230,39 +230,40 @@ export function DashboardView({
         />
 
         <MetricCard
-          title="Next Deadline"
-          value={
-            nearestDeadline
-              ? nearestDeadline.daysUntil <= 30
-                ? `${nearestDeadline.daysUntil}d`
-                : `${Math.ceil(nearestDeadline.daysUntil / 7)}w`
-              : "—"
-          }
-          subtitle={
-            !hasActiveExecution
-              ? "No execution deadlines because nothing is in Production."
-              : nearestDeadline
-              ? `${nearestDeadline.project.name} · View timeline →`
-              : "No scheduled deadlines"
-          }
-          icon={Calendar}
-          status={
-            nearestDeadline?.daysUntil && nearestDeadline.daysUntil <= 14
-              ? "warning"
-              : "healthy"
-          }
-          onClick={() => onNavigate?.("planning", "budget")}
+          title="Pipeline Words"
+          value={(() => {
+            const total = analysis.reduce((sum, p) => sum + (p.targetWords || 0), 0);
+            return total > 0 ? `${Math.round(total / 1000)}k` : "—";
+          })()}
+          subtitle={(() => {
+            const active = analysis.filter(p => p.lifecycleState === "Production");
+            const total = analysis.reduce((sum, p) => sum + (p.targetWords || 0), 0);
+            if (total === 0) return "No projects in pipeline";
+            return `${active.length} active · ${analysis.length} total project${analysis.length === 1 ? "" : "s"} · View list →`;
+          })()}
+          icon={Pencil}
+          status="healthy"
+          onClick={() => onNavigate?.("planning", "products")}
         />
 
         <MetricCard
           title="Monthly Income"
-          value={writers.length > 0 ? `$${formatNumber(Math.round(writers.reduce((sum, w) => sum + w.hourlyRate * w.weeklyCapacity * 4.3, 0)))}` : "—"}
+          value={(() => {
+            const activeProjects = analysis.filter(p => p.lifecycleState === "Production");
+            if (activeProjects.length === 0 && writers.length === 0) return "—";
+            // Project-based: sum committed hours across clients, weighted by their rate
+            const total = writers.reduce((sum, w) => {
+              const monthlyHours = Math.min(w.committedHours / 12, w.weeklyCapacity * 4.3);
+              return sum + monthlyHours * w.hourlyRate;
+            }, 0);
+            return total > 0 ? `$${formatNumber(Math.round(total))}` : "—";
+          })()}
           subtitle={
             writers.length === 0
               ? "Add clients to see income projection"
               : hasActiveExecution
-              ? "Projected from active client rates · View clients →"
-              : "Projected from client rates · No active work yet"
+              ? "From active project hours · View clients →"
+              : "Projected from committed project hours"
           }
           icon={DollarSign}
           status="healthy"

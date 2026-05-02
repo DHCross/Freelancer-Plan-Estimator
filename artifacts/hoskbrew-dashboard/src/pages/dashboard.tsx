@@ -867,6 +867,7 @@ function DashboardPageContent() {
                 teamMembers={teamRoster}
                 onUpdateTeamMembers={handleTeamMemberUpdate}
                 clientMode={isClientMode}
+                projects={projects}
               />
               <TeamConfiguration clientMode={isClientMode} />
             </div>

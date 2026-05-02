@@ -36,11 +36,10 @@ export function EfficiencyView({
     <div className="space-y-6">
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Studio Value</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Market Comparison</p>
           <h2 className="text-2xl font-bold text-slate-900">Replacement Cost Calculator</h2>
           <p className="text-sm text-slate-600 max-w-2xl mt-2">
-            Demonstrates that the Production Engine is cheaper than hiring three separate vendors. Adjust assumptions to show Paul how quickly
-            the internal model beats market rates.
+            See how your freelance rates and capacity compare to hiring separate vendors for the same work. Adjust assumptions to benchmark your value proposition.
           </p>
         </div>
         <ShieldCheck className="w-12 h-12 text-emerald-500" />

@@ -95,7 +95,7 @@ export function generateDossierMarkdown(ctx: DossierContext, tone: DossierTone =
       ? `${project.name} sits inside a ${ctx.seriesBooks}-book arc (~${formatNumber(seriesWords)} words total).`
       : `${project.name} is modeled as a standalone product in this dossier.`,
     subsidy > 0
-      ? `Your labor on this project currently embeds approximately ${subsidyLabel} of unbilled studio-equivalent value.`
+      ? `Your labor on this project currently embeds approximately ${subsidyLabel} of unbilled market-rate value.`
       : "Labor valuation for this project is modeled but subsidy calculations require refinement.",
     roundedWeeks
       ? `With current team capacity, the modeled execution window is approximately ${minWeeks || roundedWeeks}–${maxWeeks || roundedWeeks} weeks from greenlight to print-ready files.`
@@ -105,25 +105,25 @@ export function generateDossierMarkdown(ctx: DossierContext, tone: DossierTone =
       : "Art budget scaffolding is present, but page count/asset density need to be confirmed.",
   ];
 
-  const projectScope = `This dossier covers ${project.name} as modeled in the Production Engine dashboard, using current assumptions for scope, staffing, and efficiency.`;
+  const projectScope = `This dossier covers ${project.name} as modeled in Freelance Forge, using current assumptions for scope, client, and efficiency.`;
 
-  const strategicAlignmentInternal = `This project is treated as part of the Production Engine roadmap. The purpose of this dossier is to align scope, staffing, and financial reality so that future negotiations, print runs, and distribution choices are grounded in the same shared numbers.`;
+  const strategicAlignmentInternal = `This project is part of your active freelance pipeline. The purpose of this dossier is to align scope and financial reality so that future negotiations, print runs, and distribution choices are grounded in the same shared numbers.`;
 
-  const strategicAlignmentExternal = `This project is positioned as part of your 2026 publishing roadmap. The purpose of this dossier is to clarify scope, budget bands, and production timing so that stakeholders can make informed decisions without reopening prior negotiations.`;
+  const strategicAlignmentExternal = `This project is part of your 2026 publishing roadmap. The purpose of this dossier is to clarify scope, budget bands, and production timing so that clients can make informed decisions without reopening prior negotiations.`;
 
   const strategicAlignment = tone === "internal" ? strategicAlignmentInternal : strategicAlignmentExternal;
 
   const riskLevel = subsidy > 0 ? "high" : "medium";
 
   const executiveSummary = `# ${project.name} PROJECT DOSSIER
-Integrated Transcript + Strategic Production Report
+Project Overview + Strategic Estimate
 
 ## Executive Summary
 This document consolidates the full scope, timeline, financial modeling, and structural insight surrounding **${project.name}**.
 
 It utilizes data from:
-- Direct transcript or meeting-note synthesis (where available)
-- The Production Engine's labor, scope, and efficiency modeling
+- Project notes and client meeting summaries (where available)
+- Freelance Forge labor, scope, and efficiency modeling
 - Industry-aligned production assumptions for art, layout, and printing
 
 The combined analysis confirms:
@@ -147,7 +147,7 @@ ${strategicAlignment}
 ${meetingNotes || "_TODO: Paste or synthesize meeting notes/transcript excerpts here. Focus on decisions, tradeoffs, and scope clarification._"}
 `;
 
-  const laborTable = `Category | Your Work | Industry Studio | Delta
+  const laborTable = `Category | Your Work | Market Rate | Delta
 ---|---|---|---
 Hours | ${actualHours ? formatNumber(actualHours) : "TODO"} | ${industryHours ? formatNumber(industryHours) : "TODO"} | ${actualHours && industryHours ? `${formatNumber(industryHours - actualHours)} h` : "TODO"}
 Cost | ${internalCost ? formatCurrency(internalCost) : "TODO"} | ${marketCost ? formatCurrency(marketCost) : "TODO"} | ${marketCost && internalCost ? formatCurrency(marketCost - internalCost) : "TODO"}

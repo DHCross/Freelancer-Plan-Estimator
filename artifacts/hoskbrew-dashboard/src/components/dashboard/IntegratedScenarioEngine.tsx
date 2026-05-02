@@ -246,9 +246,9 @@ export function IntegratedScenarioEngine({ clientMode = false, onNavigateToTeamB
                 <div className="bg-slate-100 rounded p-2">
                   <div className="text-xs font-semibold text-slate-700 mb-1">Recommended Actions:</div>
                   <div className="text-xs text-slate-600 space-y-1">
-                    <div>• Resolve team bottlenecks in Resource Validation</div>
-                    <div>• Consider extending timeline or hiring contractors</div>
-                    <div>• Reallocate projects from overloaded team members</div>
+                    <div>• Resolve capacity bottlenecks in Resource Validation</div>
+                    <div>• Consider extending the timeline or subcontracting</div>
+                    <div>• Reduce scope on overloaded client projects</div>
                   </div>
                 </div>
               )}
@@ -549,10 +549,10 @@ export function IntegratedScenarioEngine({ clientMode = false, onNavigateToTeamB
         <div className="bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm text-slate-600">
           <h4 className="font-semibold text-slate-800 mb-2">How This Works</h4>
           <ul className="space-y-1">
-            <li>• <strong>Target Budget/Timeline</strong> are pulled from your Team Builder configuration</li>
-            <li>• <strong>Total Cost</strong> is calculated from Team Builder&apos;s Total Project Cost</li>
-            <li>• <strong>Timeline</strong> is validated by the Who Does What page based on the longest critical path</li>
-            <li>• <strong>Bottleneck</strong> warnings come directly from overloaded team members in Resource Validation</li>
+            <li>• <strong>Target Budget/Timeline</strong> are pulled from your client configuration</li>
+            <li>• <strong>Total Cost</strong> is calculated from your project cost estimates</li>
+            <li>• <strong>Timeline</strong> is validated by the Client Load page based on the longest critical path</li>
+            <li>• <strong>Bottleneck</strong> warnings come directly from overloaded clients in Resource Validation</li>
             <li>• <strong>Scenarios</strong> can be saved and compared to analyze different approaches</li>
           </ul>
         </div>

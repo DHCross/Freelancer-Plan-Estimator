@@ -313,6 +313,8 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
               <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-left text-xs font-semibold text-slate-600 uppercase`}>Client Group</th>
               <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-left text-xs font-semibold text-slate-600 uppercase`}>Client</th>
               <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-left text-xs font-semibold text-slate-600 uppercase`}>Status</th>
+              <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-left text-xs font-semibold text-slate-600 uppercase`}>Rate</th>
+              <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-left text-xs font-semibold text-slate-600 uppercase`}>Invoice</th>
               <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-left text-xs font-semibold text-slate-600 uppercase`}>Deadline</th>
               <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-center text-xs font-semibold text-slate-600 uppercase`}>Word Count</th>
               <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-center text-xs font-semibold text-slate-600 uppercase`}>Actions</th>
@@ -420,6 +422,56 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
                       }`}>
                         {STATUSES.find((s) => s.value === displayData.internalStatus)?.label || displayData.internalStatus}
                       </div>
+                    )}
+                  </td>
+                  {/* Rate Type */}
+                  <td className={`px-4 ${isCompact ? "py-2" : "py-3"}`}>
+                    {isEditing ? (
+                      <select
+                        value={(project as any).rateType || ""}
+                        onChange={(e) => handleFieldChange(project.id, "rateType", e.target.value)}
+                        className="w-full px-2 py-1 border border-slate-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
+                      >
+                        <option value="">—</option>
+                        <option value="flat-fee">Flat Fee</option>
+                        <option value="per-word">Per Word</option>
+                        <option value="hourly">Hourly</option>
+                      </select>
+                    ) : (
+                      <span className="text-xs text-slate-600">
+                        {(project as any).rateType === "flat-fee" ? "Flat Fee"
+                          : (project as any).rateType === "per-word" ? "Per Word"
+                          : (project as any).rateType === "hourly" ? "Hourly"
+                          : "—"}
+                      </span>
+                    )}
+                  </td>
+                  {/* Invoice Status */}
+                  <td className={`px-4 ${isCompact ? "py-2" : "py-3"}`}>
+                    {isEditing ? (
+                      <select
+                        value={(project as any).invoiceStatus || ""}
+                        onChange={(e) => handleFieldChange(project.id, "invoiceStatus", e.target.value)}
+                        className="w-full px-2 py-1 border border-slate-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
+                      >
+                        <option value="">—</option>
+                        <option value="not-invoiced">Not Sent</option>
+                        <option value="invoiced">Awaiting</option>
+                        <option value="paid">Paid</option>
+                      </select>
+                    ) : (
+                      <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+                        (project as any).invoiceStatus === "paid"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : (project as any).invoiceStatus === "invoiced"
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-slate-100 text-slate-500"
+                      }`}>
+                        {(project as any).invoiceStatus === "paid" ? "Paid"
+                          : (project as any).invoiceStatus === "invoiced" ? "Awaiting"
+                          : (project as any).invoiceStatus === "not-invoiced" ? "Not Sent"
+                          : "—"}
+                      </span>
                     )}
                   </td>
                   <td className={`px-4 ${isCompact ? "py-2" : "py-3"}`}>

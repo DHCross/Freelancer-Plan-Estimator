@@ -251,7 +251,7 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
           </div>
 
           <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-4">
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">My Capacity</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Report Settings</p>
 
             <div className="grid grid-cols-3 gap-3">
               <label className="block">
@@ -706,7 +706,7 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
                   <div className="text-sm font-medium text-slate-700">Content Summary</div>
                   <div className="space-y-1 text-xs">
                     <div className="flex justify-between p-2 bg-slate-50 rounded">
-                      <span className="text-slate-600">Team Members:</span>
+                      <span className="text-slate-600">Clients:</span>
                       <span className="font-medium text-slate-900">{teamRoster.length}</span>
                     </div>
                     <div className="flex justify-between p-2 bg-slate-50 rounded">
@@ -735,7 +735,7 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
                   {showPreview ? 'Report Editor' : 'Report Preview'}
                 </p>
                 <p className="text-xs text-slate-400 mt-1">
-                  {generatedMarkdown ? "Edit markdown below or export" : "Click 'Generate Report' to create your production plan"}
+                  {generatedMarkdown ? "Edit markdown below or export" : "Click 'Generate Report' to create your project report"}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -766,7 +766,7 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
               className="flex-1 w-full bg-transparent text-xs font-mono px-4 py-3 resize-none outline-none"
               value={generatedMarkdown}
               onChange={(e) => setGeneratedMarkdown(e.target.value)}
-              placeholder={showPreview ? "Click 'Generate Report' to produce your 2026 Core Series Integrated Production Plan..." : "Generate the report first to see the content here..."}
+              placeholder={showPreview ? "Click 'Generate Report' to produce your project report..." : "Generate the report first to see the content here..."}
             />
           </div>
         </div>

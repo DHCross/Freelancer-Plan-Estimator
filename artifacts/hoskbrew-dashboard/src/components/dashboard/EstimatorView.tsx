@@ -44,11 +44,11 @@ export function EstimatorView({ inputs, onChange, onEstimate, result, clientMode
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
             {clientMode ? "Schedule Assurance" : "Reality Check"}
           </p>
-          <h2 className="text-2xl font-bold text-slate-900">Team-Aware Estimator</h2>
+          <h2 className="text-2xl font-bold text-slate-900">Project Estimator</h2>
           <p className="text-sm text-slate-600 mt-2 max-w-2xl">
             {clientMode
-              ? "See how different team members affect delivery timelines."
-              : "Generate accurate estimates based on individual team member capabilities and work styles."}
+              ? "See how client capacity and rate affect delivery timelines."
+              : "Generate accurate estimates based on your own capabilities and client work styles."}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -66,13 +66,13 @@ export function EstimatorView({ inputs, onChange, onEstimate, result, clientMode
         <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4">
           <div className="space-y-3">
             <label className="block text-sm">
-              <span className="text-slate-500">Team Member</span>
+              <span className="text-slate-500">Client</span>
               <select
                 className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2"
                 value={inputs.teamMemberId || ""}
                 onChange={(e) => handleTeamMemberChange(e.target.value)}
               >
-                <option value="">Individual estimation (no team member)</option>
+                <option value="">Estimate without client context</option>
                 {teamRoster.map((member) => (
                   <option key={member.id} value={member.id}>
                     {member.name} - {member.role} ({member.draftSpeed} w/hr)
@@ -185,7 +185,7 @@ export function EstimatorView({ inputs, onChange, onEstimate, result, clientMode
             <div className="bg-slate-100 border border-dashed border-slate-300 rounded-2xl p-6 text-sm text-slate-500">
               {selectedTeamMember 
                 ? `Enter task parameters to generate ${selectedTeamMember.name}&#39;s delivery estimate.`
-                : "Select a team member and enter task parameters to generate an accurate estimate."
+                : "Select a client and enter task parameters to generate an accurate estimate."
               }
             </div>
           )}

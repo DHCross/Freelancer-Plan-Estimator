@@ -31,11 +31,11 @@ export function MethodologyView({
     <div className="space-y-6">
       <div className="bg-slate-900 text-white p-6 rounded-xl shadow-lg flex justify-between items-start">
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Production Engine</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Workflow Method</p>
           <h2 className="text-2xl font-bold mt-1">Architecture → Assembly</h2>
           <p className="text-sm text-slate-300 max-w-2xl mt-2">
-            The studio only achieves high-velocity drafting because the architectural work front-loads the risk. This view articulates
-            the CapEx → OpEx hand-off that justifies the Architect-Writer rate.
+            High-velocity drafting is possible because architectural work front-loads the risk. This view shows how each phase contributes
+            to project delivery and how your capacity maps to real timelines.
           </p>
         </div>
         <div className="flex items-center gap-4">

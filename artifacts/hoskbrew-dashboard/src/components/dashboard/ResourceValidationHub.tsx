@@ -32,7 +32,7 @@ export function ResourceValidationHub({ clientMode = false, onReassignProjects, 
       onReassignProjects();
     } else {
       // Default behavior: Show a message indicating reassignment capability
-      alert('Project reassignment feature: Select projects from the overloaded team member to reassign to available capacity.');
+      alert('Project reassignment feature: Select projects from the overloaded client to redistribute capacity.');
     }
     setTimeout(() => setActiveAction(null), 2000);
   }, [onReassignProjects]);
@@ -150,7 +150,7 @@ export function ResourceValidationHub({ clientMode = false, onReassignProjects, 
           )}
         </div>
         <p className="text-sm text-blue-700">
-          Pulls team members, capacity, and hourly rates from Team Builder. 
+          Pulls client capacity and hourly rates from your client list.
           Load calculations dynamically feed project timeline adjustments to the Scenario Engine.
         </p>
       </div>
@@ -200,7 +200,7 @@ export function ResourceValidationHub({ clientMode = false, onReassignProjects, 
                 {/* Impact Preview */}
                 <div className={`${getCapacityColor(bottleneck?.loadPercentage || 0).bg} ${getCapacityColor(bottleneck?.loadPercentage || 0).border} rounded-lg p-3 mt-3`}>
                   <div className={`text-xs ${getCapacityColor(bottleneck?.loadPercentage || 0).text}`}>
-                    <span className="font-semibold">Impact Preview:</span> Reassigning 2 projects to available team members would reduce {bottleneck.teamMemberName}'s load to ~180% capacity.
+                    <span className="font-semibold">Impact Preview:</span> Reassigning 2 projects to other clients would reduce {bottleneck.teamMemberName}'s load to ~180% capacity.
                   </div>
                 </div>
               </div>
@@ -385,8 +385,8 @@ export function ResourceValidationHub({ clientMode = false, onReassignProjects, 
       <div className="bg-white border border-slate-200 rounded-xl p-4 text-sm text-slate-600">
         <h4 className="font-semibold text-slate-900 mb-1">How Resource Validation Works</h4>
         <p>
-          This hub pulls team member capacity from the Team Builder and validates project assignments.
-          When a team member exceeds 100% capacity, the system flags them as a bottleneck and
+          This hub pulls client capacity from your client list and validates project assignments.
+          When a client exceeds 100% capacity, the system flags them as a bottleneck and
           adjusts the overall project timeline in the Scenario Engine.
         </p>
       </div>
