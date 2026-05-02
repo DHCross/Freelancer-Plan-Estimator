@@ -126,16 +126,16 @@ export function StrategicPivotReportView() {
         </h3>
         <div className="space-y-4">
           <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-            <div className="font-bold text-blue-800 mb-2">Matthew: Core IP Protection</div>
-            <blockquote className="text-blue-700 italic">"{report.stakeholderMandates.matthew}"</blockquote>
+            <div className="font-bold text-blue-800 mb-2">Sam: Core IP Protection</div>
+            <blockquote className="text-blue-700 italic">"{report.stakeholderMandates.sam}"</blockquote>
           </div>
           <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-            <div className="font-bold text-green-800 mb-2">Martin: Production Backbone</div>
-            <blockquote className="text-green-700 italic">"{report.stakeholderMandates.martin}"</blockquote>
+            <div className="font-bold text-green-800 mb-2">Jordan: Production Backbone</div>
+            <blockquote className="text-green-700 italic">"{report.stakeholderMandates.jordan}"</blockquote>
           </div>
           <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
-            <div className="font-bold text-amber-800 mb-2">Dan: Institutional Architecture</div>
-            <blockquote className="text-amber-700 italic">"{report.stakeholderMandates.dan}"</blockquote>
+            <div className="font-bold text-amber-800 mb-2">Alex: Institutional Architecture</div>
+            <blockquote className="text-amber-700 italic">"{report.stakeholderMandates.alex}"</blockquote>
           </div>
         </div>
       </div>

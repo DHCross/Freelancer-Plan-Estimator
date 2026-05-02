@@ -51,10 +51,10 @@ export class DataIngestionService {
       type: "TRPG Adventure",
       clientType: "Internal",
       targetWords: 50000, // Default assumption if missing
-      assignedTo: "Dan Cross", // Default owner
+      assignedTo: "Alex Rivera", // Default owner
       internalStatus: "Active",
       clientStatus: "In Progress",
-      stakeholder: "Dan",
+      stakeholder: "Alex",
       launchWindow: data.project.hard_deadline || "2026-01-31",
       budgetType: "Fixed",
       dependency: null,

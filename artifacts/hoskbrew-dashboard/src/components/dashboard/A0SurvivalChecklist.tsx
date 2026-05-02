@@ -74,7 +74,7 @@ const INITIAL_TASKS: SurvivalTask[] = [
     id: "visual-audit",
     category: "Quality",
     title: "Visual Audit",
-    description: "Ensure all stat blocks match the 'Martin Standard' by stripping code tags and using bold, all-caps headers.",
+    description: "Ensure all stat blocks match the 'house style standard' by stripping code tags and using bold, all-caps headers.",
     completed: false,
     priority: "High",
     icon: Eye,

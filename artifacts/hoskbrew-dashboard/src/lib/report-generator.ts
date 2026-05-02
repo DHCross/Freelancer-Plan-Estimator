@@ -29,8 +29,8 @@ export interface ReportConfig {
   };
   generatedDate?: string;
   teamCapacity?: {
-    danWeeklyHours: number;
-    martinWeeklyHours: number;
+    supportWeeklyHours: number;
+    primaryWeeklyHours: number;
     workingWeeksPerYear: number;
   };
   roleOwnership?: {
@@ -70,10 +70,10 @@ function calculateCapacityAnalysis(config: ReportConfig, totalHours: number) {
   const capacity = config.teamCapacity;
   if (!capacity) return null;
 
-  const { danWeeklyHours, martinWeeklyHours, workingWeeksPerYear } = capacity;
+  const { supportWeeklyHours, primaryWeeklyHours, workingWeeksPerYear } = capacity;
   
   // Calculate actual capacity
-  const combinedWeeklyHours = danWeeklyHours + martinWeeklyHours;
+  const combinedWeeklyHours = supportWeeklyHours + primaryWeeklyHours;
   const annualCapacity = combinedWeeklyHours * workingWeeksPerYear;
   
   // Calculate gaps
@@ -85,8 +85,8 @@ function calculateCapacityAnalysis(config: ReportConfig, totalHours: number) {
   const equivalentTeamSize = totalHours / (workingWeeksPerYear * 40); // 40 = standard full-time week
   
   return {
-    danWeeklyHours,
-    martinWeeklyHours,
+    supportWeeklyHours,
+    primaryWeeklyHours,
     combinedWeeklyHours,
     annualCapacity,
     totalHours,
@@ -102,8 +102,8 @@ function generateCapacityAnalysisSection(analysis: ReturnType<typeof calculateCa
   if (!analysis) return "";
 
   const {
-    danWeeklyHours,
-    martinWeeklyHours,
+    supportWeeklyHours,
+    primaryWeeklyHours,
     combinedWeeklyHours,
     annualCapacity,
     totalHours,
@@ -119,8 +119,8 @@ function generateCapacityAnalysisSection(analysis: ReturnType<typeof calculateCa
     : `**Surplus:** ${formatNumber(Math.abs(hourGap))} hours of slack capacity.`;
 
   const cleanFixes = [
-    "Push one Q4 deliverable (e.g., Grimdark Skeleton) into Q1 2027.",
-    "De-scope Ravenous Coast to a Phase 1 book (regional core + bastions).",
+    "Push one Q4 deliverable into Q1 2027.",
+    "De-scope World Setting Guide to a Phase 1 book (regional core + key locations).",
     "Serialize A2 development — outline in Q3, full production after A1 ship."
   ];
 
@@ -128,8 +128,8 @@ function generateCapacityAnalysisSection(analysis: ReturnType<typeof calculateCa
 
   return `
 **Actual capacity (realistic):**
-- Dan: ${danWeeklyHours} hrs/week
-- Martin: ${martinWeeklyHours} hrs/week
+- Dan: ${supportWeeklyHours} hrs/week
+- Martin: ${primaryWeeklyHours} hrs/week
 - Combined: ${combinedWeeklyHours} hrs/week × ${workingWeeksPerYear} working weeks ≈ ${formatNumber(annualCapacity)} hrs/year
 
 **Plan demand:** ${formatNumber(totalHours)} hrs/year (${Math.round(totalHours / workingWeeksPerYear)} hrs/week equivalent)
@@ -140,7 +140,7 @@ ${gapDescription}
 
 **Where load concentrates:**
 1. **Q3 overlap:** A1 polish + Players Guide + Maps + A2 ramp assume parallel throughput you don't have.
-2. **Q4 stack:** Ravenous Coast + Grimdark Skeleton double-book the same window; ~${formatNumber(Math.max(0, hourGap))} missing hours live here.
+2. **Q4 stack:** World Setting Guide + Core Ruleset double-book the same window; ~${formatNumber(Math.max(0, hourGap))} missing hours live here.
 
 **Cleanest fixes (no heroics):**
 ${cleanFixList}
@@ -163,24 +163,24 @@ function generateRoleOwnershipAnalysis(roles: ReportConfig['roleOwnership'], hea
 
 ### Explicit Role Coverage
 
-**1. Creative Lead / Setting Architect — ${narrativeLead || "Martin"}**
+**1. Creative Lead / Setting Architect — ${narrativeLead || "Jordan"}**
 - Primary narrative authoring
 - Tone, theme, and scene conception
 - Module-level storytelling momentum
 
-**2. Systems & Structure Lead — ${systemsLead || "Dan"}**
+**2. Systems & Structure Lead — ${systemsLead || "Alex"}**
 - Rules translation & system fluency
 - Structural consistency across books
 - Layout-aware writing and editorial hygiene
 - Long-horizon continuity thinking
 
-**3. Production Arbiter — ${productionArbiter || "Dan"}**
+**3. Production Arbiter — ${productionArbiter || "Alex"}**
 - Final calls on scope cuts
 - Priority conflict resolution
 - "Good enough" threshold decisions
 - Completion sign-off authority
 
-**4. Final Editor & Integrator — ${finalEditor || "Dan"}**
+**4. Final Editor & Integrator — ${finalEditor || "Alex"}**
 - Editorial enforcement phase
 - Cross-project consistency
 - Layout integration oversight
@@ -218,11 +218,11 @@ function generateRoleOwnershipAnalysis(roles: ReportConfig['roleOwnership'], hea
 
 | Decision Area | Primary Authority | Backup Authority | Escalation |
 |---------------|-------------------|------------------|------------|
-| Narrative Content | ${narrativeLead || "Martin"} | ${systemsLead || "Dan"} | Joint discussion |
-| Rules & Systems | ${systemsLead || "Dan"} | ${narrativeLead || "Martin"} | ${productionArbiter || "Dan"} final call |
-| Scope & Priority | ${productionArbiter || "Dan"} | ${narrativeLead || "Martin"} | Joint discussion |
-| Editorial Quality | ${finalEditor || "Dan"} | ${narrativeLead || "Martin"} | ${productionArbiter || "Dan"} final call |
-| Asset Integration | ${assetCoordinator || "TBD"} | ${finalEditor || "Dan"} | ${projectManager || "Dan"} escalation |
+| Narrative Content | ${narrativeLead || "Jordan"} | ${systemsLead || "Alex"} | Joint discussion |
+| Rules & Systems | ${systemsLead || "Alex"} | ${narrativeLead || "Jordan"} | ${productionArbiter || "Alex"} final call |
+| Scope & Priority | ${productionArbiter || "Alex"} | ${narrativeLead || "Jordan"} | Joint discussion |
+| Editorial Quality | ${finalEditor || "Alex"} | ${narrativeLead || "Jordan"} | ${productionArbiter || "Alex"} final call |
+| Asset Integration | ${assetCoordinator || "TBD"} | ${finalEditor || "Alex"} | ${projectManager || "Dan"} escalation |
 
 ---
 `;
@@ -343,7 +343,7 @@ ${subtitle || ""}
   sections.push(`${nextHeading("Strategic Priorities")}
 
 ### Primary Deliverable
-The A-Series Adventure Path (A0–A4) represents the core publishing initiative for the year.
+The Core Series Adventure Path (A02013A4) represents the core publishing initiative for the year.
 
 ### Release Window
 The target for A1: The Problem of Possibilities is late Q2 (May–June print and distribution window).
@@ -364,7 +364,7 @@ Primary print strategy will use domestic offset printing (runs in 1k–2k units)
 |-------|--------|-------------|-------|`);
 
   projects
-    .filter(p => p.stakeholder === "Martin" || p.name.toLowerCase().includes("a0") || p.name.toLowerCase().includes("a1") || p.name.toLowerCase().includes("a2") || p.name.toLowerCase().includes("a3") || p.name.toLowerCase().includes("a4") || p.name.toLowerCase().includes("player") || p.name.toLowerCase().includes("ravenous"))
+    .filter(p => p.stakeholder === "Jordan" || p.name.toLowerCase().includes("a0") || p.name.toLowerCase().includes("a1") || p.name.toLowerCase().includes("a2") || p.name.toLowerCase().includes("a3") || p.name.toLowerCase().includes("a4") || p.name.toLowerCase().includes("player") || p.name.toLowerCase().includes("world setting"))
     .sort((a, b) => {
       const dateA = a.targetDate || a.displayDate || a.launchWindow || "";
       const dateB = b.targetDate || b.displayDate || b.launchWindow || "";
@@ -533,7 +533,7 @@ Final files should be routed mid-April for uninterrupted layout flow.
   // Footer
   sections.push(`${nextHeading("Summary")}
 
-This plan forms the baseline working schedule, financial model, and operational sequencing for full execution of the A-Series cycle in 2026. Additional downstream planning—as marketing timing, distribution routing, and sales cadence—is available upon request.
+This plan forms the baseline working schedule, financial model, and operational sequencing for full execution of the Core Series cycle in 2026. Additional downstream planning—as marketing timing, distribution routing, and sales cadence—is available upon request.
 
 ---
 

@@ -35,15 +35,15 @@ export function PurgeView({ ghostCapacity }: PurgeViewProps) {
           </h4>
           <p className="text-sm text-slate-600 mb-4">
             You are now the <strong>Institutional Archivist</strong>. Without scaffolding, the
-            A-series cannot launch and corporate deadlines slip.
+            Core series cannot launch and corporate deadlines slip.
           </p>
           <div className="space-y-3 text-sm">
             <div className="p-3 bg-emerald-50 border border-emerald-100 rounded text-emerald-800">
-              <strong>For Martin:</strong> &ldquo;Admin&rdquo; time is the production backbone. No calendar
+              <strong>For the lead author:</strong> &ldquo;Admin&rdquo; time is the production backbone. No calendar
               = no A1 launch.
             </div>
             <div className="p-3 bg-blue-50 border border-blue-100 rounded text-blue-800">
-              <strong>For Matthew:</strong> &ldquo;Dec 22nd is non-negotiable. I am protecting the Core IP revenue.&rdquo;
+              <strong>For the project lead:</strong> &ldquo;The release deadline is non-negotiable. Protecting the Core IP revenue is the priority.&rdquo;
             </div>
           </div>
         </div>

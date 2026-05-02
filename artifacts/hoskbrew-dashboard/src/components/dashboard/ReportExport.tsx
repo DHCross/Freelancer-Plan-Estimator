@@ -17,9 +17,9 @@ interface ReportExportProps {
 
 export function ReportExport({ projects, metrics, teamRoster, clientMode = false }: ReportExportProps) {
   const [copied, setCopied] = useState(false);
-  const [reportTitle, setReportTitle] = useState("2026 A-Series Integrated Production Plan");
+  const [reportTitle, setReportTitle] = useState("2026 Core Series Integrated Production Plan");
   const [generatedHTML, setGeneratedHTML] = useState("");
-  const [reportSubtitle, setReportSubtitle] = useState("Based on the A-Series Project Dossier, the following roadmap outlines the publishing strategy, sequencing, and production execution for fiscal year 2026. A1 remains the anchor deliverable and sets the production cadence for all supporting modules.");
+  const [reportSubtitle, setReportSubtitle] = useState("Based on the Core Series Project Dossier, the following roadmap outlines the publishing strategy, sequencing, and production execution for fiscal year 2026. A1 remains the anchor deliverable and sets the production cadence for all supporting modules.");
   // A1 Manuscript Reality Baseline (audited from A1: Problem of Possibilities 4.1.25)
   const [regionalMaps, setRegionalMaps] = useState(A1_ART_BASELINE.regionalMaps);
   const [encounterMaps, setEncounterMaps] = useState(A1_ART_BASELINE.encounterMaps);
@@ -32,15 +32,15 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
   const [generatedMarkdown, setGeneratedMarkdown] = useState("");
   const [selectedFormat, setSelectedFormat] = useState<'markdown' | 'html' | 'pdf'>('markdown');
   const [showPreview, setShowPreview] = useState(false);
-  const [danWeeklyHours, setDanWeeklyHours] = useState(18);
-  const [martinWeeklyHours, setMartinWeeklyHours] = useState(30);
+  const [supportWeeklyHours, setSupportWeeklyHours] = useState(18);
+  const [primaryWeeklyHours, setPrimaryWeeklyHours] = useState(30);
   const [workingWeeksPerYear, setWorkingWeeksPerYear] = useState(48);
-  const [narrativeLead, setNarrativeLead] = useState("Martin");
-  const [systemsLead, setSystemsLead] = useState("Dan");
-  const [productionArbiter, setProductionArbiter] = useState("Dan");
-  const [finalEditor, setFinalEditor] = useState("Dan");
+  const [narrativeLead, setNarrativeLead] = useState("Jordan");
+  const [systemsLead, setSystemsLead] = useState("Alex");
+  const [productionArbiter, setProductionArbiter] = useState("Alex");
+  const [finalEditor, setFinalEditor] = useState("Alex");
   const [assetCoordinator, setAssetCoordinator] = useState("TBD");
-  const [projectManagerRole, setProjectManagerRole] = useState("Dan");
+  const [projectManagerRole, setProjectManagerRole] = useState("Alex");
   const [marketPreset, setMarketPreset] = useState<ArtDensityPreset>("osr");
   const [showMarketComparison, setShowMarketComparison] = useState(true);
 
@@ -70,8 +70,8 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
       high: investmentHigh,
     },
     teamCapacity: {
-      danWeeklyHours,
-      martinWeeklyHours,
+      supportWeeklyHours,
+      primaryWeeklyHours,
       workingWeeksPerYear,
     },
     roleOwnership: {
@@ -98,8 +98,8 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
     covers,
     investmentLow,
     investmentHigh,
-    danWeeklyHours,
-    martinWeeklyHours,
+    supportWeeklyHours,
+    primaryWeeklyHours,
     workingWeeksPerYear,
     narrativeLead,
     systemsLead,
@@ -122,13 +122,13 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
   }, []);
 
   const capacitySnapshot = useMemo(() => {
-    const combinedWeekly = danWeeklyHours + martinWeeklyHours;
+    const combinedWeekly = supportWeeklyHours + primaryWeeklyHours;
     const annualCapacity = combinedWeekly * workingWeeksPerYear;
     return {
       combinedWeekly,
       annualCapacity,
     };
-  }, [danWeeklyHours, martinWeeklyHours, workingWeeksPerYear]);
+  }, [supportWeeklyHours, primaryWeeklyHours, workingWeeksPerYear]);
 
   const totalArtBudget = useMemo(() => {
     return (regionalMaps * REGIONAL_MAP_DEFAULT) + 
@@ -246,7 +246,7 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
               Production Plan Report
             </h2>
             <p className="text-sm text-slate-600 max-w-2xl mt-2">
-              Generate a professional production plan report matching the format you sent to Martin. Export as Markdown, HTML, or print to PDF.
+              Generate a professional production plan report matching the format you sent to the lead author. Export as Markdown, HTML, or print to PDF.
             </p>
           </div>
 
@@ -258,17 +258,17 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
                 <span className="text-xs font-medium text-slate-600">Dan hrs/week</span>
                 <input
                   type="number"
-                  value={danWeeklyHours}
-                  onChange={(e) => setDanWeeklyHours(Number(e.target.value))}
+                  value={supportWeeklyHours}
+                  onChange={(e) => setSupportWeeklyHours(Number(e.target.value))}
                   className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
                 />
               </label>
               <label className="block">
-                <span className="text-xs font-medium text-slate-600">Martin hrs/week</span>
+                <span className="text-xs font-medium text-slate-600">Primary hrs/week</span>
                 <input
                   type="number"
-                  value={martinWeeklyHours}
-                  onChange={(e) => setMartinWeeklyHours(Number(e.target.value))}
+                  value={primaryWeeklyHours}
+                  onChange={(e) => setPrimaryWeeklyHours(Number(e.target.value))}
                   className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
                 />
               </label>
@@ -766,7 +766,7 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
               className="flex-1 w-full bg-transparent text-xs font-mono px-4 py-3 resize-none outline-none"
               value={generatedMarkdown}
               onChange={(e) => setGeneratedMarkdown(e.target.value)}
-              placeholder={showPreview ? "Click 'Generate Report' to produce your 2026 A-Series Integrated Production Plan..." : "Generate the report first to see the content here..."}
+              placeholder={showPreview ? "Click 'Generate Report' to produce your 2026 Core Series Integrated Production Plan..." : "Generate the report first to see the content here..."}
             />
           </div>
         </div>

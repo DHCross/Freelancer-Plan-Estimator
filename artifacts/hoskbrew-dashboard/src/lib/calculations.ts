@@ -131,16 +131,16 @@ export function calculateProjectAnalysis(
 export function calculateStakeholderDemand(
   analysis: ProjectAnalysis[]
 ): StakeholderDemand[] {
-  const load: Record<string, number> = { Martin: 0, Matthew: 0, Dan: 0 };
+  const load: Record<string, number> = { Jordan: 0, Sam: 0, Alex: 0 };
 
   analysis.forEach((project) => {
     load[project.stakeholder] += project.total;
   });
 
   const labelMap: Record<string, { internal: string; client: string }> = {
-    Martin: { internal: "Martin's Demand", client: "A-Series Initiative" },
-    Matthew: { internal: "Matthew's Demand", client: "Eldritch Initiative" },
-    Dan: { internal: "Dan (Architecture)", client: "Production Engine" },
+    Jordan: { internal: "Jordan's Demand", client: "Core Series Initiative" },
+    Sam: { internal: "Sam's Demand", client: "Core IP Initiative" },
+    Alex: { internal: "Alex (Architecture)", client: "Production Engine" },
   };
 
   return Object.entries(load).map(([stakeholderKey, hours]) => {
@@ -282,7 +282,7 @@ export function computePaceScenario({
 export function getDefaultDraftSpeedForRole(roleId?: string | null): number {
   if (!roleId) return 175;
   const key = roleId.toLowerCase();
-  if (key === "dan" || key === "dan-cross") return 200;
+  if (key === "alex" || key === "dan") return 200;
   if (key === "martin") return 150;
   return 175;
 }

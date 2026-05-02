@@ -158,7 +158,7 @@ export function LayoutSafeDeadlineCalculator({ onApplyDates }: LayoutSafeDeadlin
                   />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">days</span>
                 </div>
-                <span className="text-xs text-slate-400">Martin's layout time</span>
+                <span className="text-xs text-slate-400">Lead author's layout time</span>
               </label>
               
               <label className="block">
@@ -322,7 +322,7 @@ export function LayoutSafeDeadlineCalculator({ onApplyDates }: LayoutSafeDeadlin
                     You must be available for quick decisions from <strong>{formatDateNice(calculations.contentLockDate)}</strong> to <strong>{formatDateNice(calculations.target)}</strong>.
                   </p>
                   <p className="text-xs text-indigo-600 mt-1">
-                    Martin needs rapid turnaround on layout questions during this phase.
+                    The lead author needs rapid turnaround on layout questions during this phase.
                   </p>
                 </div>
               </div>

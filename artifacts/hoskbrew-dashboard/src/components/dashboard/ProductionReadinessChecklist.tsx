@@ -162,7 +162,7 @@ export function ProductionReadinessChecklist() {
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
         <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
         <div className="text-sm text-amber-900">
-          <strong>Martin's Directive:</strong> These decisions are prerequisites for the "Content Lock" phase. 
+          <strong>Directive:</strong> These decisions are prerequisites for the "Content Lock" phase. 
           Changing them after layout begins will cause significant rework and jeopardize the Jan 31 deadline.
         </div>
       </div>

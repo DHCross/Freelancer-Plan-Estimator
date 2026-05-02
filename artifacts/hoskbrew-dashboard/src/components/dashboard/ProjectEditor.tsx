@@ -135,9 +135,9 @@ export function ProjectEditor({ project, onUpdate, clientMode = false }: Project
               onChange={(e) => handleFieldChange("assignedTo", e.target.value)}
               className="w-full px-2 py-1 text-sm border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500"
             >
-              <option value="dan">Dan</option>
-              <option value="martin">Martin</option>
-              <option value="matthew">Matthew</option>
+              <option value="dan">Alex</option>
+              <option value="martin">Jordan</option>
+              <option value="matthew">Sam</option>
             </select>
           </div>
           

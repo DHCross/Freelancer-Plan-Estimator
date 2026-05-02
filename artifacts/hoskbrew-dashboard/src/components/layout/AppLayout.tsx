@@ -91,7 +91,7 @@ export function AppLayout({
                 </button>
                 <div>
                   <p className="text-[10px] uppercase tracking-[0.3em] text-slate-400 font-medium">
-                    Hoskbrew Strategic Board
+                    Studio Strategic Board
                   </p>
                   <h1 className="text-xl font-bold text-slate-900 tracking-tight">
                     Production Engine

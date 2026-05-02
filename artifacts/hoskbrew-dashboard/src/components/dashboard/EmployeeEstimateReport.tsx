@@ -24,9 +24,9 @@ export function EmployeeEstimateReport({ projects, metrics, teamRoster, clientMo
   const [generatedMarkdown, setGeneratedMarkdown] = useState("");
 
   // Employee info
-  const [employeeName, setEmployeeName] = useState("Dan Cross");
+  const [employeeName, setEmployeeName] = useState("Alex Rivera");
   const [employeeRole, setEmployeeRole] = useState("Creative Infrastructure Lead");
-  const [recipientName, setRecipientName] = useState("Martin");
+  const [recipientName, setRecipientName] = useState("Jordan");
   const [recipientTitle, setRecipientTitle] = useState("Marketing & Creative Strategy Lead");
 
   // Project selection

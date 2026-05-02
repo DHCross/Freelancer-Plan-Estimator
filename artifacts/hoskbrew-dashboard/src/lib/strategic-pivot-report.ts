@@ -8,9 +8,9 @@ export interface StrategicPivotReport {
     impact: string;
   };
   stakeholderMandates: {
-    matthew: string;
-    martin: string;
-    dan: string;
+    sam: string;
+    jordan: string;
+    alex: string;
   };
   operationalRealities: {
     capacityLoss: string;
@@ -29,28 +29,28 @@ export function generateStrategicPivotReport(): StrategicPivotReport {
 
   return {
     executiveSummary: {
-      situation: "The Great Remote Purge eliminated 16 staff members, removing 120 hours/week of operational capacity and leaving the TTRPG division as a skeleton crew operation.",
+      situation: "The Organizational Restructure eliminated 16 staff members, removing 120 hours/week of operational capacity and leaving the TTRPG division as a skeleton crew operation.",
       decision: "Strategic pivot to Institutional Archivist model with focus on knowledge preservation, critical path protection, and scalable system building.",
       timeline: "90-day stabilization window with immediate focus on Dec 22 deadline and A1 launch continuity.",
       impact: "Current operational model covers only 27% of required capacity. Without immediate intervention, major revenue streams and strategic initiatives face significant delays or cancellation."
     },
     stakeholderMandates: {
-      matthew: "Dec 22nd is non-negotiable. I am protecting the Core IP revenue. Eldritch 2E: Curses to Prose must ship to maintain financial stability.",
-      martin: "Admin time is the production backbone. No calendar = no A1 launch. A-series production pipeline requires administrative scaffolding to prevent collapse.",
-      dan: "Without scaffolding, the A-series cannot launch and corporate deadlines slip. Institutional knowledge preservation is critical for future scaling."
+      sam: "The Core IP deadline is non-negotiable. The 2nd Edition release must ship to maintain financial stability.",
+      jordan: "Admin time is the production backbone. No launch calendar means no flagship release. The core series pipeline requires administrative scaffolding to prevent collapse.",
+      alex: "Without scaffolding, the core series cannot launch and deadlines slip. Institutional knowledge preservation is critical for future scaling."
     },
     operationalRealities: {
-      capacityLoss: "32,000 annual hours eliminated. Ghost capacity from Jon (writing/editing), Derek (art/visuals), and Randy (production lead) creates 120h/wk deficit.",
-      criticalPathRisk: "A1 flagship launch (End of May) and Eldritch 2E deadline (Dec 22) both at risk. Production pipeline collapse threatens entire 2026 revenue plan.",
+      capacityLoss: "32,000 annual hours eliminated. Ghost capacity from three departed senior staff creates 120h/wk deficit.",
+      criticalPathRisk: "A1 flagship launch (End of May) and Core IP deadline both at risk. Production pipeline collapse threatens entire 2026 revenue plan.",
       survivalHorizon: "Current runway of approximately 11 weeks at reduced capacity. Immediate action required to prevent cascade failures."
     },
     strategicRecommendations: {
       immediate: [
-        "Protect Dec 22 Eldritch 2E deadline - allocate 20h/wk to Matthew's Core IP",
-        "Maintain A1 production calendar - allocate 15h/wk to Martin's administrative backbone",
-        "Document Jon's technical style guide - capture editorial standards before knowledge loss",
-        "Preserve Derek's art coordination standards - maintain visual consistency protocols",
-        "Capture Randy's production pipeline methods - ensure timeline management continuity"
+        "Protect core IP deadline - allocate 20h/wk to publisher IP pipeline",
+        "Maintain flagship production calendar - allocate 15h/wk to lead author pipeline",
+        "Document lead editor style guide - capture editorial standards before knowledge loss",
+        "Preserve art coordination standards - maintain visual consistency protocols",
+        "Capture production pipeline methods - ensure timeline management continuity"
       ],
       shortTerm: [
         "Create scalable scaffolding systems for future team expansion",
@@ -73,7 +73,7 @@ export function generateStrategicPivotReport(): StrategicPivotReport {
 export function formatPivotReportAsMarkdown(): string {
   const report = generateStrategicPivotReport();
   
-  return `# Strategic Pivot Report: Great Remote Purge Response
+  return `# Strategic Pivot Report: Organizational Restructure Response
 
 ## Executive Summary
 
@@ -89,14 +89,14 @@ export function formatPivotReportAsMarkdown(): string {
 
 ## Stakeholder Mandates
 
-### Matthew: Core IP Protection
-> "${report.stakeholderMandates.matthew}"
+### Sam: Core IP Protection
+> "${report.stakeholderMandates.sam}"
 
-### Martin: Production Backbone
-> "${report.stakeholderMandates.martin}"
+### Jordan: Production Backbone
+> "${report.stakeholderMandates.jordan}"
 
-### Dan: Institutional Architecture
-> "${report.stakeholderMandates.dan}"
+### Alex: Institutional Architecture
+> "${report.stakeholderMandates.alex}"
 
 ---
 
@@ -138,7 +138,7 @@ ${report.strategicRecommendations.longTerm.map((item, idx) => `${idx + 1}. ${ite
 
 ## Conclusion
 
-The Great Remote Purge represents both a crisis and an opportunity. By embracing the Institutional Archivist role and implementing this strategic pivot, we can:
+The Organizational Restructure represents both a crisis and an opportunity. By embracing the Institutional Archivist role and implementing this strategic pivot, we can:
 
 1. **Protect immediate revenue** through deadline adherence
 2. **Preserve critical knowledge** before permanent loss

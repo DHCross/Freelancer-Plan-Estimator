@@ -34,7 +34,7 @@ export function PoliticsView({ stakeholderLoad, clientMode = false }: PoliticsVi
           <p className="text-sm text-slate-600 max-w-2xl mt-2">
             {clientMode
               ? "Shows Paul how labor budget directly protects revenue commitments per executive owner."
-              : "Use this to remind Matthew and Martin whose promises you are currently carrying."}
+              : "Use this to remind stakeholders whose priorities you are currently managing."}
           </p>
         </div>
         <TrendingUp className="w-12 h-12 text-orange-500" />

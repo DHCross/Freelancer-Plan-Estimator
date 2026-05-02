@@ -23,7 +23,7 @@ export function formatCurrency(value: number) {
 export function loadOverrides(): Record<string, any> {
   if (typeof window === "undefined") return {};
   try {
-    const raw = window.localStorage.getItem("hoskbrew_overrides");
+    const raw = window.localStorage.getItem("studio_overrides");
     return raw ? JSON.parse(raw) : {};
   } catch {
     return {};
@@ -33,7 +33,7 @@ export function loadOverrides(): Record<string, any> {
 export function saveOverrides(overrides: Record<string, any>) {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem("hoskbrew_overrides", JSON.stringify(overrides));
+    window.localStorage.setItem("studio_overrides", JSON.stringify(overrides));
   } catch {
     /* noop */
   }
@@ -54,7 +54,7 @@ export function setProjectOverride(projectId: number, patch: Record<string, any>
 export function loadPublished(): Record<string, any> {
   if (typeof window === "undefined") return {};
   try {
-    const raw = window.localStorage.getItem("hoskbrew_published");
+    const raw = window.localStorage.getItem("studio_published");
     return raw ? JSON.parse(raw) : {};
   } catch {
     return {};
@@ -64,7 +64,7 @@ export function loadPublished(): Record<string, any> {
 export function savePublished(published: Record<string, any>) {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem("hoskbrew_published", JSON.stringify(published));
+    window.localStorage.setItem("studio_published", JSON.stringify(published));
   } catch {
     /* noop */
   }

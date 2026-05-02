@@ -606,7 +606,7 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
                   <li>When adding a member, start typing a role name or select from the dropdown</li>
                   <li>Click a template option to auto-fill all metrics for that role</li>
                   <li>Customize the values afterward if needed</li>
-                  <li>Reference rates from the Hoskbrew Operating Charter</li>
+                  <li>Reference rates from the Studio Operating Charter</li>
                 </ul>
               </div>
             </details>

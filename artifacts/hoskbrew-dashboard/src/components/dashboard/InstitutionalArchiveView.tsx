@@ -25,8 +25,8 @@ export function InstitutionalArchiveView({ ghostCapacity }: InstitutionalArchive
           <div className="bg-white p-4 rounded-lg border border-red-100">
             <div className="font-semibold text-red-700 mb-2">Immediate Risks</div>
             <ul className="space-y-1 text-gray-600">
-              <li>• No calendar = no A1 launch (Martin dependency)</li>
-              <li>• Dec 22 deadline non-negotiable (Matthew mandate)</li>
+              <li>• No calendar = no A1 launch (lead author dependency)</li>
+              <li>• Dec 22 deadline non-negotiable (publisher mandate)</li>
               <li>• 32,000 annual hours capacity gap</li>
             </ul>
           </div>
@@ -40,7 +40,7 @@ export function InstitutionalArchiveView({ ghostCapacity }: InstitutionalArchive
           Your Role: Institutional Archivist
         </h3>
         <p className="text-slate-300 mb-4">
-          Without scaffolding, the A-series cannot launch and corporate deadlines slip. You are the sole guardian of production continuity.
+          Without scaffolding, the Core series cannot launch and corporate deadlines slip. You are the sole guardian of production continuity.
         </p>
         <div className="grid md:grid-cols-3 gap-4">
           <div className="bg-slate-700 p-4 rounded-lg">
@@ -89,9 +89,9 @@ export function InstitutionalArchiveView({ ghostCapacity }: InstitutionalArchive
               <span className="text-2xl font-mono text-amber-600">45h/wk</span>
             </div>
             <div className="mt-3 text-sm text-gray-600">
-              <div>Dan: 20h/wk (Infrastructure)</div>
-              <div>Martin: 15h/wk (Creative)</div>
-              <div>Matthew: 10h/wk (PM)</div>
+              <div>Alex: 20h/wk (Infrastructure)</div>
+              <div>Jordan: 15h/wk (Creative)</div>
+              <div>Sam: 10h/wk (PM)</div>
             </div>
           </div>
 
@@ -113,15 +113,15 @@ export function InstitutionalArchiveView({ ghostCapacity }: InstitutionalArchive
         <div className="space-y-3">
           <div className="bg-white p-4 rounded-lg border border-indigo-100">
             <div className="font-bold text-indigo-700 mb-1">1. Protect December 22 Deadline</div>
-            <div className="text-sm text-gray-600">Matthew's Core IP revenue protection is non-negotiable</div>
+            <div className="text-sm text-gray-600">Core IP revenue protection is non-negotiable</div>
           </div>
           <div className="bg-white p-4 rounded-lg border border-indigo-100">
             <div className="font-bold text-indigo-700 mb-1">2. Maintain A1 Launch Path</div>
-            <div className="text-sm text-gray-600">Martin's production calendar needs administrative backbone</div>
+            <div className="text-sm text-gray-600">Lead author's production calendar needs administrative backbone</div>
           </div>
           <div className="bg-white p-4 rounded-lg border border-indigo-100">
             <div className="font-bold text-indigo-700 mb-1">3. Document Critical Knowledge</div>
-            <div className="text-sm text-gray-600">Capture Jon's style guide, Derek's art standards, Randy's production methods</div>
+            <div className="text-sm text-gray-600">Capture style guides, art standards, and production methods from departing staff</div>
           </div>
           <div className="bg-white p-4 rounded-lg border border-indigo-100">
             <div className="font-bold text-indigo-700 mb-1">4. Create Scalable Systems</div>

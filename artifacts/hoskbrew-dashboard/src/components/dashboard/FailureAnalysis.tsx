@@ -16,7 +16,7 @@ interface ProjectFailure {
 
 const failureData: ProjectFailure[] = [
   {
-    project: "Ravenous Coast A1",
+    project: "World Setting Guide A1",
     teamSize: 4,
     budget: 85000,
     timeline: 8,

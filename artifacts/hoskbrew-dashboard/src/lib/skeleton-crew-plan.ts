@@ -46,8 +46,8 @@ export function analyzeCapacityGap(): CapacityAnalysis {
 export function identifyCriticalDependencies(): CriticalDependency[] {
   const criticalProjects = INITIAL_PROJECTS.filter(project => 
     project.isLocked || 
-    project.stakeholder === "Matthew" ||
-    (project.stakeholder === "Martin" && project.internalStatus === "Critical")
+    project.stakeholder === "Sam" ||
+    (project.stakeholder === "Jordan" && project.internalStatus === "Critical")
   );
 
   return criticalProjects.map(project => ({
@@ -55,7 +55,7 @@ export function identifyCriticalDependencies(): CriticalDependency[] {
     projectName: project.name,
     stakeholder: project.stakeholder,
     deadline: project.displayDate || project.launchWindow || "TBD",
-    riskLevel: project.isLocked ? "critical" : project.stakeholder === "Matthew" ? "critical" : "high",
+    riskLevel: project.isLocked ? "critical" : project.stakeholder === "Sam" ? "critical" : "high",
     missingCapabilities: getMissingCapabilities(project),
   }));
 }
@@ -83,43 +83,43 @@ export function generateReallocationStrategy(): ReallocationStrategy[] {
   return [
     {
       priority: 1,
-      action: "Protect Dec 22 Eldritch 2E deadline",
-      assignee: "Dan Cross",
+      action: "Protect core IP deadline",
+      assignee: "Alex Rivera",
       hoursReallocated: 20,
       impact: "Matthew's Core IP revenue protection - non-negotiable",
     },
     {
       priority: 2,
       action: "Maintain A1 production calendar",
-      assignee: "Martin",
+      assignee: "Jordan",
       hoursReallocated: 15,
       impact: "Without admin backbone, A1 launch fails",
     },
     {
       priority: 3,
       action: "Document Jon's technical style guide",
-      assignee: "Dan Cross",
+      assignee: "Alex Rivera",
       hoursReallocated: 10,
       impact: "Prevents editorial standards loss",
     },
     {
       priority: 4,
       action: "Capture Derek's art coordination standards",
-      assignee: "Martin",
+      assignee: "Jordan",
       hoursReallocated: 5,
-      impact: "Maintains visual consistency for A-series",
+      impact: "Maintains visual consistency for core series",
     },
     {
       priority: 5,
       action: "Preserve Randy's production pipeline methods",
-      assignee: "Matthew",
+      assignee: "Sam",
       hoursReallocated: 5,
       impact: "Timeline management continuity",
     },
     {
       priority: 6,
       action: "Create scalable scaffolding systems",
-      assignee: "Dan Cross",
+      assignee: "Alex Rivera",
       hoursReallocated: 15,
       impact: "Enables future team expansion",
     },

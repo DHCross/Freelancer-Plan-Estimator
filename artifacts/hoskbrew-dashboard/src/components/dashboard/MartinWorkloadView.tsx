@@ -58,8 +58,8 @@ const WORKLOAD_CATEGORIES: WorkloadCategory[] = [
     color: "bg-emerald-100 text-emerald-700",
     description: "Publisher coordination and art direction.",
     items: [
-      "Liaison with William (Publisher)",
-      "Coordinating Cover Art (Augusta)",
+      "Liaison with Publisher",
+      "Coordinating Cover Art",
       "Commissioning Isometric & Blue-Ink Maps"
     ]
   },
@@ -89,12 +89,12 @@ const ACTION_ITEMS: ActionItem[] = [
   { id: "tables", label: "Finalize Random Encounter Tables", status: "pending", icon: Sword },
   { id: "art", label: "Coordinate Cover Art & Isometric Maps", status: "pending", icon: Palette },
   { id: "worm", label: "Draft 'Scythe Worm' (Big Trouble style)", status: "pending", icon: AlertCircle },
-  { id: "william", label: "Follow up with William (Website/Dossier)", status: "pending", icon: MessageSquare },
+  { id: "william", label: "Follow up with Publisher (Website/Dossier)", status: "pending", icon: MessageSquare },
   { id: "sewer", label: "Finalize Sewer Map for cartographer", status: "pending", icon: MapIcon },
-  { id: "campfire", label: "Campfire & Cuddles Prompts (Reassigned to Dan)", status: "delegated", icon: ArrowRightCircle },
+  { id: "campfire", label: "Campfire & Cuddles Prompts (Re-assigned)", status: "delegated", icon: ArrowRightCircle },
 ];
 
-export function MartinWorkloadView() {
+export function LeadAuthorWorkloadView() {
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -104,7 +104,7 @@ export function MartinWorkloadView() {
             <Brain className="w-8 h-8" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">Martin's Role: The Creative Engine</h2>
+            <h2 className="text-xl font-bold text-white">Lead Author's Role: The Creative Engine</h2>
             <p className="text-slate-400 mt-2 text-sm leading-relaxed max-w-3xl">
               "He views himself as the high-level visionary... trying to translate 30 years of imagination into a functional Pathfinder product. He is focusing on the 'World of Consequence', leaving the technical durability to the Workbench."
             </p>
@@ -171,7 +171,7 @@ export function MartinWorkloadView() {
           </div>
           
           <div className="bg-amber-50 rounded-xl p-4 border border-amber-100 text-amber-800 text-sm">
-            <strong>Note on Deadlines:</strong> Martin manages the strategic clock. The January 31st deadline is a "hard lock" he imposed to force completion, bypassing technical feasibility warnings.
+            <strong>Note on Deadlines:</strong> The lead author manages the strategic clock. The primary deadline is a "hard lock" imposed to force completion, bypassing technical feasibility warnings.
           </div>
         </div>
       </div>

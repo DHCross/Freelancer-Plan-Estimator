@@ -89,7 +89,7 @@ export function BudgetView({ analysis, quarters, clientMode, onProjectUpdate }: 
       assignedTo: "dan",
       internalStatus: "Planning",
       clientStatus: "Internal",
-      stakeholder: "Dan",
+      stakeholder: "Alex",
       launchWindow: targetQuarter ?? "Q2 2026",
       displayDate: targetQuarter ?? "Q2 2026",
       budgetType: template?.budgetType ?? "Custom",
@@ -650,9 +650,9 @@ export function BudgetView({ analysis, quarters, clientMode, onProjectUpdate }: 
                                       onChange={e => updateItem(item.id, "assignedTo", e.target.value)}
                                       className="w-full text-xs p-1 border rounded focus:ring-1 focus:ring-indigo-500"
                                     >
-                                      <option value="dan">Dan</option>
-                                      <option value="martin">Martin</option>
-                                      <option value="matthew">Matthew</option>
+                                      <option value="dan">Alex</option>
+                                      <option value="martin">Jordan</option>
+                                      <option value="matthew">Sam</option>
                                     </select>
                                   </div>
                                   <div>

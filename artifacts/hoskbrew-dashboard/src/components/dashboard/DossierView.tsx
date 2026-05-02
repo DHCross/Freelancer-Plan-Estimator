@@ -59,7 +59,7 @@ export function DossierView({
         marketPerWord,
         teamWeeklyCapacity,
         meetingNotes,
-        // Simple A-series default: if this looks like A1, assume a 4-book arc ~158k words
+        // Simple core series default: if this looks like A1, assume a 4-book arc ~158k words
         seriesBooks: selectedProject.name.startsWith("A1:") ? 4 : undefined,
         seriesWords: selectedProject.name.startsWith("A1:") ? 158000 : undefined,
       },

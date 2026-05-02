@@ -34,7 +34,7 @@ export function ProductListingView({ teamRoster, onNavigateToProductLines }: Pro
 
   const a0 = products.find(p => p.name.toLowerCase().includes("caravan"));
   const a0Insights = a0 ? getInsightsForProduct(a0.name) : null;
-  const dan = teamRoster.find(m => m.name.toLowerCase().startsWith("dan")) || teamRoster.find(m => m.id === "dan");
+  const dan = teamRoster.find(m => m.id === "dan");
   const [selectedLayoutHours, setSelectedLayoutHours] = useState<number>(a0Insights?.layoutHours.mid ?? 50);
 
   const [insightsApplied, setInsightsApplied] = useState(false);
@@ -58,7 +58,7 @@ export function ProductListingView({ teamRoster, onNavigateToProductLines }: Pro
     <div className="space-y-6 relative">
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex items-center justify-between">
         <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Hoskbrew Strategic Roadmap</p>
+          <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Studio Strategic Roadmap</p>
           <h2 className="text-2xl font-bold text-slate-900">Product Listing</h2>
           <p className="text-sm text-slate-600 mt-2 max-w-2xl">
             Manage all products in development. Edit names, descriptions, owners, statuses, and launch windows directly in the grid.

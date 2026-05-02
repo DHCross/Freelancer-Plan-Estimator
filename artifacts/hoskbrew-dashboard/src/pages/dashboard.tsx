@@ -63,7 +63,7 @@ import {
   ProductLinesView,
   TeamHealthDashboard,
   A0SurvivalChecklist,
-  MartinWorkloadView,
+  LeadAuthorWorkloadView,
 } from "@/components/dashboard";
 import { ScenarioWorkspace } from "@/components/dashboard/scenarios/ScenarioWorkspace";
 import { FailureAnalysis } from "@/components/dashboard/FailureAnalysis";
@@ -195,7 +195,7 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
               { id: "layout-safe", label: "Layout-Safe Calculator", icon: Shield },
               { id: "production-readiness", label: "Production Readiness Checklist", icon: Lock },
               { id: "a0-survival", label: "A0: Survival Checklist", icon: AlertTriangle },
-              { id: "martin-workload", label: "Stakeholder: Martin's Brief", icon: Users },
+              { id: "martin-workload", label: "Lead Author: Workload Brief", icon: Users },
               { id: "export-report", label: "Export Report", icon: FileText },
               { id: "lessons-learned", label: "Lessons Learned", icon: Lightbulb },
             ],
@@ -227,22 +227,22 @@ const DEFAULT_SUBVIEWS: Record<PrimaryTab, string> = {
 
 const DEFAULT_ESTIMATION_BUCKETS: EstimationBucketEntry[] = [
   {
-    id: "example-a1-martin-writing",
-    projectName: "A1: Narrative Finish",
-    activity: "Draft new scenes (Martin)",
+    id: "example-a1-jordan-writing",
+    projectName: "A1: Core Release Finish",
+    activity: "Draft new scenes (Jordan)",
     roleLabel: "Writing",
     teamMemberId: "martin",
-    teamMemberName: "Martin",
+    teamMemberName: "Jordan",
     hours: 120,
     days: 30,
   },
   {
-    id: "example-a1-dan-editing",
-    projectName: "A1: Narrative Finish",
-    activity: "Development edit pass (Dan)",
+    id: "example-a1-alex-editing",
+    projectName: "A1: Core Release Finish",
+    activity: "Development edit pass (Alex)",
     roleLabel: "Editing",
     teamMemberId: "dan",
-    teamMemberName: "Dan",
+    teamMemberName: "Alex",
     hours: 40,
     days: 10,
   },
@@ -299,11 +299,11 @@ const STATUS_COLUMN_CONFIG: StatusColumnConfig[] = [
 
 function DashboardPageContent() {
   // ========== AUTH STATE ==========
-  const passcode = import.meta.env.VITE_DASHBOARD_PASSWORD ?? "hoskbrew";
+  const passcode = import.meta.env.VITE_DASHBOARD_PASSWORD ?? "studio";
   const [isAuthed, setIsAuthed] = useState(() => {
     if (import.meta.env.MODE === "development") return true;
     if (typeof window === "undefined") return false;
-    return window.localStorage.getItem("hoskbrew_authed") === "true";
+    return window.localStorage.getItem("studio_authed") === "true";
   });
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
@@ -318,7 +318,7 @@ function DashboardPageContent() {
   // ========== DATA STATE ==========
   const [projects, setProjects] = useState(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("hoskbrew_projects");
+      const saved = localStorage.getItem("studio_projects");
       return saved ? JSON.parse(saved) : INITIAL_PROJECTS;
     }
     return INITIAL_PROJECTS;
@@ -326,7 +326,7 @@ function DashboardPageContent() {
 
   const [metrics, setMetrics] = useState(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("hoskbrew_metrics");
+      const saved = localStorage.getItem("studio_metrics");
       return saved ? JSON.parse(saved) : DEFAULT_METRICS;
     }
     return DEFAULT_METRICS;
@@ -334,7 +334,7 @@ function DashboardPageContent() {
 
   const [teamRoster, setTeamRoster] = useState<TeamMember[]>(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("hoskbrew_team_roster");
+      const saved = localStorage.getItem("studio_team_roster");
       return saved ? JSON.parse(saved) : TEAM_ROSTER;
     }
     return TEAM_ROSTER;
@@ -342,7 +342,7 @@ function DashboardPageContent() {
 
   const [estimationBuckets, setEstimationBuckets] = useState<EstimationBucketEntry[]>(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("hoskbrew_estimation_buckets");
+      const saved = localStorage.getItem("studio_estimation_buckets");
       return saved ? JSON.parse(saved) : DEFAULT_ESTIMATION_BUCKETS;
     }
     return DEFAULT_ESTIMATION_BUCKETS;
@@ -360,7 +360,7 @@ function DashboardPageContent() {
     bufferPercent: 30,
     dailyHours: 4,
     teamMemberId: "martin",
-    projectName: "A1: Narrative Finish",
+    projectName: "A1: Core Release Finish",
     roleLabel: "Writing",
   });
   const [estimatorResult, setEstimatorResult] = useState<EstimatorResult | null>(null);
@@ -496,7 +496,7 @@ function DashboardPageContent() {
       setIsAuthed(true);
       setAuthError(null);
       if (typeof window !== "undefined") {
-        window.localStorage.setItem("hoskbrew_authed", "true");
+        window.localStorage.setItem("studio_authed", "true");
       }
     } else {
       setAuthError("Incorrect password.");
@@ -539,7 +539,7 @@ function DashboardPageContent() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `hoskbrew-dashboard-${new Date().toISOString().split("T")[0]}.json`;
+    a.download = `studio-dashboard-${new Date().toISOString().split("T")[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -625,25 +625,25 @@ function DashboardPageContent() {
   // ========== PERSISTENCE ==========
   useEffect(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("hoskbrew_projects", JSON.stringify(projects));
+      localStorage.setItem("studio_projects", JSON.stringify(projects));
     }
   }, [projects]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("hoskbrew_metrics", JSON.stringify(metrics));
+      localStorage.setItem("studio_metrics", JSON.stringify(metrics));
     }
   }, [metrics]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("hoskbrew_team_roster", JSON.stringify(teamRoster));
+      localStorage.setItem("studio_team_roster", JSON.stringify(teamRoster));
     }
   }, [teamRoster]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("hoskbrew_estimation_buckets", JSON.stringify(estimationBuckets));
+      localStorage.setItem("studio_estimation_buckets", JSON.stringify(estimationBuckets));
     }
   }, [estimationBuckets]);
 
@@ -674,7 +674,7 @@ function DashboardPageContent() {
           className="bg-slate-900 border border-slate-800 rounded-2xl p-8 w-full max-w-sm space-y-6 shadow-2xl"
         >
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Hoskbrew Access</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Studio Access</p>
             <h1 className="text-2xl font-bold mt-2">Enter the production passcode</h1>
             <p className="text-sm text-slate-400 mt-1">
               This dashboard contains sensitive staffing and budget data.
@@ -1050,7 +1050,7 @@ function DashboardPageContent() {
           )}
 
           {subView === "martin-workload" && (
-            <MartinWorkloadView />
+            <LeadAuthorWorkloadView />
           )}
 
           {subView === "export-report" && (
