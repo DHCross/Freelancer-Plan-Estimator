@@ -145,7 +145,7 @@ export function CommandPalette({
           <Search className="w-5 h-5 text-slate-400 mr-3" />
           <input
             type="text"
-            placeholder="Search projects, people, or reports…"
+            placeholder="Search projects, clients, or reports…"
             className="flex-1 bg-transparent border-none outline-none text-slate-900 placeholder:text-slate-400 text-lg"
             value={query}
             onChange={(e) => setQuery(e.target.value)}

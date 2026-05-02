@@ -193,8 +193,8 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
               { id: "dossier", label: "Project Dossier", icon: BookOpen },
               { id: "deadline-estimator", label: "Deadline Estimator", icon: Calendar },
               { id: "layout-safe", label: "Layout-Safe Calculator", icon: Shield },
-              { id: "production-readiness", label: "Production Checklist", icon: Lock },
-              { id: "a0-survival", label: "Quick-Start Checklist", icon: AlertTriangle },
+              { id: "production-readiness", label: "Delivery Checklist", icon: Lock },
+              { id: "a0-survival", label: "Project Checklist", icon: AlertTriangle },
               { id: "martin-workload", label: "Capacity Summary", icon: Users },
               { id: "export-report", label: "Project Proposal", icon: FileText },
               { id: "lessons-learned", label: "Lessons Learned", icon: Lightbulb },
@@ -967,7 +967,7 @@ function DashboardPageContent() {
             </span>
           </div>
 
-          {subView === "financial-model" && <FinancialModel defaultDevCost={20000} />}
+          {subView === "financial-model" && <FinancialModel projects={analysisWithDisplay} teamMembers={teamRoster} />}
 
           {subView === "cost-savings" && (
             <EfficiencyView
@@ -999,8 +999,8 @@ function DashboardPageContent() {
               {subView === "dossier" && "Project Dossier"}
               {subView === "deadline-estimator" && "Deadline Estimator"}
               {subView === "layout-safe" && "Layout-Safe Calculator"}
-              {subView === "production-readiness" && "Production Checklist"}
-              {subView === "a0-survival" && "Quick-Start Checklist"}
+              {subView === "production-readiness" && "Delivery Checklist"}
+              {subView === "a0-survival" && "Project Checklist"}
               {subView === "martin-workload" && "Capacity Summary"}
               {subView === "export-report" && "Project Proposal"}
               {subView === "lessons-learned" && "Lessons Learned"}

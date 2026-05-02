@@ -1,452 +1,271 @@
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import {
     DollarSign,
     TrendingUp,
-    Package,
-    Truck,
-    Scale,
+    CheckCircle2,
+    Clock,
     AlertCircle,
+    FileText,
     BarChart3,
-    Target,
-    Activity,
 } from "lucide-react";
-import {
-    DistributionChannel,
-    PrintRunConfig,
-    ProductPricing,
-    RoiResult,
-    DistributionChannelType,
-} from "@/lib/types";
-import { calculateRoi } from "@/lib/calculations";
-import { getBudgetColor } from "@/lib/colors";
-
-// Default Channels based on user data
-const DEFAULT_CHANNELS: DistributionChannel[] = [
-    {
-        id: "distributor_standard",
-        label: "Standard Distributor (Alliance/GTS)",
-        discountPercent: 60, // 60% off MSRP
-        fulfillmentFeePerUnit: 0, // Usually bulk shipped to them
-        platformFeePercent: 0,
-    },
-    {
-        id: "distributor_hybrid",
-        label: "Hybrid Partner (Modiphius)",
-        discountPercent: 55, // User estimate: "50-60% is normal", Modiphius acts as distributor.
-        fulfillmentFeePerUnit: 2.50, // Pick & Pack fee (estimated for hybrid fulfillment)
-        platformFeePercent: 0,
-    },
-    {
-        id: "kickstarter",
-        label: "Kickstarter / Crowdfunding",
-        discountPercent: 0, // Full MSRP
-        fulfillmentFeePerUnit: 3.00, // 3PL Pick & Pack
-        platformFeePercent: 9, // 5% KS + ~4% Processing (incl. fixed fee)
-    },
-    {
-        id: "direct",
-        label: "Direct Webstore",
-        discountPercent: 0,
-        fulfillmentFeePerUnit: 3.00,
-        platformFeePercent: 3, // Stripe only
-    },
-];
+import { DisplayProject, TeamMember } from "@/lib/types";
 
 interface FinancialModelProps {
+    projects?: DisplayProject[];
+    teamMembers?: TeamMember[];
     defaultDevCost?: number;
 }
 
-export function FinancialModel({ defaultDevCost = 20000 }: FinancialModelProps) {
-    const [devCost, setDevCost] = useState(defaultDevCost);
-    const [msrp, setMsrp] = useState(40);
-    const [breakEvenUnits, setBreakEvenUnits] = useState(0); // For interactive slider
+const TTRPG_PER_WORD = 0.08;
 
-    const [printRun, setPrintRun] = useState<PrintRunConfig>({
-        quantity: 1000,
-        unitCost: 6.00,
-        freightPerUnit: 1.00,
-        warehousingPerUnit: 0.25,
-        tariffPercent: 0,
-    });
+function calcProjectValue(p: DisplayProject, m?: TeamMember): number {
+    if (p.rateType === "per-word") {
+        return (p.targetWords || 0) * (p.rateAmount ?? TTRPG_PER_WORD);
+    }
+    if (p.rateType === "flat-fee") {
+        return p.rateAmount ?? (p.manualHours || 0) * (m?.hourlyRate || 0);
+    }
+    return (p.manualHours || 0) * (p.rateAmount ?? m?.hourlyRate ?? 0);
+}
 
-    const [selectedChannelId, setSelectedChannelId] = useState<DistributionChannelType>("distributor_standard");
+function formatCurrency(val: number): string {
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(val);
+}
 
-    const selectedChannel = useMemo(
-        () => DEFAULT_CHANNELS.find((c) => c.id === selectedChannelId) || DEFAULT_CHANNELS[0],
-        [selectedChannelId]
+function rateLabel(p: DisplayProject, m?: TeamMember): string {
+    if (p.rateType === "per-word") {
+        const rate = p.rateAmount ?? TTRPG_PER_WORD;
+        return `$${rate.toFixed(3)}/word`;
+    }
+    if (p.rateType === "flat-fee") return "Flat fee";
+    const rate = p.rateAmount ?? m?.hourlyRate ?? 0;
+    return `$${rate}/hr`;
+}
+
+function statusBadge(status: string | undefined) {
+    if (status === "paid") return { label: "Paid", color: "bg-emerald-100 text-emerald-800" };
+    if (status === "invoiced") return { label: "Invoiced", color: "bg-blue-100 text-blue-800" };
+    return { label: "Pending", color: "bg-amber-100 text-amber-800" };
+}
+
+export function FinancialModel({ projects = [], teamMembers = [] }: FinancialModelProps) {
+    const memberById = useMemo(() => new Map(teamMembers.map(m => [m.id, m])), [teamMembers]);
+
+    const projectsWithValue = useMemo(() =>
+        projects.map(p => ({
+            ...p,
+            member: memberById.get(p.assignedTo || ""),
+            value: calcProjectValue(p, memberById.get(p.assignedTo || "")),
+        })),
+        [projects, memberById]
     );
 
-    const roi = useMemo(
-        () => calculateRoi(devCost, printRun, { msrp }, selectedChannel),
-        [devCost, printRun, msrp, selectedChannel]
+    const paid = useMemo(() =>
+        projectsWithValue.filter(p => p.invoiceStatus === "paid").reduce((s, p) => s + p.value, 0),
+        [projectsWithValue]
     );
+    const invoiced = useMemo(() =>
+        projectsWithValue.filter(p => p.invoiceStatus === "invoiced").reduce((s, p) => s + p.value, 0),
+        [projectsWithValue]
+    );
+    const pending = useMemo(() =>
+        projectsWithValue.filter(p => !p.invoiceStatus || p.invoiceStatus === "not-invoiced").reduce((s, p) => s + p.value, 0),
+        [projectsWithValue]
+    );
+    const total = paid + invoiced + pending;
 
-    // Update break-even slider when ROI changes
-    useMemo(() => {
-        setBreakEvenUnits(roi.breakEvenUnits);
-    }, [roi.breakEvenUnits]);
+    const avgHourlyRate = teamMembers.length > 0
+        ? teamMembers.reduce((s, m) => s + m.hourlyRate, 0) / teamMembers.length
+        : 0;
 
-    // Calculate break-even scenarios for different quantities
-    const breakEvenScenarios = useMemo(() => {
-        const scenarios = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
-        return scenarios.map(multiplier => {
-            const quantity = Math.round(roi.breakEvenUnits * multiplier);
-            const scenarioRoi = calculateRoi(devCost, { ...printRun, quantity }, { msrp }, selectedChannel);
-            return {
-                quantity,
-                multiplier,
-                profit: scenarioRoi.netProfit,
-                profitPerUnit: scenarioRoi.netRevenuePerUnit,
-                margin: (scenarioRoi.netRevenuePerUnit / msrp) * 100
-            };
-        });
-    }, [devCost, printRun, msrp, selectedChannel, roi.breakEvenUnits]);
+    const totalHoursThisYear = projects.reduce((s, p) => s + (p.total || p.manualHours || 0), 0);
 
-    const formatCurrency = (val: number) =>
-        new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(val);
-
-    const formatNumber = (val: number) =>
-        new Intl.NumberFormat("en-US").format(Math.round(val));
+    const ratesByClient = useMemo(() =>
+        teamMembers.map(m => {
+            const clientProjects = projectsWithValue.filter(p => p.assignedTo === m.id);
+            const clientRevenue = clientProjects.reduce((s, p) => s + p.value, 0);
+            return { member: m, projects: clientProjects.length, revenue: clientRevenue };
+        }),
+        [teamMembers, projectsWithValue]
+    );
 
     return (
         <div className="space-y-6">
-            {/* Header with subtitle */}
             <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
                 <div className="flex items-center gap-3 mb-2">
                     <div className="bg-indigo-100 p-2 rounded-lg">
                         <DollarSign className="w-6 h-6 text-indigo-600" />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-bold text-slate-900">Income Projection</h2>
-                        <p className="text-sm text-slate-600">Model unit economics and income potential for your self-published projects.</p>
+                        <h2 className="text-2xl font-bold text-slate-900">Revenue Model</h2>
+                        <p className="text-sm text-slate-600">Pipeline income, project rates, and earnings breakdown across all clients.</p>
                     </div>
                 </div>
             </div>
 
+            {/* Summary Stat Bar */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-1">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Paid</span>
+                    </div>
+                    <p className="text-2xl font-bold text-emerald-900">{formatCurrency(paid)}</p>
+                    <p className="text-xs text-emerald-600 mt-1">{projectsWithValue.filter(p => p.invoiceStatus === "paid").length} projects</p>
+                </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-1">
+                        <FileText className="w-4 h-4 text-blue-600" />
+                        <span className="text-xs font-semibold text-blue-700 uppercase tracking-wider">Invoiced</span>
+                    </div>
+                    <p className="text-2xl font-bold text-blue-900">{formatCurrency(invoiced)}</p>
+                    <p className="text-xs text-blue-600 mt-1">{projectsWithValue.filter(p => p.invoiceStatus === "invoiced").length} projects</p>
+                </div>
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-1">
+                        <Clock className="w-4 h-4 text-amber-600" />
+                        <span className="text-xs font-semibold text-amber-700 uppercase tracking-wider">Pending</span>
+                    </div>
+                    <p className="text-2xl font-bold text-amber-900">{formatCurrency(pending)}</p>
+                    <p className="text-xs text-amber-600 mt-1">{projectsWithValue.filter(p => !p.invoiceStatus || p.invoiceStatus === "not-invoiced").length} projects</p>
+                </div>
+                <div className="bg-slate-900 border border-slate-700 rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-1">
+                        <TrendingUp className="w-4 h-4 text-indigo-400" />
+                        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Pipeline</span>
+                    </div>
+                    <p className="text-2xl font-bold text-white">{formatCurrency(total)}</p>
+                    <p className="text-xs text-slate-400 mt-1">{projects.length} projects · {Math.round(totalHoursThisYear)}h</p>
+                </div>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Inputs Column */}
-                <div className="space-y-6">
-                    <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-                        <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                            <Scale className="w-5 h-5 text-indigo-600" />
-                            Project Parameters
-                        </h3>
-
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-600 mb-1">
-                                    Development Cost (Sunk)
-                                </label>
-                                <div className="relative">
-                                    <span className="absolute left-3 top-2.5 text-slate-400">$</span>
-                                    <input
-                                        type="number"
-                                        value={devCost}
-                                        onChange={(e) => setDevCost(Number(e.target.value))}
-                                        className="w-full pl-8 pr-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                                    />
-                                </div>
-                                <p className="text-xs text-slate-500 mt-1">Writing, Art, Layout, Editing</p>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-slate-600 mb-1">
-                                    Target MSRP
-                                </label>
-                                <div className="relative">
-                                    <span className="absolute left-3 top-2.5 text-slate-400">$</span>
-                                    <input
-                                        type="number"
-                                        value={msrp}
-                                        onChange={(e) => setMsrp(Number(e.target.value))}
-                                        className="w-full pl-8 pr-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                                    />
-                                </div>
-                            </div>
-                        </div>
+                {/* Project Income Table */}
+                <div className="lg:col-span-2 bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                    <div className="p-5 border-b border-slate-100 flex items-center gap-2">
+                        <BarChart3 className="w-5 h-5 text-indigo-500" />
+                        <h3 className="text-base font-semibold text-slate-800">Project Income Breakdown</h3>
                     </div>
-
-                    <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-                        <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                            <Package className="w-5 h-5 text-emerald-600" />
-                            Print Run Specs
-                        </h3>
-
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-medium text-slate-600 mb-1">Quantity</label>
-                                    <input
-                                        type="number"
-                                        value={printRun.quantity}
-                                        onChange={(e) => setPrintRun({ ...printRun, quantity: Number(e.target.value) })}
-                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-slate-600 mb-1">Unit Print Cost</label>
-                                    <div className="relative">
-                                        <span className="absolute left-2 top-2 text-slate-400 text-xs">$</span>
-                                        <input
-                                            type="number"
-                                            step="0.10"
-                                            value={printRun.unitCost}
-                                            onChange={(e) => setPrintRun({ ...printRun, unitCost: Number(e.target.value) })}
-                                            className="w-full pl-5 pr-2 py-2 border border-slate-200 rounded-lg text-sm"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-medium text-slate-600 mb-1">Freight/Unit</label>
-                                    <div className="relative">
-                                        <span className="absolute left-2 top-2 text-slate-400 text-xs">$</span>
-                                        <input
-                                            type="number"
-                                            step="0.10"
-                                            value={printRun.freightPerUnit}
-                                            onChange={(e) => setPrintRun({ ...printRun, freightPerUnit: Number(e.target.value) })}
-                                            className="w-full pl-5 pr-2 py-2 border border-slate-200 rounded-lg text-sm"
-                                        />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-slate-600 mb-1">Tariff %</label>
-                                    <div className="relative">
-                                        <input
-                                            type="number"
-                                            value={printRun.tariffPercent}
-                                            onChange={(e) => setPrintRun({ ...printRun, tariffPercent: Number(e.target.value) })}
-                                            className="w-full pl-3 pr-6 py-2 border border-slate-200 rounded-lg text-sm"
-                                        />
-                                        <span className="absolute right-3 top-2 text-slate-400 text-xs">%</span>
-                                    </div>
-                                </div>
-                            </div>
+                    {projectsWithValue.length === 0 ? (
+                        <div className="p-8 text-center text-slate-400">
+                            <AlertCircle className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                            <p className="text-sm">No projects yet. Add projects to see income breakdown.</p>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="bg-slate-50 text-xs text-slate-500 uppercase tracking-wider">
+                                        <th className="text-left px-4 py-3 font-semibold">Project</th>
+                                        <th className="text-left px-4 py-3 font-semibold">Rate</th>
+                                        <th className="text-right px-4 py-3 font-semibold">Value</th>
+                                        <th className="text-center px-4 py-3 font-semibold">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {projectsWithValue.map(p => {
+                                        const badge = statusBadge(p.invoiceStatus);
+                                        return (
+                                            <tr key={p.id} className="hover:bg-slate-50 transition-colors">
+                                                <td className="px-4 py-3">
+                                                    <p className="font-medium text-slate-900 truncate max-w-[200px]">{p.name}</p>
+                                                    <p className="text-xs text-slate-400">{p.member?.name || "Unassigned"} · {p.type || "Module"}</p>
+                                                </td>
+                                                <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
+                                                    {rateLabel(p, p.member)}
+                                                    {p.rateType === "per-word" && p.targetWords && (
+                                                        <div className="text-xs text-slate-400">{(p.targetWords || 0).toLocaleString()} words</div>
+                                                    )}
+                                                    {p.rateType === "hourly" && p.manualHours && (
+                                                        <div className="text-xs text-slate-400">{p.manualHours}h</div>
+                                                    )}
+                                                </td>
+                                                <td className="px-4 py-3 text-right font-mono font-semibold text-slate-900 whitespace-nowrap">
+                                                    {p.value > 0 ? formatCurrency(p.value) : <span className="text-slate-300">—</span>}
+                                                </td>
+                                                <td className="px-4 py-3 text-center">
+                                                    <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${badge.color}`}>
+                                                        {badge.label}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                                <tfoot>
+                                    <tr className="bg-slate-50 border-t border-slate-200">
+                                        <td colSpan={2} className="px-4 py-3 text-sm font-semibold text-slate-700">Total Pipeline</td>
+                                        <td className="px-4 py-3 text-right font-mono font-bold text-slate-900">{formatCurrency(total)}</td>
+                                        <td />
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    )}
                 </div>
 
-                {/* Channel Selection & Results */}
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-                        <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-                            <Truck className="w-5 h-5 text-blue-600" />
-                            Distribution Channel
+                {/* My Rates sidebar */}
+                <div className="space-y-4">
+                    <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                        <h3 className="text-base font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                            <DollarSign className="w-4 h-4 text-indigo-500" />
+                            My Rates by Client
                         </h3>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {DEFAULT_CHANNELS.map((channel) => (
-                                <button
-                                    key={channel.id}
-                                    onClick={() => setSelectedChannelId(channel.id)}
-                                    className={`flex flex-col items-start p-4 rounded-xl border transition-all ${selectedChannelId === channel.id
-                                        ? "bg-blue-50 border-blue-500 ring-1 ring-blue-500"
-                                        : "bg-white border-slate-200 hover:border-slate-300"
-                                        }`}
-                                >
-                                    <span className={`font-semibold ${selectedChannelId === channel.id ? "text-blue-900" : "text-slate-700"}`}>
-                                        {channel.label}
-                                    </span>
-                                    <div className="mt-2 text-xs space-y-1 text-slate-500">
-                                        <div className="flex justify-between w-full gap-4">
-                                            <span>Discount:</span>
-                                            <span className="font-mono font-medium">{channel.discountPercent}%</span>
+                        {teamMembers.length === 0 ? (
+                            <p className="text-sm text-slate-400">Add clients to see rate breakdown.</p>
+                        ) : (
+                            <div className="space-y-3">
+                                {ratesByClient.map(({ member, projects: cnt, revenue }) => (
+                                    <div key={member.id} className="flex items-start justify-between gap-2">
+                                        <div className="min-w-0">
+                                            <p className="font-medium text-slate-900 text-sm truncate">{member.name}</p>
+                                            <p className="text-xs text-slate-400">{member.role || "Client"} · {cnt} project{cnt !== 1 ? "s" : ""}</p>
                                         </div>
-                                        <div className="flex justify-between w-full gap-4">
-                                            <span>Platform Fee:</span>
-                                            <span className="font-mono font-medium">{channel.platformFeePercent}%</span>
-                                        </div>
-                                        <div className="flex justify-between w-full gap-4">
-                                            <span>Fulfillment:</span>
-                                            <span className="font-mono font-medium">${channel.fulfillmentFeePerUnit.toFixed(2)}/unit</span>
+                                        <div className="text-right shrink-0">
+                                            <p className="text-sm font-semibold text-slate-800">${member.hourlyRate}/hr</p>
+                                            {revenue > 0 && (
+                                                <p className="text-xs text-indigo-600">{formatCurrency(revenue)}</p>
+                                            )}
                                         </div>
                                     </div>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Unit Economics Card */}
-                        <div className="bg-slate-900 text-slate-100 rounded-xl p-6 shadow-lg">
-                            <h4 className="text-sm uppercase tracking-wider text-slate-400 mb-4">Unit Economics</h4>
-
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-end border-b border-slate-700 pb-2">
-                                    <span className="text-slate-300">MSRP</span>
-                                    <span className="font-mono text-lg">{formatCurrency(msrp)}</span>
-                                </div>
-
-                                <div className="flex justify-between items-end text-rose-400 text-sm">
-                                    <span>Channel Cut ({selectedChannel.discountPercent}%)</span>
-                                    <span className="font-mono">-{formatCurrency(msrp * (selectedChannel.discountPercent / 100))}</span>
-                                </div>
-
-                                <div className="flex justify-between items-end text-rose-400 text-sm">
-                                    <span>COGS (Print/Ship/Fees)</span>
-                                    <span className="font-mono">-{formatCurrency(roi.totalCogs / printRun.quantity)}</span>
-                                </div>
-
-                                <div className="pt-4 flex justify-between items-end">
-                                    <span className="font-bold text-emerald-400">Net Profit Per Unit</span>
-                                    <span className="font-mono text-2xl font-bold text-emerald-400">
-                                        {formatCurrency(roi.netRevenuePerUnit)}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Total ROI Card */}
-                        <div className={`rounded-xl p-6 shadow-lg border ${roi.netProfit > 0 ? "bg-emerald-50 border-emerald-200" : "bg-rose-50 border-rose-200"
-                            }`}>
-                            <h4 className={`text-sm uppercase tracking-wider mb-4 ${roi.netProfit > 0 ? "text-emerald-700" : "text-rose-700"
-                                }`}>
-                                Total Project ROI
-                            </h4>
-
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center">
-                                    <span className="text-slate-600 font-medium">Break-Even Units</span>
-                                    <div className="flex items-center gap-2">
-                                        <span className={`font-mono font-bold text-lg ${roi.breakEvenUnits > printRun.quantity ? "text-rose-600" : "text-slate-800"
-                                            }`}>
-                                            {formatNumber(roi.breakEvenUnits)} / {formatNumber(printRun.quantity)}
-                                        </span>
-                                        {roi.breakEvenUnits > printRun.quantity && (
-                                            <Target className="w-4 h-4 text-rose-500" />
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
-                                    <div
-                                        className={`h-full rounded-full ${roi.breakEvenUnits > printRun.quantity ? "bg-rose-500" : "bg-emerald-500"}`}
-                                        style={{ width: `${Math.min(100, (printRun.quantity / roi.breakEvenUnits) * 100)}%` }}
-                                    />
-                                </div>
-
-                                {/* Interactive Break-Even Slider */}
-                                <div className="mt-4 p-3 bg-slate-50 rounded-lg">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="text-sm font-medium text-slate-700">Interactive Break-Even Analysis</span>
-                                        <Activity className="w-4 h-4 text-slate-500" />
-                                    </div>
-                                    <div className="space-y-3">
-                                        <div>
-                                            <label className="text-xs text-slate-600">Units Sold: {formatNumber(breakEvenUnits)}</label>
-                                            <input
-                                                type="range"
-                                                min={Math.floor(roi.breakEvenUnits * 0.5)}
-                                                max={Math.ceil(roi.breakEvenUnits * 2)}
-                                                value={breakEvenUnits}
-                                                onChange={(e) => setBreakEvenUnits(Number(e.target.value))}
-                                                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
-                                                style={{
-                                                    background: `linear-gradient(to right, #10b981 0%, #10b981 ${((breakEvenUnits - (roi.breakEvenUnits * 0.5)) / (roi.breakEvenUnits * 1.5)) * 100}%, #e2e8f0 ${((breakEvenUnits - (roi.breakEvenUnits * 0.5)) / (roi.breakEvenUnits * 1.5)) * 100}%, #e2e8f0 100%)`
-                                                }}
-                                            />
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-2 text-xs">
-                                            <div className="flex justify-between">
-                                                <span className="text-slate-600">Profit:</span>
-                                                <span className={`font-medium ${(() => {
-                                                    const scenarioRoi = calculateRoi(devCost, { ...printRun, quantity: breakEvenUnits }, { msrp }, selectedChannel);
-                                                    return scenarioRoi.netProfit >= 0 ? "text-emerald-600" : "text-rose-600";
-                                                })()}`}>
-                                                    {(() => {
-                                                    const scenarioRoi = calculateRoi(devCost, { ...printRun, quantity: breakEvenUnits }, { msrp }, selectedChannel);
-                                                    return formatCurrency(scenarioRoi.netProfit);
-                                                })()}
-                                                </span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-slate-600">Margin:</span>
-                                                <span className={`font-medium ${(() => {
-                                                    const scenarioRoi = calculateRoi(devCost, { ...printRun, quantity: breakEvenUnits }, { msrp }, selectedChannel);
-                                                    return scenarioRoi.netRevenuePerUnit >= 0 ? "text-emerald-600" : "text-rose-600";
-                                                })()}`}>
-                                                    {(() => {
-                                                    const scenarioRoi = calculateRoi(devCost, { ...printRun, quantity: breakEvenUnits }, { msrp }, selectedChannel);
-                                                    return `${Math.round((scenarioRoi.netRevenuePerUnit / msrp) * 100)}%`;
-                                                })()}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="pt-2 flex justify-between items-end border-t border-slate-200/50">
-                                    <span className="text-slate-600 font-medium">Net Profit (Loss)</span>
-                                    <span className={`font-mono text-2xl font-bold ${roi.netProfit > 0 ? "text-emerald-700" : "text-rose-700"
-                                        }`}>
-                                        {formatCurrency(roi.netProfit)}
-                                    </span>
-                                </div>
-
-                                {roi.netProfit < 0 && (
-                                    <div className="flex items-start gap-2 text-xs text-rose-600 bg-rose-100/50 p-2 rounded">
-                                        <AlertCircle className="w-4 h-4 shrink-0" />
-                                        <p>
-                                            Warning: This print run does not cover development costs.
-                                            You need to sell {formatNumber(roi.breakEvenUnits - printRun.quantity)} more units.
-                                        </p>
+                                ))}
+                                {avgHourlyRate > 0 && (
+                                    <div className="pt-3 mt-3 border-t border-slate-100 flex justify-between items-center">
+                                        <span className="text-xs text-slate-500">Blended avg rate</span>
+                                        <span className="text-sm font-bold text-indigo-700">${avgHourlyRate.toFixed(2)}/hr</span>
                                     </div>
                                 )}
-
-                                {/* Break-Even Scenarios Chart */}
-                                <div className="mt-4 p-3 bg-slate-50 rounded-lg">
-                                    <div className="flex items-center justify-between mb-3">
-                                        <span className="text-sm font-medium text-slate-700">Profit Scenarios</span>
-                                        <BarChart3 className="w-4 h-4 text-slate-500" />
-                                    </div>
-                                    <div className="space-y-2">
-                                        {breakEvenScenarios.map((scenario, index) => {
-                                            const isCurrentRun = scenario.quantity === printRun.quantity;
-                                            const isBreakEven = scenario.quantity === Math.round(roi.breakEvenUnits);
-                                            
-                                            return (
-                                                <div key={index} className={`flex items-center justify-between p-2 rounded-lg border ${
-                                                    isCurrentRun ? 'border-indigo-300 bg-indigo-50' : 
-                                                    isBreakEven ? 'border-emerald-300 bg-emerald-50' : 
-                                                    'border-slate-200 bg-white'
-                                                }`}>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className="text-xs font-medium text-slate-600">
-                                                            {scenario.multiplier}x
-                                                        </span>
-                                                        <span className="text-sm">
-                                                            {formatNumber(scenario.quantity)} units
-                                                        </span>
-                                                        {isBreakEven && (
-                                                            <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-medium">
-                                                                Break-Even
-                                                            </span>
-                                                        )}
-                                                        {isCurrentRun && (
-                                                            <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-medium">
-                                                                Current
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <div className={`font-mono text-sm font-medium ${
-                                                            scenario.profit >= 0 ? 'text-emerald-600' : 'text-rose-600'
-                                                        }`}>
-                                                            {formatCurrency(scenario.profit)}
-                                                        </div>
-                                                        <div className="text-xs text-slate-500">
-                                                            {formatCurrency(scenario.profitPerUnit)}/unit
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
                             </div>
+                        )}
+                    </div>
+
+                    <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-5">
+                        <h3 className="text-base font-semibold text-indigo-900 mb-3 flex items-center gap-2">
+                            <TrendingUp className="w-4 h-4" />
+                            Income Projection
+                        </h3>
+                        <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                                <span className="text-indigo-700">Earned (paid)</span>
+                                <span className="font-semibold text-indigo-900">{formatCurrency(paid)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-indigo-700">Awaiting payment</span>
+                                <span className="font-semibold text-indigo-900">{formatCurrency(invoiced)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-indigo-700">In pipeline</span>
+                                <span className="font-semibold text-indigo-900">{formatCurrency(pending)}</span>
+                            </div>
+                            <div className="flex justify-between pt-2 border-t border-indigo-200">
+                                <span className="font-bold text-indigo-900">Total</span>
+                                <span className="font-bold text-indigo-900 text-lg">{formatCurrency(total)}</span>
+                            </div>
+                            {totalHoursThisYear > 0 && total > 0 && (
+                                <p className="text-xs text-indigo-600 pt-1">
+                                    Effective rate: {formatCurrency(total / totalHoursThisYear)}/hr
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>
