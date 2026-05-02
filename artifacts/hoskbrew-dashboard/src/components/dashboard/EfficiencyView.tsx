@@ -124,7 +124,7 @@ export function EfficiencyView({
               <p className="text-xs uppercase tracking-[0.2em] text-slate-400">External annual cost</p>
               <p className="text-2xl font-bold">{formatCurrency(200000)}</p>
             </div>
-            <span className="text-xs text-emerald-300">vs. $20/hr studio rate benchmark</span>
+            <span className="text-xs text-emerald-300">vs. $20/hr TTRPG industry benchmark</span>
           </div>
         </div>
       </div>
