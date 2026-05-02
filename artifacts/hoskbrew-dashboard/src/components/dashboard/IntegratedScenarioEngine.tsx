@@ -102,7 +102,7 @@ export function IntegratedScenarioEngine({ clientMode = false, onNavigateToTeamB
         </div>
         <div className="mt-3 bg-indigo-50 border border-indigo-200 rounded-lg p-2">
           <p className="text-xs text-indigo-700">
-            <span className="font-medium">Current Step:</span> Analyzing project feasibility and identifying bottlenecks. Validating timeline against team capacity.
+            <span className="font-medium">Current Step:</span> Analyzing project feasibility and identifying bottlenecks. Validating timeline against your available capacity.
           </p>
         </div>
       </div>
@@ -124,7 +124,7 @@ export function IntegratedScenarioEngine({ clientMode = false, onNavigateToTeamB
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg transition-all duration-200 hover:shadow-md"
               >
                 <Wrench className="w-3 h-3" />
-                <span>Edit Team</span>
+                <span>Edit Clients</span>
               </button>
             )}
           </div>

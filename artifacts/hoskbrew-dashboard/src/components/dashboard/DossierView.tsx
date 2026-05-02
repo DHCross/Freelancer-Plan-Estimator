@@ -99,7 +99,7 @@ export function DossierView({
             <div>
               <h3 className="font-semibold text-amber-900">Report Assumptions</h3>
               <p className="text-sm text-amber-700 mt-1">
-                This report pulls from your current project and team settings. Edit them before generating.
+                This report pulls from your current project and client settings. Edit them before generating.
               </p>
               <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
                 <div className="bg-white/60 rounded-lg px-3 py-2 border border-amber-200">
@@ -115,7 +115,7 @@ export function DossierView({
                   <div className="text-amber-900 font-bold">{formatNumber(defendWPH)} w/hr</div>
                 </div>
                 <div className="bg-white/60 rounded-lg px-3 py-2 border border-amber-200">
-                  <div className="text-amber-600 font-medium">Team Capacity</div>
+                  <div className="text-amber-600 font-medium">Your Capacity</div>
                   <div className="text-amber-900 font-bold">{formatNumber(teamWeeklyCapacity)} hrs/wk</div>
                 </div>
               </div>
@@ -148,7 +148,7 @@ export function DossierView({
                 className="flex items-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md whitespace-nowrap"
               >
                 <Users className="w-4 h-4" />
-                Edit Team & Rates
+                Edit Clients & Rates
                 <ArrowRight className="w-3 h-3" />
               </button>
             )}
@@ -164,8 +164,8 @@ export function DossierView({
             Dossier Generator
           </h2>
           <p className="text-sm text-slate-600 max-w-2xl mt-2">
-            Compile a markdown dossier for any project using current Production Engine assumptions. Generate internal planning documents or
-            publisher-ready summaries.
+            Compile a project brief for any project using your current rates and project data. Generate client-ready summaries or
+            internal planning documents.
           </p>
         </div>
         <FileText className="w-10 h-10 text-indigo-500" />

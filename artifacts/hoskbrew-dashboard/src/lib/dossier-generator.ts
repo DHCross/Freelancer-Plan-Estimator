@@ -98,7 +98,7 @@ export function generateDossierMarkdown(ctx: DossierContext, tone: DossierTone =
       ? `Your labor on this project currently embeds approximately ${subsidyLabel} of unbilled market-rate value.`
       : "Labor valuation for this project is modeled but subsidy calculations require refinement.",
     roundedWeeks
-      ? `With current team capacity, the modeled execution window is approximately ${minWeeks || roundedWeeks}–${maxWeeks || roundedWeeks} weeks from greenlight to print-ready files.`
+      ? `Based on your current weekly capacity, the modeled execution window is approximately ${minWeeks || roundedWeeks}–${maxWeeks || roundedWeeks} weeks from greenlight to print-ready files.`
       : "Timeline modeling depends on confirmed weekly capacity inputs.",
     artPieces
       ? `Art is the primary variable cost driver: ${formatNumber(artPieces)} pieces (${artBaseline.regionalMaps} regional map, ${artBaseline.encounterMaps} encounter maps, ${artBaseline.interiorIllustrations} illustrations, ${artBaseline.spotArt} spot art), with a working budget band of ${formatCurrency(artLow)}–${formatCurrency(artHigh)}.`
@@ -198,10 +198,10 @@ How does your art budget compare to industry standards?
 ### 3. Timeline Validation
 
 - Modeled execution hours: **${actualHours ? formatNumber(actualHours) : "TODO"} h**
-- Current weekly capacity (team total): **${teamWeeklyCapacity ? formatNumber(teamWeeklyCapacity) : "TODO"} h/week**
+- Your weekly capacity: **${teamWeeklyCapacity ? formatNumber(teamWeeklyCapacity) : "TODO"} h/week**
 - Implied production window: **${roundedWeeks ? `${minWeeks}–${maxWeeks} weeks` : "TODO"}**
 
-> This is a blended estimate from the Production Engine. For printing lead times and freight, use the dedicated Financials tab and append those specifics here.
+> This is a blended estimate from your project data. For printing lead times and freight, use the dedicated Finance tab and append those specifics here.
 `;
 
   const seriesSection = `## PART III — Strategic Series Outlook

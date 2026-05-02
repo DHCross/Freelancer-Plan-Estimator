@@ -189,7 +189,7 @@ export function IntegratedFinancialModel({ clientMode = false, onNavigateToTeamB
             className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg transition-all duration-200 hover:shadow-md ml-4"
           >
             <Wrench className="w-3 h-3" />
-            <span>Edit Team</span>
+            <span>Edit Clients</span>
           </button>
         )}
       </div>

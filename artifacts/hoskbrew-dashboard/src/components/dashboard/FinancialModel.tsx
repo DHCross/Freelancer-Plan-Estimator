@@ -117,8 +117,8 @@ export function FinancialModel({ defaultDevCost = 20000 }: FinancialModelProps) 
                         <DollarSign className="w-6 h-6 text-indigo-600" />
                     </div>
                     <div>
-                        <h2 className="text-2xl font-bold text-slate-900">ROI & Print Run</h2>
-                        <p className="text-sm text-slate-600">Model unit economics and profitability for your project.</p>
+                        <h2 className="text-2xl font-bold text-slate-900">Income Projection</h2>
+                        <p className="text-sm text-slate-600">Model unit economics and income potential for your self-published projects.</p>
                     </div>
                 </div>
             </div>

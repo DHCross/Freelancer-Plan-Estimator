@@ -67,7 +67,7 @@ import {
 } from "@/components/dashboard";
 import { ScenarioWorkspace } from "@/components/dashboard/scenarios/ScenarioWorkspace";
 import { FailureAnalysis } from "@/components/dashboard/FailureAnalysis";
-import { TeamConfiguration } from "@/components/dashboard/TeamConfiguration";
+
 import { TeamManagement } from "@/components/dashboard/TeamManagement";
 import { QuickEstimator } from "@/components/dashboard/QuickEstimator";
 import { EstimatorBuckets } from "@/components/dashboard/EstimatorBuckets";
@@ -101,7 +101,7 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
             label: "Planning Tools",
             description: "Resource allocation and scheduling",
             items: [
-              { id: "integrated", label: "Resource Validation", icon: Gauge, description: "Team capacity & conflicts" },
+              { id: "integrated", label: "Resource Validation", icon: Gauge, description: "Your capacity & project conflicts" },
               { id: "scenarios", label: "Scenario Engine", icon: Lightbulb, description: "What-if analysis" },
               { id: "status", label: "Task Board", icon: ClipboardList, description: "Execution Kanban" },
             ],
@@ -869,7 +869,6 @@ function DashboardPageContent() {
                 clientMode={isClientMode}
                 projects={projects}
               />
-              <TeamConfiguration clientMode={isClientMode} />
             </div>
           )}
 
@@ -963,8 +962,8 @@ function DashboardPageContent() {
             <span>Finance</span>
             <span className="mx-2">›</span>
             <span className="text-slate-900 font-medium">
-              {subView === "financial-model" && "ROI & Print Run"}
-              {subView === "cost-savings" && "Rate Calculator"}
+              {subView === "financial-model" && "Income Projection"}
+              {subView === "cost-savings" && "Rate Benchmarking"}
             </span>
           </div>
 

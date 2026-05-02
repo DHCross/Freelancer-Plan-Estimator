@@ -154,16 +154,31 @@ export function DashboardView({
     return { total, committed, pct };
   }, [writers, getInjectedHours]);
 
-  // Monthly income from active project pipeline (hours × client rate)
-  const projectMonthlyIncome = useMemo(() => {
-    return analysis
-      .filter(p => p.lifecycleState === "Production")
-      .reduce((sum, p) => {
-        const client = writers.find(w => w.id === p.assignedTo);
-        const rate = client?.hourlyRate ?? 0;
-        return sum + ((p.manualHours || 0) * rate) / 12;
-      }, 0);
+  // Monthly income from active project pipeline — rateType-aware
+  const TTRPG_PER_WORD_RATE = 0.08; // $0.08/word: standard TTRPG freelance rate
+  const projectIncomeBreakdown = useMemo(() => {
+    const active = analysis.filter(p => p.lifecycleState === "Production");
+    let earned = 0;   // invoiceStatus === "paid"
+    let pending = 0;  // invoiced or not-invoiced
+    for (const p of active) {
+      const client = writers.find(w => w.id === p.assignedTo);
+      const hourlyRate = client?.hourlyRate ?? 0;
+      let projectTotal = 0;
+      if (p.rateType === "per-word") {
+        projectTotal = (p.targetWords || 0) * TTRPG_PER_WORD_RATE / 12;
+      } else {
+        // "hourly" or "flat-fee" (flat-fee uses manualHours × rate as best available proxy)
+        projectTotal = ((p.manualHours || 0) * hourlyRate) / 12;
+      }
+      if (p.invoiceStatus === "paid") {
+        earned += projectTotal;
+      } else {
+        pending += projectTotal;
+      }
+    }
+    return { earned, pending, total: earned + pending, count: active.length };
   }, [analysis, writers]);
+  const projectMonthlyIncome = projectIncomeBreakdown.total;
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -274,9 +289,11 @@ export function DashboardView({
           subtitle={
             writers.length === 0
               ? "Add clients to see income projection"
-              : hasActiveExecution && projectMonthlyIncome > 0
-              ? `From ${analysis.filter(p => p.lifecycleState === "Production").length} active project hours · View clients →`
-              : "No active projects contributing income yet"
+              : projectIncomeBreakdown.count === 0
+              ? "No active projects contributing income yet"
+              : projectIncomeBreakdown.earned > 0
+              ? `$${formatNumber(Math.round(projectIncomeBreakdown.earned))} earned · $${formatNumber(Math.round(projectIncomeBreakdown.pending))} pending`
+              : `$${formatNumber(Math.round(projectIncomeBreakdown.pending))} pending · ${projectIncomeBreakdown.count} active project${projectIncomeBreakdown.count === 1 ? "" : "s"}`
           }
           icon={DollarSign}
           status="healthy"

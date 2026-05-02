@@ -92,7 +92,7 @@ export function MethodologyView({
                     <p className="text-xs text-slate-500 mt-1">
                       {durationLabel}
                       {teamWeeklyCapacity && teamWeeklyCapacity > 0 && (
-                        <> @ {teamWeeklyCapacity} hrs/week team capacity</>
+                        <> @ {teamWeeklyCapacity} hrs/week your capacity</>
                       )}
                     </p>
                   )}

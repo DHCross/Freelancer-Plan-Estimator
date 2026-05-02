@@ -110,7 +110,7 @@ export function DeadlineEstimator({
             Deadline Estimator
           </h2>
           <p className="text-sm text-slate-600 mt-1">
-            Calculate realistic completion dates based on project scope and team capacity.
+            Calculate realistic completion dates based on project scope and your weekly capacity.
           </p>
         </div>
       </div>
