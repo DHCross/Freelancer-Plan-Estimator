@@ -188,9 +188,9 @@ export function TeamConfiguration({ clientMode = false }: { clientMode?: boolean
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Client Roster */}
         <div className="space-y-4">
-          <h4 className="text-md font-medium text-slate-800">Team Roles</h4>
+          <h4 className="text-md font-medium text-slate-800">Capacity Settings</h4>
           <p className="text-sm text-slate-600">
-            Add team members to calculate project costs and timeline.
+            Configure your capacity to calculate project timelines accurately.
             <Tooltip term="coordination-overhead" className="ml-1">
               <span className="text-indigo-600 underline">Larger teams need more coordination time.</span>
             </Tooltip>

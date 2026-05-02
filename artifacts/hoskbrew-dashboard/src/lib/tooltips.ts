@@ -60,7 +60,7 @@ export const tooltipContent = {
     category: 'financial'
   },
 
-  // Team Roles
+  // Roles
   'lead-writer': {
     title: 'Lead Writer',
     content: 'Primary writer responsible for story structure, world-building, and maintaining consistency across the project.',
@@ -357,7 +357,7 @@ export const HelpSection: React.FC<{
   const categoryTitles = {
     planning: 'Project Planning Terms',
     financial: 'Financial & Business Terms',
-    roles: 'Team Roles & Responsibilities',
+    roles: 'Roles & Responsibilities',
     production: 'Production & Workflow Terms',
     industry: 'Industry & Game Terms',
     all: 'All Terms & Concepts'

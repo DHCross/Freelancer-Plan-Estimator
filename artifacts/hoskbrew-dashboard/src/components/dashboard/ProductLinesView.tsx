@@ -48,9 +48,9 @@ export function ProductLinesView({ projects, teamRoster }: ProductLinesViewProps
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Planning</p>
-          <h2 className="text-2xl font-bold text-slate-900">Product Lines & Assignments</h2>
+          <h2 className="text-2xl font-bold text-slate-900">Client Project Assignments</h2>
           <p className="text-sm text-slate-600 mt-2 max-w-2xl">
-            See every product grouped by line, who owns it, their load %, and a realistic finish window adjusted for bandwidth.
+            See every project grouped by client, with workload percentage and a realistic finish window adjusted for your capacity.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -135,7 +135,7 @@ export function ProductLinesView({ projects, teamRoster }: ProductLinesViewProps
             <div key={line.id} id={`product-line-${line.id}`} className="bg-white border border-slate-200 rounded-2xl shadow-sm scroll-mt-16">
               <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between p-6 border-b border-slate-100" style={{ borderTop: `4px solid ${line.color}` }}>
                 <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Product Line</p>
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Client</p>
                   <h3 className="text-xl font-bold text-slate-900">{line.label}</h3>
                   <p className="text-sm text-slate-600 max-w-2xl">{line.description}</p>
                   <div className="mt-2 flex items-center gap-3 text-xs text-slate-600">

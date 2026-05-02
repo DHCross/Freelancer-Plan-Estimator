@@ -112,8 +112,8 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
             label: "Projects",
             description: "Product catalog and budgets",
             items: [
-              { id: "product-lines", label: "Product Lines", icon: BookOpen },
-              { id: "products", label: "Product Listing", icon: Briefcase },
+              { id: "product-lines", label: "Client Projects", icon: BookOpen },
+              { id: "products", label: "Project List", icon: Briefcase },
               { id: "budget", label: "Budget & Timeline", icon: Calendar },
             ],
             defaultExpanded: true,
@@ -174,7 +174,7 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
             id: "financial",
             label: "Income & Rates",
             items: [
-              { id: "financial-model", label: "ROI & Print Run", icon: DollarSign },
+              { id: "financial-model", label: "Revenue Model", icon: DollarSign },
               { id: "cost-savings", label: "Rate Calculator", icon: Calculator },
             ],
             defaultExpanded: true,
@@ -195,7 +195,7 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
               { id: "layout-safe", label: "Layout-Safe Calculator", icon: Shield },
               { id: "production-readiness", label: "Production Checklist", icon: Lock },
               { id: "a0-survival", label: "Quick-Start Checklist", icon: AlertTriangle },
-              { id: "martin-workload", label: "Workload Brief", icon: Users },
+              { id: "martin-workload", label: "Capacity Summary", icon: Users },
               { id: "export-report", label: "Project Proposal", icon: FileText },
               { id: "lessons-learned", label: "Lessons Learned", icon: Lightbulb },
             ],
@@ -734,8 +734,8 @@ function DashboardPageContent() {
               {subView === "integrated" && "Resource Validation"}
               {subView === "scenarios" && "Scenario Engine"}
               {subView === "status" && "Task Board"}
-              {subView === "product-lines" && "Product Lines"}
-              {subView === "products" && "Product Listing"}
+              {subView === "product-lines" && "Client Projects"}
+              {subView === "products" && "Project List"}
               {subView === "budget" && "Budget & Timeline"}
               {subView === "methodology" && "How We Build"}
               {subView === "art-budget" && "Art Budget"}
@@ -1001,7 +1001,7 @@ function DashboardPageContent() {
               {subView === "layout-safe" && "Layout-Safe Calculator"}
               {subView === "production-readiness" && "Production Checklist"}
               {subView === "a0-survival" && "Quick-Start Checklist"}
-              {subView === "martin-workload" && "Workload Brief"}
+              {subView === "martin-workload" && "Capacity Summary"}
               {subView === "export-report" && "Project Proposal"}
               {subView === "lessons-learned" && "Lessons Learned"}
             </span>

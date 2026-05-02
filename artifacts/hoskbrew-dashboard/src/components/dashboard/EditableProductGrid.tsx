@@ -257,7 +257,7 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="text-xs text-slate-500">Product Line</label>
+            <label className="text-xs text-slate-500">Client</label>
             <div className="relative">
               <select
                 value={productLineFilter}

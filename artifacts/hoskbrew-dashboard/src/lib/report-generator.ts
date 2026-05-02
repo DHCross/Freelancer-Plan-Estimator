@@ -118,31 +118,28 @@ function generateCapacityAnalysisSection(analysis: ReturnType<typeof calculateCa
     ? `**Gap:** Short ${formatNumber(Math.abs(hourGap))} hours (${weeklyGap.toFixed(1)} hrs/week) — consider deferring lower-priority projects.`
     : `**Surplus:** ${formatNumber(Math.abs(hourGap))} hours of slack capacity.`;
 
-  const cleanFixes = [
-    "Push one Q4 deliverable into Q1 2027.",
-    "De-scope World Setting Guide to a Phase 1 book (regional core + key locations).",
-    "Serialize A2 development — outline in Q3, full production after A1 ship."
+  const cleanFixes = isOverallocated ? [
+    "Defer lower-priority projects to the next quarter.",
+    "Reduce scope on the largest in-flight project.",
+    "Negotiate a later deadline with one client to redistribute load.",
+  ] : [
+    "You have capacity headroom — consider taking on additional work.",
+    "Use the surplus to build buffer into existing deadlines.",
   ];
 
   const cleanFixList = cleanFixes.map(item => `- ${item}`).join("\n");
 
   return `
-**Actual capacity (realistic):**
-- Dan: ${supportWeeklyHours} hrs/week
-- Martin: ${primaryWeeklyHours} hrs/week
-- Combined: ${combinedWeeklyHours} hrs/week × ${workingWeeksPerYear} working weeks ≈ ${formatNumber(annualCapacity)} hrs/year
+**Your capacity (realistic):**
+- Weekly hours: ${combinedWeeklyHours} hrs/week × ${workingWeeksPerYear} working weeks ≈ ${formatNumber(annualCapacity)} hrs/year
 
 **Plan demand:** ${formatNumber(totalHours)} hrs/year (${Math.round(totalHours / workingWeeksPerYear)} hrs/week equivalent)
 
 ${gapDescription}
 
-**Equivalent team size implied by plan:** ${equivalentTeamSize.toFixed(1)} FTE (plan assumes ~${Math.round(totalHours / workingWeeksPerYear)} hrs/week).
+**Equivalent workload:** ${equivalentTeamSize.toFixed(1)} FTE-equivalent (plan assumes ~${Math.round(totalHours / workingWeeksPerYear)} hrs/week).
 
-**Where load concentrates:**
-1. **Q3 overlap:** A1 polish + Players Guide + Maps + A2 ramp assume parallel throughput you don't have.
-2. **Q4 stack:** World Setting Guide + Core Ruleset double-book the same window; ~${formatNumber(Math.max(0, hourGap))} missing hours live here.
-
-**Cleanest fixes (no heroics):**
+**Recommendations:**
 ${cleanFixList}
 `;
 }
@@ -320,9 +317,12 @@ export function generateProductionPlanMarkdown(config: ReportConfig): string {
     high: Math.round(totalArtBudget * 1.2),
   };
 
-  // Find flagship project (A1)
-  const flagshipProject = projects.find(p => p.name.toLowerCase().includes("a1") && p.name.toLowerCase().includes("problem"));
-  const flagshipHours = flagshipProject?.total || flagshipProject?.manualHours || 400;
+  // Find flagship project (largest by hours)
+  const flagshipProject = projects.reduce((best, p) => {
+    const hours = p.total || p.manualHours || 0;
+    return hours > (best?.total || best?.manualHours || 0) ? p : best;
+  }, projects[0] || null);
+  const flagshipHours = flagshipProject?.total || flagshipProject?.manualHours || 0;
 
   let sectionIndex = 1;
   const nextHeading = (title: string) => `## ${getRomanNumeral(sectionIndex++)}. ${title}`;
@@ -369,11 +369,11 @@ Deliverables will follow TTRPG industry conventions for layout-ready manuscripts
     .forEach(project => {
       const format = project.type || "Module";
       const targetDate = project.displayDate || project.launchWindow || "2026";
-      const notes = project.name.toLowerCase().includes("a1") ? "Flagship release" :
-                    project.name.toLowerCase().includes("player") ? "Promotional lead-in" :
-                    project.name.toLowerCase().includes("a0") ? "Intro module" :
-                    project.name.toLowerCase().includes("ravenous") ? "Confirmed release" :
-                    "Serialized follow-through";
+      const notes = project.invoiceStatus === "paid" ? "Paid & complete" :
+                    project.invoiceStatus === "invoiced" ? "Invoiced" :
+                    project.lifecycleState === "Production" ? "In production" :
+                    project.lifecycleState === "Planning" ? "Planned" :
+                    "Confirmed";
       sections.push(`| ${project.name} | ${format} | ${targetDate} | ${notes} |`);
     });
 
@@ -389,36 +389,33 @@ Deliverables will follow TTRPG industry conventions for layout-ready manuscripts
     sections.push(`### ${getQuarterLabel(group.quarter)}
 `);
 
-    if (group.quarter === "Q1") {
-      sections.push(`- Commission A1 art and contracts
-- Deliver Player's Guide and A0
-- Finalize template systems, layout framework, and encounter formatting
-- **Target completion point:** March 31
-`);
-    } else if (group.quarter === "Q2") {
-      sections.push(`**Sequence:**
-- Art and maps delivered mid-April
-- Full layout execution
-- Print-ready file handoff
+    const activeProjects = group.projects.filter(p => p.lifecycleState === "Production" || p.internalStatus === "Drafting" || p.internalStatus === "Review");
+    const plannedProjects = group.projects.filter(p => p.lifecycleState === "Planning" || p.internalStatus === "Planning");
 
-**Milestone Outcome:** A1 print and release in the May–June window
-`);
-    } else if (group.quarter === "Q3") {
-      sections.push(`- Full development run on A2 using established conventions
-- **Release target:** September 30
-`);
-    } else if (group.quarter === "Q4") {
-      sections.push(`- Production cycle begins mid-August to protect year-end deadlines
-- **Release target:** December 15
-`);
-    }
-
-    if (group.projects.length > 0) {
-      sections.push(`**Projects in this quarter:**`);
-      group.projects.forEach(p => {
-        sections.push(`- ${p.name} (${p.total || p.manualHours || 0} hours, ${formatCurrency(p.estCost || 0)})`);
+    if (activeProjects.length > 0) {
+      sections.push(`**Active work this ${group.quarter === "2026" ? "period" : "quarter"}:**`);
+      activeProjects.forEach(p => {
+        const hours = p.total || p.manualHours || 0;
+        const cost = p.estCost || 0;
+        const rateNote = p.rateType === "per-word" ? ` · ${formatNumber(p.targetWords || 0)} words` :
+                         p.rateType === "flat-fee" ? " · flat fee" : ` · ${hours}h`;
+        sections.push(`- **${p.name}** (${p.type}${rateNote}${cost > 0 ? `, ${formatCurrency(cost)}` : ""})`);
       });
       sections.push(``);
+    }
+
+    if (plannedProjects.length > 0) {
+      sections.push(`**Planned for this ${group.quarter === "2026" ? "period" : "quarter"}:**`);
+      plannedProjects.forEach(p => {
+        const hours = p.total || p.manualHours || 0;
+        sections.push(`- ${p.name} (${p.type}, ${hours}h estimated)`);
+      });
+      sections.push(``);
+    }
+
+    if (group.totalHours > 0) {
+      sections.push(`**${group.quarter} total:** ${formatNumber(group.totalHours)} hours${group.totalCost > 0 ? ` · ${formatCurrency(group.totalCost)} estimated` : ""}
+`);
     }
   });
 
@@ -440,17 +437,17 @@ Deliverables will follow TTRPG industry conventions for layout-ready manuscripts
 | Spot Art/Chapter Openers | ${calculatedArtBudget.spotArt} | COSMETIC | ~${formatCurrency(calculatedArtBudget.spotCost)} |
 | NPC Portraits | ${calculatedArtBudget.npcPortraits} | N/A | ~${formatCurrency(calculatedArtBudget.portraitCost)} |
 | Cover Art | ${calculatedArtBudget.covers} | REQUIRED | ~${formatCurrency(calculatedArtBudget.coverCost)} |
-| **A1 Art Subtotal** | **${calculatedArtBudget.totalPieces}** | **TOTAL** | **~${formatCurrency(calculatedArtBudget.regionalMapCost + calculatedArtBudget.encounterMapCost + calculatedArtBudget.interiorCost + calculatedArtBudget.spotCost + calculatedArtBudget.portraitCost + calculatedArtBudget.coverCost)}** |
+| **Art Budget Total** | **${calculatedArtBudget.totalPieces}** | **TOTAL** | **~${formatCurrency(calculatedArtBudget.regionalMapCost + calculatedArtBudget.encounterMapCost + calculatedArtBudget.interiorCost + calculatedArtBudget.spotCost + calculatedArtBudget.portraitCost + calculatedArtBudget.coverCost)}** |
 
 This tier prioritizes consistent execution at predictable schedules and quality.
-
+${flagshipHours > 0 ? `
 ### Efficiency Note
-Approximately ${formatNumber(flagshipHours)} hours invested into A1 development directly reduce production time on A2-A4 due to:
+Approximately ${formatNumber(flagshipHours)} hours invested into the flagship project establish reusable systems that reduce production time on subsequent deliverables:
 
-- Reusable style systems
-- Encounter framework established
-- Proven pacing structure
-- Finalized layout mechanics
+- Reusable style and formatting systems
+- Proven structure and pacing patterns
+- Finalized layout and editorial conventions
+` : ""}
 
 ---
 `);
@@ -469,7 +466,7 @@ Approximately ${formatNumber(flagshipHours)} hours invested into A1 development 
 
 This section compares your current art budget against industry standards for different market segments.
 
-### A1 Art Density Comparison (${formatNumber(a1Words)} words)
+### Art Density Comparison (${formatNumber(a1Words)} words)
 
 | Category | OSR/Indie (Current) | 5E Standard | Pathfinder Premium |
 |----------|---------------------|-------------|--------------------|
@@ -491,7 +488,7 @@ This section compares your current art budget against industry standards for dif
 | 5E Standard | ~3,000 | 1.5× | WotC market expectations, NPC portraits, chapter splashes |
 | Pathfinder Premium | ~1,600 | 2.5× | Lavish illustration, competitive differentiator |
 
-> **Note:** Your current A1 model (${calculatedArtBudget.totalPieces} pieces) aligns with the **${currentLabel}** tier. To match 5E expectations, budget ~50% more. For Pathfinder-level presentation, budget ~150% more.
+> **Note:** Your current art model (${calculatedArtBudget.totalPieces} pieces) aligns with the **${currentLabel}** tier. To match 5E expectations, budget ~50% more. For Pathfinder-level presentation, budget ~150% more.
 
 ---
 `);
