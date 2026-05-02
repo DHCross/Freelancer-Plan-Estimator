@@ -25,6 +25,8 @@ export interface TeamMember {
   draftSpeed: number;
   compileSpeed: number;
   chaosBuffer: number;
+  preferredContact?: string;
+  notes?: string;
 }
 
 export interface Project {
@@ -51,6 +53,8 @@ export interface Project {
   estimatedPages?: { min: number; max: number }; // Page range estimates
   lifecycleState?: LifecycleState;
   tasks?: ExecutionTask[];
+  rateType?: "per-word" | "flat-fee" | "hourly";
+  invoiceStatus?: "not-invoiced" | "invoiced" | "paid";
 }
 
 export interface TaskRate {

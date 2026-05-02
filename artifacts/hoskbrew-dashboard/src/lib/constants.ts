@@ -24,6 +24,8 @@ export const TEAM_ROSTER: TeamMember[] = [
     draftSpeed: 300,
     compileSpeed: 2000,
     chaosBuffer: 20,
+    preferredContact: "Marcus Reid",
+    notes: "Prefer email. Net-30 payment terms. Strong feedback loop on OSR content.",
   },
   {
     id: "thornwood",
@@ -34,6 +36,8 @@ export const TEAM_ROSTER: TeamMember[] = [
     draftSpeed: 250,
     compileSpeed: 1800,
     chaosBuffer: 25,
+    preferredContact: "Elara Whitmore",
+    notes: "Slack preferred for quick replies. Flexible deadlines but detailed briefs required.",
   },
   {
     id: "questcraft",
@@ -44,6 +48,8 @@ export const TEAM_ROSTER: TeamMember[] = [
     draftSpeed: 350,
     compileSpeed: 2500,
     chaosBuffer: 30,
+    preferredContact: "Dev Patel",
+    notes: "Discord-first. Crowdfunding cycles drive timing. Backer updates often reframe scope.",
   },
 ];
 
@@ -200,6 +206,8 @@ export const INITIAL_PROJECTS: Project[] = [
     budgetType: "Revenue Generator",
     dependency: null,
     revenuePotential: "Core Delivery",
+    rateType: "flat-fee",
+    invoiceStatus: "not-invoiced",
     manualHours: 180,
     layoutHours: 80,
     lifecycleState: "Production",
@@ -243,6 +251,8 @@ export const INITIAL_PROJECTS: Project[] = [
     budgetType: "Revenue Generator",
     dependency: null,
     revenuePotential: "Entry Hook",
+    rateType: "flat-fee",
+    invoiceStatus: "invoiced",
     manualHours: 55,
     lifecycleState: "Production",
     tasks: [{
@@ -272,6 +282,8 @@ export const INITIAL_PROJECTS: Project[] = [
     budgetType: "Revenue Generator",
     dependency: "Shattered Vaults: Adventure Module",
     revenuePotential: "Visual Bundle",
+    rateType: "hourly",
+    invoiceStatus: "not-invoiced",
     manualHours: 40,
     lifecycleState: "Planning",
     tasks: [{
@@ -303,6 +315,8 @@ export const INITIAL_PROJECTS: Project[] = [
     budgetType: "Revenue Generator",
     dependency: null,
     revenuePotential: "World Foundation",
+    rateType: "per-word",
+    invoiceStatus: "not-invoiced",
     manualHours: 160,
     lifecycleState: "Planning",
     tasks: [{
@@ -332,6 +346,8 @@ export const INITIAL_PROJECTS: Project[] = [
     budgetType: "Revenue Generator",
     dependency: null,
     revenuePotential: "Quick Revenue",
+    rateType: "per-word",
+    invoiceStatus: "not-invoiced",
     manualHours: 80,
     lifecycleState: "Production",
     tasks: [{
@@ -363,6 +379,8 @@ export const INITIAL_PROJECTS: Project[] = [
     budgetType: "Revenue Generator",
     dependency: null,
     revenuePotential: "Backer Fulfillment",
+    rateType: "flat-fee",
+    invoiceStatus: "paid",
     manualHours: 45,
     lifecycleState: "Production",
     tasks: [{
@@ -392,6 +410,8 @@ export const INITIAL_PROJECTS: Project[] = [
     budgetType: "Revenue Generator",
     dependency: "Midnight Heist: One-Shot Adventure",
     revenuePotential: "Stretch Goal Fulfillment",
+    rateType: "flat-fee",
+    invoiceStatus: "not-invoiced",
     manualHours: 70,
     lifecycleState: "Planning",
     tasks: [{

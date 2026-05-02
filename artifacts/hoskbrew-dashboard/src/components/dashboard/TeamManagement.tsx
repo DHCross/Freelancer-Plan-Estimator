@@ -365,6 +365,26 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
                           onChange={(e) => handleFieldChange("chaosBuffer", Number(e.target.value))}
                         />
                       </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Contact Person</label>
+                        <input
+                          type="text"
+                          className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                          value={editingMember.preferredContact || ""}
+                          onChange={(e) => handleFieldChange("preferredContact", e.target.value)}
+                          placeholder="Contact name or email at this publisher"
+                        />
+                      </div>
+                      <div className="lg:col-span-2">
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Notes</label>
+                        <textarea
+                          className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                          value={editingMember.notes || ""}
+                          onChange={(e) => handleFieldChange("notes", e.target.value)}
+                          placeholder="Payment terms, communication preferences, scope constraints..."
+                          rows={2}
+                        />
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
@@ -416,6 +436,12 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
                             <span className="font-medium text-purple-900">{member.chaosBuffer}% buf</span>
                           </div>
                         </div>
+                        {member.preferredContact && (
+                          <p className="text-xs text-slate-500 mt-2">Contact: <span className="font-medium text-slate-700">{member.preferredContact}</span></p>
+                        )}
+                        {member.notes && (
+                          <p className="text-xs text-slate-400 mt-1 italic">{member.notes}</p>
+                        )}
                       </div>
                     </div>
 
@@ -431,15 +457,15 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
                       <button
                         onClick={() => handleDuplicateMember(member)}
                         className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
-                        title="Duplicate member"
+                        title="Duplicate client"
                       >
                         <Copy className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDeleteMember(member.id)}
                         className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"
-                        title="Delete member"
-                        aria-label="Delete member"
+                        title="Remove client"
+                        aria-label="Remove client"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -524,6 +550,26 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
                         onChange={(e) => handleFieldChange("chaosBuffer", Number(e.target.value))}
                       />
                     </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Contact Person</label>
+                      <input
+                        type="text"
+                        className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                        value={editingMember.preferredContact || ""}
+                        onChange={(e) => handleFieldChange("preferredContact", e.target.value)}
+                        placeholder="Contact name or email at this publisher"
+                      />
+                    </div>
+                    <div className="lg:col-span-2">
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Notes</label>
+                      <textarea
+                        className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                        value={editingMember.notes || ""}
+                        onChange={(e) => handleFieldChange("notes", e.target.value)}
+                        placeholder="Payment terms, communication preferences, scope constraints..."
+                        rows={2}
+                      />
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
@@ -531,7 +577,7 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
                       className="flex items-center gap-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition text-sm"
                     >
                       <Save className="w-4 h-4" />
-                      Add Member
+                      Add Client
                     </button>
                     <button
                       onClick={handleCancelEdit}
@@ -548,8 +594,8 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
             {teamMembers.length === 0 && !isAddingNew && (
               <div className="text-center py-8 text-slate-500">
                 <Users className="w-12 h-12 mx-auto mb-4 text-slate-300" />
-                <p>No team members configured yet.</p>
-                <p className="text-sm">Add your first team member to get started with team-based estimation.</p>
+                <p>No clients configured yet.</p>
+                <p className="text-sm">Add your first client to start tracking projects and income.</p>
               </div>
             )}
           </div>
@@ -616,7 +662,7 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
 
       {clientMode && (
         <div className="bg-white border border-slate-200 rounded-2xl p-6">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4">Team Capacity Overview</h3>
+          <h3 className="text-lg font-semibold text-slate-900 mb-4">Client Overview</h3>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {teamMembers.map((member) => (
               <div key={member.id} className="border border-slate-200 rounded-lg p-4 hover:shadow-md transition">

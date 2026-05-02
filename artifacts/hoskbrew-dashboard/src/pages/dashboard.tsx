@@ -817,6 +817,7 @@ function DashboardPageContent() {
               quarters={quarterBuckets}
               clientMode={isClientMode}
               onProjectUpdate={handleProjectUpdate}
+              teamRoster={teamRoster}
             />
           )}
 

@@ -35,11 +35,11 @@ export function TeamPlanner({ writers, clientMode = false, onEditMember, onNavig
       {/* Section Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Who Does What</h2>
+          <h2 className="text-2xl font-bold text-slate-900">Client Load Overview</h2>
           <p className="text-slate-600 mt-1">
             {clientMode 
-              ? "Team allocation and workload distribution across contributors."
-              : "Monitor workload and bottlenecks across all contributors."}
+              ? "Project hours and load allocation across your active clients."
+              : "Track project hours and capacity across all your clients."}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -49,7 +49,7 @@ export function TeamPlanner({ writers, clientMode = false, onEditMember, onNavig
               className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-all duration-200 hover:shadow-lg hover:scale-[1.02]"
             >
               <Wrench className="w-4 h-4" />
-              <span>Edit Team</span>
+              <span>Manage Clients</span>
             </button>
           )}
           {!clientMode && (
@@ -72,14 +72,14 @@ export function TeamPlanner({ writers, clientMode = false, onEditMember, onNavig
           <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
           <div className="flex-1">
             <div className="flex items-start justify-between">
-              <h4 className="font-bold text-red-800">Resource Bottleneck Detected</h4>
+              <h4 className="font-bold text-red-800">Capacity Warning</h4>
               {onNavigateToTeamBuilder && (
                 <button 
                   onClick={onNavigateToTeamBuilder}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md"
                 >
                   <Wrench className="w-3.5 h-3.5" />
-                  <span>Resolve in Team Builder</span>
+                  <span>Manage Clients</span>
                 </button>
               )}
             </div>
@@ -88,8 +88,7 @@ export function TeamPlanner({ writers, clientMode = false, onEditMember, onNavig
               ({formatNumber(mostOverloaded.totalHours)}h assigned vs {formatNumber(mostOverloaded.annualCapacity)}h available annually).
             </p>
             <p className="text-xs text-red-600 mt-2">
-              <strong>Impact:</strong> Projects will take {Math.round(mostOverloadedPercent / 100)}x longer than planned, 
-              or require redistributing {formatNumber(mostOverloaded.totalHours - mostOverloaded.annualCapacity)}h to other team members.
+              <strong>Impact:</strong> Projects will take longer than planned. Consider reducing scope or pushing deadlines by {formatNumber(mostOverloaded.totalHours - mostOverloaded.annualCapacity)}h.
             </p>
           </div>
         </div>
@@ -243,7 +242,7 @@ export function TeamPlanner({ writers, clientMode = false, onEditMember, onNavig
                 {injected > 0 && (
                   <div className="text-xs bg-indigo-50 border border-indigo-200 rounded p-2 mt-2">
                     <div className="font-semibold text-indigo-900">
-                      +{formatNumber(injected)}h from Product Builder
+                      +{formatNumber(injected)}h from Project Estimator
                     </div>
                     {(() => {
                       const loads = teamLoads.get(writer.id) || [];

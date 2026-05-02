@@ -4,13 +4,14 @@
 import { useEffect, useState, useMemo } from "react";
 import { DollarSign, ShieldAlert, Calendar, Plus, Upload, RotateCcw, Copy, Edit2, Save, X, Check, ChevronDown } from "lucide-react";
 import { formatCurrency, getPublished, setPublished } from "@/lib/utils";
-import type { DisplayProject, QuarterBuckets, Project } from "@/lib/types";
+import type { DisplayProject, QuarterBuckets, Project, TeamMember } from "@/lib/types";
 
 interface BudgetViewProps {
   analysis: DisplayProject[];
   quarters: QuarterBuckets;
   clientMode: boolean;
   onProjectUpdate?: (projectId: number, field: keyof Project, value: any) => void;
+  teamRoster?: TeamMember[];
 }
 
 interface ProjectTemplate {
@@ -39,7 +40,7 @@ interface SelectionState {
 
 const QUARTERS = ["Q1", "Q2", "Q3", "Q4", "Dec 22 Deadline", "Ongoing"];
 
-export function BudgetView({ analysis, quarters, clientMode, onProjectUpdate }: BudgetViewProps) {
+export function BudgetView({ analysis, quarters, clientMode, onProjectUpdate, teamRoster = [] }: BudgetViewProps) {
   // Convert analysis to local state for editing in internal mode
   const [items, setItems] = useState<DisplayProject[]>(analysis);
   const [editStates, setEditStates] = useState<EditState>({});
@@ -650,9 +651,9 @@ export function BudgetView({ analysis, quarters, clientMode, onProjectUpdate }: 
                                       onChange={e => updateItem(item.id, "assignedTo", e.target.value)}
                                       className="w-full text-xs p-1 border rounded focus:ring-1 focus:ring-indigo-500"
                                     >
-                                      <option value="ironforge">Ironforge Games</option>
-                                      <option value="thornwood">Thornwood Press</option>
-                                      <option value="questcraft">QuestCraft Creative</option>
+                                      {teamRoster.map((c) => (
+                                        <option key={c.id} value={c.id}>{c.name}</option>
+                                      ))}
                                     </select>
                                   </div>
                                   <div>

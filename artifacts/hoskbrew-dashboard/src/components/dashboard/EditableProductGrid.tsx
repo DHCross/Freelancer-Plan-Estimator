@@ -174,16 +174,16 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
                 <Play className="w-6 h-6 text-blue-600 ml-0.5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-900">Begin Execution?</h3>
+                <h3 className="text-lg font-bold text-slate-900">Start This Project?</h3>
                 <p className="text-sm text-slate-600 mt-2">
-                  This will move the product to <strong>Production</strong>. Tasks will start consuming capacity and budget.
+                  This will move the project to <strong>Active</strong>. Tasks will be scheduled against your available capacity.
                 </p>
                 <div className="mt-6 flex items-center gap-3">
                   <button
                     onClick={confirmMoveToProduction}
                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm transition-colors"
                   >
-                    Move to Production
+                    Start Project
                   </button>
                   <button
                     onClick={() => setConfirmProductionId(null)}
@@ -224,7 +224,7 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="text-xs text-slate-500">Owner</label>
+            <label className="text-xs text-slate-500">Client</label>
             <div className="relative">
               <select
                 value={ownerFilter}
@@ -305,15 +305,15 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
                   checked={selectedIds.size === filteredAndSortedProducts.length && filteredAndSortedProducts.length > 0}
                   onChange={handleSelectAll}
                   className="w-4 h-4 cursor-pointer"
-                  title="Select/deselect all products for bulk actions"
+                  title="Select/deselect all projects for bulk actions"
                 />
               </th>
               <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-left text-xs font-semibold text-slate-600 uppercase`}>Project Name</th>
               <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-left text-xs font-semibold text-slate-600 uppercase`}>Description</th>
-              <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-left text-xs font-semibold text-slate-600 uppercase`}>Product Line</th>
-              <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-left text-xs font-semibold text-slate-600 uppercase`}>Owner</th>
+              <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-left text-xs font-semibold text-slate-600 uppercase`}>Client Group</th>
+              <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-left text-xs font-semibold text-slate-600 uppercase`}>Client</th>
               <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-left text-xs font-semibold text-slate-600 uppercase`}>Status</th>
-              <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-left text-xs font-semibold text-slate-600 uppercase`}>Launch Window</th>
+              <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-left text-xs font-semibold text-slate-600 uppercase`}>Deadline</th>
               <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-center text-xs font-semibold text-slate-600 uppercase`}>Word Count</th>
               <th className={`px-4 ${isCompact ? "py-2" : "py-3"} text-center text-xs font-semibold text-slate-600 uppercase`}>Actions</th>
             </tr>
@@ -336,7 +336,7 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
                         checked={isSelected}
                         onChange={() => handleToggleSelection(project.id)}
                         className="w-4 h-4 cursor-pointer mr-2"
-                        title="Select this product for bulk actions"
+                        title="Select this project for bulk actions"
                       />
                     </div>
                   </td>
@@ -453,7 +453,7 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
                             title="Start execution"
                           >
                             <Play className="w-3 h-3 fill-current" />
-                            Move to Prod
+                            Start
                           </button>
                         )}
                         <button
@@ -492,7 +492,7 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
       {/* Empty state for filtered results */}
       {filteredAndSortedProducts.length === 0 && statusFilter !== "all" && (
         <div className="text-center py-8 text-slate-500">
-          <p>No products with status "{FILTER_OPTIONS.find(f => f.value === statusFilter)?.label}"</p>
+          <p>No projects with status "{FILTER_OPTIONS.find(f => f.value === statusFilter)?.label}"</p>
           <button
             onClick={() => setStatusFilter("all")}
             className="mt-2 text-blue-600 hover:underline text-sm"
@@ -508,7 +508,7 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
           <div>
             <p className="text-sm font-medium text-yellow-900">Unsaved Changes</p>
             <p className="text-xs text-yellow-700 mt-1">
-              You have {products.filter((p) => hasUnsavedChanges(p.id)).length} product(s) with pending changes. 
+              You have {products.filter((p) => hasUnsavedChanges(p.id)).length} project(s) with pending changes.
               Click the save icon on each row to publish your updates.
             </p>
           </div>
@@ -518,11 +518,11 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
       {selectedIds.size > 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-between">
           <p className="text-sm font-medium text-blue-900">
-            {selectedIds.size} product(s) selected
+            {selectedIds.size} project(s) selected
           </p>
           <button
             className="px-3 py-1 text-sm bg-red-50 text-red-700 hover:bg-red-100 rounded transition-colors flex items-center gap-2"
-            title="Delete selected products (feature coming soon)"
+            title="Delete selected projects (feature coming soon)"
           >
             <Trash2 className="w-4 h-4" />
             Delete Selected
