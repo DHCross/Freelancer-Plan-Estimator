@@ -8,10 +8,12 @@ This project is **Freelance Forge** — a business management suite for independ
 
 ## Artifacts
 
-- `artifacts/hoskbrew-dashboard` — Main web app (React + Vite), served at `/`. Purely frontend, all data in localStorage. The core Freelance Forge dashboard.
-- `artifacts/hoskbrew-pitch-deck` — Pitch deck slides artifact at `/hoskbrew-pitch-deck/`.
+- Main web app (React + Vite), served at `/`. Package: `@workspace/freelance-forge`. Purely frontend, all data in localStorage. The core dashboard.
+- Pitch deck slides artifact at the deck preview path. Package: `@workspace/freelance-forge-deck`.
 - `artifacts/api-server` — Express API server (currently unused by the dashboard, available for future backend features)
 - `artifacts/mockup-sandbox` — Design sandbox (internal tooling)
+
+> Note: artifact directory names use legacy paths and are intentionally kept as-is (renaming requires a full workspace migration).
 
 ## Stack
 

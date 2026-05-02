@@ -15,10 +15,10 @@ paths = [ "/hoskbrew-pitch-deck/" ]
 localPort = 20518
 
 [services.development]
-run = "pnpm --filter @workspace/hoskbrew-pitch-deck run dev"
+run = "pnpm --filter @workspace/freelance-forge-deck run dev"
 
 [services.production]
-build = [ "pnpm", "--filter", "@workspace/hoskbrew-pitch-deck", "run", "build" ]
+build = [ "pnpm", "--filter", "@workspace/freelance-forge-deck", "run", "build" ]
 publicDir = "artifacts/hoskbrew-pitch-deck/dist/public"
 serve = "static"
 
