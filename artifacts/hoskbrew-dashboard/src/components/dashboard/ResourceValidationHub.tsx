@@ -116,7 +116,7 @@ export function ResourceValidationHub({ clientMode = false, onReassignProjects, 
       {/* Data Flow Indicator with Edit Button */}
       <div className="bg-slate-100 border border-slate-200 rounded-lg p-3 flex items-center justify-between">
         <div className="flex items-center justify-center gap-3 text-sm flex-1">
-          <span className="font-medium text-slate-600">Team Builder</span>
+          <span className="font-medium text-slate-600">Client Roster</span>
           <ArrowRight className="w-4 h-4 text-slate-400" />
           <span className="font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded">Resource Validation</span>
           <ArrowRight className="w-4 h-4 text-slate-400" />
@@ -345,7 +345,7 @@ export function ResourceValidationHub({ clientMode = false, onReassignProjects, 
         {/* Detailed Metrics */}
         <div className="grid md:grid-cols-2 gap-6">
           <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-            <div className="text-sm text-slate-600 mb-2">Target Timeline (from Team Builder)</div>
+            <div className="text-sm text-slate-600 mb-2">Target Timeline (from Client Roster)</div>
             <div className="text-3xl font-bold text-slate-900 tabular-nums">
               {scenario.targetTimeline} months
             </div>

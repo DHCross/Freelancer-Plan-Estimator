@@ -56,11 +56,11 @@ export function CommandPalette({
     },
     {
       id: "nav-team",
-      label: "Go to Team",
+      label: "Go to Clients",
       icon: Users,
       action: () => onNavigate("team"),
       category: "Navigation",
-      keywords: ["people", "members", "capacity", "who"],
+      keywords: ["clients", "publishers", "rates", "contact"],
     },
     {
       id: "nav-finance",

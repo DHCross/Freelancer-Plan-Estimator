@@ -186,7 +186,7 @@ export function TeamConfiguration({ clientMode = false }: { clientMode?: boolean
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Team Builder */}
+        {/* Client Roster */}
         <div className="space-y-4">
           <h4 className="text-md font-medium text-slate-800">Team Roles</h4>
           <p className="text-sm text-slate-600">

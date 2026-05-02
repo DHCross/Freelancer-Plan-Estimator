@@ -172,8 +172,8 @@ export function EstimatorView({ inputs, onChange, onEstimate, result, clientMode
                 <div className="bg-emerald-100 border border-emerald-200 rounded-lg p-3 text-xs text-emerald-700">
                   <p>Based on {result.teamMember.name}'s profile:</p>
                   <p>• Role: {result.teamMember.role}</p>
-                  <p>• Draft Speed: {result.teamMember.draftSpeed} words/hr</p>
-                  <p>• Chaos Buffer: {result.teamMember.chaosBuffer}%</p>
+                  <p>• Writing Speed: {result.teamMember.draftSpeed} words/hr</p>
+                  <p>• Revision Buffer: {result.teamMember.chaosBuffer}%</p>
                   {result.roleAdjusted && <p>• Adjusted for role-specific factors</p>}
                 </div>
               )}

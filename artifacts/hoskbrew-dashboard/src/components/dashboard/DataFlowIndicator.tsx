@@ -11,7 +11,7 @@ interface DataFlowIndicatorProps {
 }
 
 const STEPS: { id: FlowStep; label: string; shortLabel: string }[] = [
-  { id: "team-builder", label: "Team Builder", shortLabel: "Team" },
+  { id: "team-builder", label: "Client Roster", shortLabel: "Clients" },
   { id: "resource-validation", label: "Resource Validation", shortLabel: "Resources" },
   { id: "scenario-engine", label: "Scenario Engine", shortLabel: "Scenario" },
   { id: "financial-model", label: "Financial Model", shortLabel: "Finance" },
@@ -67,10 +67,10 @@ export function DataFlowMini({ activeStep }: { activeStep: FlowStep }) {
   return (
     <div className="inline-flex items-center gap-1 text-xs text-slate-500 bg-slate-50 px-2 py-1 rounded">
       <span className="font-medium">Data from:</span>
-      {activeStep === "resource-validation" && <span>Team Builder</span>}
-      {activeStep === "scenario-engine" && <span>Team Builder + Resource Validation</span>}
-      {activeStep === "financial-model" && <span>Team Builder (Project Cost)</span>}
-      {activeStep === "estimator" && <span>Team Builder (Member Profiles)</span>}
+      {activeStep === "resource-validation" && <span>Client Roster</span>}
+      {activeStep === "scenario-engine" && <span>Client Roster + Resource Validation</span>}
+      {activeStep === "financial-model" && <span>Client Roster (Project Cost)</span>}
+      {activeStep === "estimator" && <span>Client Roster (Client Rates)</span>}
     </div>
   );
 }

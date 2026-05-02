@@ -71,7 +71,7 @@ export function IntegratedFinancialModel({ clientMode = false, onNavigateToTeamB
   const [unifiedModel] = useState(() => UnifiedProjectModel.getInstance());
   const [scenario, setScenario] = useState(unifiedModel.getProjectScenario());
   
-  // Development cost now comes from Team Builder via unified model
+  // Development cost now comes from Client Roster via unified model
   const devCostFromTeamBuilder = Math.round(scenario.validatedBudget);
   
   const [msrp, setMsrp] = useState(40);
@@ -175,7 +175,7 @@ export function IntegratedFinancialModel({ clientMode = false, onNavigateToTeamB
       {/* Data Flow Indicator with Edit Button */}
       <div className="bg-slate-100 border border-slate-200 rounded-lg p-3 flex items-center justify-between">
         <div className="flex items-center justify-center gap-3 text-sm flex-1">
-          <span className="font-medium text-slate-600">Team Builder</span>
+          <span className="font-medium text-slate-600">Client Roster</span>
           <ArrowRight className="w-4 h-4 text-slate-400" />
           <span className="font-medium text-slate-600">Resource Validation</span>
           <ArrowRight className="w-4 h-4 text-slate-400" />
@@ -247,7 +247,7 @@ export function IntegratedFinancialModel({ clientMode = false, onNavigateToTeamB
             <p className="text-xs text-blue-600 mt-2">
               {isValueInKindEnabled
                 ? "Shifting focus to Systemic Gain: offsetting structural investments (e.g. templates) from unit economics."
-                : "Pulled automatically from Team Builder's Total Project Cost."}
+                : "Pulled automatically from Client Roster's Total Project Cost."}
             </p>
           </div>
 
@@ -517,9 +517,9 @@ export function IntegratedFinancialModel({ clientMode = false, onNavigateToTeamB
               <span className="font-semibold text-slate-800">Integrated Data Flow</span>
             </div>
             <p>
-              Development Cost is automatically populated from the Team Builder&apos;s Total Project Cost 
-              (currently {formatCurrency(devCostFromTeamBuilder)}). This ensures ROI calculations 
-              reflect your actual team configuration and project scope.
+              Development Cost is automatically populated from the Client Roster&apos;s Total Project Cost 
+              (currently {formatCurrency(devCostFromTeamBuilder)}). This ensures income projections 
+              reflect your actual client rates and project scope.
             </p>
           </div>
         </div>

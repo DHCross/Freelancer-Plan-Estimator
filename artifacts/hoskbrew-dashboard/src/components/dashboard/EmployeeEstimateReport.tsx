@@ -258,7 +258,7 @@ export function EmployeeEstimateReport({ projects, metrics, teamRoster, clientMo
               {teamRoster.find(m => m.id === employeeName) && (
                 <div className="mt-2 p-2 bg-emerald-50 border border-emerald-200 rounded-lg">
                   <div className="text-xs text-emerald-700">
-                    <span className="font-semibold">Auto-populated from Team Builder:</span> {employeeName}
+                    <span className="font-semibold">Auto-populated from Client Roster:</span> {employeeName}
                   </div>
                   <div className="grid grid-cols-2 gap-2 mt-1 text-xs">
                     <div className="flex justify-between">
@@ -370,7 +370,7 @@ export function EmployeeEstimateReport({ projects, metrics, teamRoster, clientMo
             
             <div className="grid grid-cols-2 gap-3">
               <label className="block">
-                <span className="text-xs font-medium text-slate-600">Draft Speed (w/hr)</span>
+                <span className="text-xs font-medium text-slate-600">Writing Speed (w/hr)</span>
                 <div className="relative">
                   <input
                     type="number"
@@ -388,7 +388,7 @@ export function EmployeeEstimateReport({ projects, metrics, teamRoster, clientMo
                 </div>
                 <div className="text-xs text-slate-500 mt-1">
                   {teamRoster.find(m => m.id === employeeName) && draftSpeed !== (teamRoster.find(m => m.id === employeeName)?.draftSpeed || 200) 
-                    ? `Using custom rate (Team Builder: ${teamRoster.find(m => m.id === employeeName)?.draftSpeed || 200} w/hr)`
+                    ? `Using custom rate (Client Roster: ${teamRoster.find(m => m.id === employeeName)?.draftSpeed || 200} w/hr)`
                     : 'Typical range: 100-300 w/hr (industry: 150-200)'
                   }
                 </div>
@@ -425,13 +425,13 @@ export function EmployeeEstimateReport({ projects, metrics, teamRoster, clientMo
                 </div>
                 <div className="text-xs text-slate-500 mt-1">
                   {teamRoster.find(m => m.id === employeeName) && dailyHours !== ((teamRoster.find(m => m.id === employeeName)?.weeklyCapacity || 40) / 5) 
-                    ? `Using custom hours (Team Builder: ${Math.round(((teamRoster.find(m => m.id === employeeName)?.weeklyCapacity) || 20) / 5)} hrs/day)`
+                    ? `Using custom hours (Client Roster: ${Math.round(((teamRoster.find(m => m.id === employeeName)?.weeklyCapacity) || 20) / 5)} hrs/day)`
                     : 'Recommended: 4-8 hrs/day for sustainable pace'
                   }
                 </div>
               </label>
               <label className="block">
-                <span className="text-xs font-medium text-slate-600">Chaos Buffer (%)</span>
+                <span className="text-xs font-medium text-slate-600">Revision Buffer (%)</span>
                 <input
                   type="number"
                   value={chaosBuffer}

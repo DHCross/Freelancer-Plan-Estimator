@@ -1,9 +1,8 @@
 
 
 import { useState, useEffect } from "react";
-import { Users, Plus, Edit2, Trash2, Save, X, Info, GripVertical, Copy, Download, DollarSign, Clock, PenTool, Shield, BarChart3, ChevronDown } from "lucide-react";
+import { Users, Plus, Edit2, Trash2, Save, X, GripVertical, Copy, Download, DollarSign, Clock, BarChart3, ChevronDown, Info } from "lucide-react";
 import { TeamMember, Project } from "@/lib/types";
-import { ROLE_TEMPLATES } from "@/lib/constants";
 
 interface TeamManagementProps {
   teamMembers: TeamMember[];
@@ -116,9 +115,9 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
 
   const handleExportConfig = () => {
     const csv = [
-      ['Name', 'Role', 'Hourly Rate', 'Weekly Capacity (hrs)', 'Draft Speed (w/hr)', 'Chaos Buffer (%)'].join(','),
+      ['Client Name', 'Client Type', 'Your Rate ($/hr)', 'Weekly Hours', 'Contact', 'Notes'].join(','),
       ...teamMembers.map(m =>
-        [m.name, m.role, m.hourlyRate, m.weeklyCapacity, m.draftSpeed, m.chaosBuffer].join(',')
+        [m.name, m.role, m.hourlyRate, m.weeklyCapacity, m.preferredContact || '', (m.notes || '').replace(/,/g, ';')].join(',')
       ),
     ].join('\n');
 
@@ -130,21 +129,6 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
     a.click();
     window.URL.revokeObjectURL(url);
     showToast('✅ Client roster exported');
-  };
-
-  const handleRoleTemplateSelect = (roleName: string) => {
-    const template = ROLE_TEMPLATES[roleName as keyof typeof ROLE_TEMPLATES];
-    if (template && editingMember) {
-      setEditingMember({
-        ...editingMember,
-        role: roleName,
-        hourlyRate: template.hourlyRate,
-        weeklyCapacity: template.weeklyCapacity,
-        draftSpeed: template.draftSpeed,
-        compileSpeed: template.compileSpeed,
-        chaosBuffer: template.chaosBuffer,
-      });
-    }
   };
 
   const handleEditMember = (member: TeamMember) => {
@@ -235,27 +219,45 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
         <Users className="w-10 h-10 text-indigo-500" />
       </div>
 
-      {/* Team Summary Stats */}
-      {!clientMode && teamMembers.length > 0 && (
-        <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-2xl p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="border-r border-indigo-200 pr-4 sm:pr-6">
-            <p className="text-xs font-semibold text-indigo-600 uppercase tracking-[0.1em] mb-1">Monthly Revenue</p>
-            <p className="text-2xl font-bold text-slate-900">${Math.round(teamStats.totalMonthly).toLocaleString()}</p>
+      {/* Client Summary Stats */}
+      {!clientMode && teamMembers.length > 0 && (() => {
+        const TTRPG_PER_WORD = 0.08;
+        const activeClientIds = new Set(projects.filter(p => p.lifecycleState === "Production").map(p => p.assignedTo));
+        const paidTotal = projects.filter(p => p.invoiceStatus === "paid").reduce((sum, p) => {
+          const m = teamMembers.find(m => m.id === p.assignedTo);
+          if (!m) return sum;
+          if (p.rateType === "per-word") return sum + (p.targetWords || 0) * (p.rateAmount ?? TTRPG_PER_WORD);
+          if (p.rateType === "flat-fee") return sum + (p.rateAmount ?? (p.manualHours || 0) * m.hourlyRate);
+          return sum + (p.manualHours || 0) * (p.rateAmount ?? m.hourlyRate);
+        }, 0);
+        const pendingTotal = projects.filter(p => p.invoiceStatus === "invoiced" || p.invoiceStatus === "not-invoiced").reduce((sum, p) => {
+          const m = teamMembers.find(m => m.id === p.assignedTo);
+          if (!m) return sum;
+          if (p.rateType === "per-word") return sum + (p.targetWords || 0) * (p.rateAmount ?? TTRPG_PER_WORD);
+          if (p.rateType === "flat-fee") return sum + (p.rateAmount ?? (p.manualHours || 0) * m.hourlyRate);
+          return sum + (p.manualHours || 0) * (p.rateAmount ?? m.hourlyRate);
+        }, 0);
+        return (
+          <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-2xl p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="border-r border-indigo-200 pr-4 sm:pr-6">
+              <p className="text-xs font-semibold text-indigo-600 uppercase tracking-[0.1em] mb-1">Paid Revenue</p>
+              <p className="text-2xl font-bold text-slate-900">${Math.round(paidTotal).toLocaleString()}</p>
+            </div>
+            <div className="border-r border-indigo-200 pr-4 sm:pr-6">
+              <p className="text-xs font-semibold text-indigo-600 uppercase tracking-[0.1em] mb-1">Pipeline Value</p>
+              <p className="text-2xl font-bold text-slate-900">${Math.round(pendingTotal).toLocaleString()}</p>
+            </div>
+            <div className="border-r border-indigo-200 pr-4 sm:pr-6">
+              <p className="text-xs font-semibold text-indigo-600 uppercase tracking-[0.1em] mb-1">Active Clients</p>
+              <p className="text-2xl font-bold text-slate-900">{activeClientIds.size}</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-indigo-600 uppercase tracking-[0.1em] mb-1">Total Clients</p>
+              <p className="text-2xl font-bold text-slate-900">{teamMembers.length}</p>
+            </div>
           </div>
-          <div className="border-r border-indigo-200 pr-4 sm:pr-6">
-            <p className="text-xs font-semibold text-indigo-600 uppercase tracking-[0.1em] mb-1">Active Clients</p>
-            <p className="text-2xl font-bold text-slate-900">{teamStats.activeMembers}</p>
-          </div>
-          <div className="border-r border-indigo-200 pr-4 sm:pr-6">
-            <p className="text-xs font-semibold text-indigo-600 uppercase tracking-[0.1em] mb-1">Words/Week Output</p>
-            <p className="text-2xl font-bold text-slate-900">{Math.round(teamStats.totalCapacity).toLocaleString()}w/wk</p>
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-indigo-600 uppercase tracking-[0.1em] mb-1">Weekly Earnings</p>
-            <p className="text-2xl font-bold text-slate-900">${Math.round(teamStats.totalWeeklyCost).toLocaleString()}</p>
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
       {!clientMode && (
         <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-6">
@@ -307,31 +309,17 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
                         />
                       </div>
                       <div className="lg:col-span-2">
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Role</label>
-                        <div className="space-y-2">
-                          <input
-                            type="text"
-                            className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                            value={editingMember.role}
-                            onChange={(e) => handleFieldChange("role", e.target.value)}
-                            placeholder="Enter any role or select from templates"
-                          />
-                          <select
-                            className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                            onChange={(e) => handleRoleTemplateSelect(e.target.value)}
-                            value=""
-                          >
-                            <option value="">Apply Role Template...</option>
-                            {Object.keys(ROLE_TEMPLATES).map((roleName) => (
-                              <option key={roleName} value={roleName}>
-                                {roleName}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Client Type</label>
+                        <input
+                          type="text"
+                          className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                          value={editingMember.role}
+                          onChange={(e) => handleFieldChange("role", e.target.value)}
+                          placeholder="e.g., Adventure modules, Sourcebooks, Crowdfunding"
+                        />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Hourly Rate ($)</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Your Rate ($/hr)</label>
                         <input
                           type="number"
                           className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
@@ -340,30 +328,12 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Weekly Capacity (hrs)</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Your Weekly Hours for This Client</label>
                         <input
                           type="number"
                           className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
                           value={editingMember.weeklyCapacity}
                           onChange={(e) => handleFieldChange("weeklyCapacity", Number(e.target.value))}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Draft Speed (words/hr)</label>
-                        <input
-                          type="number"
-                          className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                          value={editingMember.draftSpeed}
-                          onChange={(e) => handleFieldChange("draftSpeed", Number(e.target.value))}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1">Chaos Buffer (%)</label>
-                        <input
-                          type="number"
-                          className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                          value={editingMember.chaosBuffer}
-                          onChange={(e) => handleFieldChange("chaosBuffer", Number(e.target.value))}
                         />
                       </div>
                       <div>
@@ -415,26 +385,15 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
                         <h4 className="font-semibold text-slate-900">{member.name}</h4>
                         <p className="text-sm text-slate-600">{member.role}</p>
                         
-                        {/* Redesigned Metric Zones */}
-                        <div className="flex flex-wrap gap-4 mt-3 text-xs">
-                          {/* Zone A: Cost */}
+                        {/* Client Metric Zones */}
+                        <div className="flex flex-wrap gap-3 mt-3 text-xs">
                           <div className="flex items-center gap-2 bg-amber-50 px-2 py-1 rounded border border-amber-200">
                             <DollarSign className="w-3.5 h-3.5 text-amber-600" />
                             <span className="font-medium text-amber-900">${member.hourlyRate}/hr</span>
                           </div>
                           <div className="flex items-center gap-2 bg-blue-50 px-2 py-1 rounded border border-blue-200">
                             <Clock className="w-3.5 h-3.5 text-blue-600" />
-                            <span className="font-medium text-blue-900">{member.weeklyCapacity}h/wk</span>
-                          </div>
-
-                          {/* Zone B: Output */}
-                          <div className="flex items-center gap-2 bg-green-50 px-2 py-1 rounded border border-green-200">
-                            <PenTool className="w-3.5 h-3.5 text-green-600" />
-                            <span className="font-medium text-green-900">{member.draftSpeed}w/hr</span>
-                          </div>
-                          <div className="flex items-center gap-2 bg-purple-50 px-2 py-1 rounded border border-purple-200">
-                            <Shield className="w-3.5 h-3.5 text-purple-600" />
-                            <span className="font-medium text-purple-900">{member.chaosBuffer}% buf</span>
+                            <span className="font-medium text-blue-900">{member.weeklyCapacity}h/wk allocated</span>
                           </div>
                         </div>
                         {member.preferredContact && (
@@ -444,13 +403,28 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
                           <p className="text-xs text-slate-400 mt-1 italic">{member.notes}</p>
                         )}
                         {(() => {
+                          const TTRPG_PER_WORD = 0.08;
                           const clientProjects = projects.filter(p => p.assignedTo === member.id);
                           const activeCount = clientProjects.filter(p => p.lifecycleState === "Production").length;
-                          const lifetimeRevenue = clientProjects.reduce((sum, p) => sum + (p.manualHours || 0) * member.hourlyRate, 0);
+                          const paidRevenue = clientProjects
+                            .filter(p => p.invoiceStatus === "paid")
+                            .reduce((sum, p) => {
+                              if (p.rateType === "per-word") return sum + (p.targetWords || 0) * (p.rateAmount ?? TTRPG_PER_WORD);
+                              if (p.rateType === "flat-fee") return sum + (p.rateAmount ?? (p.manualHours || 0) * member.hourlyRate);
+                              return sum + (p.manualHours || 0) * (p.rateAmount ?? member.hourlyRate);
+                            }, 0);
+                          const billedRevenue = clientProjects
+                            .filter(p => p.invoiceStatus === "invoiced")
+                            .reduce((sum, p) => {
+                              if (p.rateType === "per-word") return sum + (p.targetWords || 0) * (p.rateAmount ?? TTRPG_PER_WORD);
+                              if (p.rateType === "flat-fee") return sum + (p.rateAmount ?? (p.manualHours || 0) * member.hourlyRate);
+                              return sum + (p.manualHours || 0) * (p.rateAmount ?? member.hourlyRate);
+                            }, 0);
                           return clientProjects.length > 0 ? (
-                            <div className="flex gap-3 mt-2 text-xs">
+                            <div className="flex flex-wrap gap-3 mt-2 text-xs">
                               <span className="text-indigo-600 font-medium">{activeCount} active / {clientProjects.length} total project{clientProjects.length === 1 ? "" : "s"}</span>
-                              <span className="text-emerald-600 font-medium">${Math.round(lifetimeRevenue).toLocaleString()} projected</span>
+                              {paidRevenue > 0 && <span className="text-emerald-600 font-medium">${Math.round(paidRevenue).toLocaleString()} paid</span>}
+                              {billedRevenue > 0 && <span className="text-amber-600 font-medium">${Math.round(billedRevenue).toLocaleString()} billed</span>}
                             </div>
                           ) : null;
                         })()}
@@ -503,31 +477,17 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
                       />
                     </div>
                     <div className="lg:col-span-2">
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Role</label>
-                      <div className="space-y-2">
-                        <input
-                          type="text"
-                          className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                          value={editingMember.role}
-                          onChange={(e) => handleFieldChange("role", e.target.value)}
-                          placeholder="e.g., Adventure modules, Sourcebooks, Crowdfunding"
-                        />
-                        <select
-                          className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                          onChange={(e) => handleRoleTemplateSelect(e.target.value)}
-                          value=""
-                        >
-                          <option value="">Apply Role Template...</option>
-                          {Object.keys(ROLE_TEMPLATES).map((roleName) => (
-                            <option key={roleName} value={roleName}>
-                              {roleName}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Client Type</label>
+                      <input
+                        type="text"
+                        className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
+                        value={editingMember.role}
+                        onChange={(e) => handleFieldChange("role", e.target.value)}
+                        placeholder="e.g., Adventure modules, Sourcebooks, Crowdfunding"
+                      />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Hourly Rate ($)</label>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Your Rate ($/hr)</label>
                       <input
                         type="number"
                         className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
@@ -536,30 +496,12 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Weekly Capacity (hrs)</label>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Your Weekly Hours for This Client</label>
                       <input
                         type="number"
                         className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
                         value={editingMember.weeklyCapacity}
                         onChange={(e) => handleFieldChange("weeklyCapacity", Number(e.target.value))}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Draft Speed (words/hr)</label>
-                      <input
-                        type="number"
-                        className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                        value={editingMember.draftSpeed}
-                        onChange={(e) => handleFieldChange("draftSpeed", Number(e.target.value))}
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Chaos Buffer (%)</label>
-                      <input
-                        type="number"
-                        className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm"
-                        value={editingMember.chaosBuffer}
-                        onChange={(e) => handleFieldChange("chaosBuffer", Number(e.target.value))}
                       />
                     </div>
                     <div>
@@ -643,28 +585,33 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
             <details className="group">
               <summary className="flex items-center gap-2 font-semibold text-slate-900 cursor-pointer hover:text-indigo-600 transition">
                 <Info className="w-4 h-4" />
-                📚 Reference: Role Definitions & Rates
+                TTRPG Industry Rate Reference
                 <ChevronDown className="w-4 h-4 transition-transform group-open:rotate-180" />
               </summary>
               <div className="mt-4 grid md:grid-cols-2 lg:grid-cols-3 gap-2 text-xs">
-                {Object.entries(ROLE_TEMPLATES).map(([roleName, template]) => (
-                  <div key={roleName} className="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-lg p-3 hover:shadow-sm transition">
-                    <p className="font-medium text-slate-800 mb-1">{roleName}</p>
-                    <p className="text-slate-600">${template.hourlyRate}/hr • {template.draftSpeed}w/hr</p>
-                    <p className="text-slate-500 mt-2 leading-snug">{template.description}</p>
-                    <div className="mt-2 flex items-center gap-1 text-slate-500">
-                      <span className="inline-block px-2 py-0.5 bg-white rounded border border-slate-300 text-xs">Buffer: {template.chaosBuffer}%</span>
-                    </div>
+                {[
+                  { label: "Writing (adventure)", range: "$0.03 – $0.08/word", hourly: "$15 – $25/hr", note: "One-shots, modules, campaign books" },
+                  { label: "Writing (supplement)", range: "$0.03 – $0.06/word", hourly: "$12 – $20/hr", note: "Player options, sourcebooks" },
+                  { label: "Editing / Dev edit", range: "$0.02 – $0.04/word", hourly: "$20 – $35/hr", note: "Rules clarity, narrative polish" },
+                  { label: "Layout & design", range: "Flat fee common", hourly: "$25 – $50/hr", note: "Varies widely by page count" },
+                  { label: "Kickstarter work", range: "$0.05 – $0.10/word", hourly: "$20 – $40/hr", note: "Backer rewards, stretch goals" },
+                  { label: "Setting / world-building", range: "$0.04 – $0.08/word", hourly: "$18 – $30/hr", note: "Lore, factions, gazetteer content" },
+                ].map(({ label, range, hourly, note }) => (
+                  <div key={label} className="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-lg p-3 hover:shadow-sm transition">
+                    <p className="font-medium text-slate-800 mb-1">{label}</p>
+                    <p className="text-slate-600">{range}</p>
+                    <p className="text-slate-500">{hourly}</p>
+                    <p className="text-slate-400 mt-2 leading-snug">{note}</p>
                   </div>
                 ))}
               </div>
               <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-900">
-                <p className="font-semibold mb-2">💡 How to Use Role Templates</p>
+                <p className="font-semibold mb-2">💡 Rate Tips</p>
                 <ul className="text-xs space-y-1 list-disc list-inside">
-                  <li>When adding a member, start typing a role name or select from the dropdown</li>
-                  <li>Click a template option to auto-fill all metrics for that role</li>
-                  <li>Customize the values afterward if needed</li>
-                  <li>Reference rates from your client agreements</li>
+                  <li>Set "Your Rate" per client to match what you actually charge them</li>
+                  <li>Use per-word rates for writing projects and hourly for layout/editing</li>
+                  <li>Flat-fee projects: enter the total contract value as rateAmount on the project</li>
+                  <li>Paid revenue is tracked per invoice status on each project</li>
                 </ul>
               </div>
             </details>
@@ -676,26 +623,35 @@ export function TeamManagement({ teamMembers, onUpdateTeamMembers, clientMode = 
         <div className="bg-white border border-slate-200 rounded-2xl p-6">
           <h3 className="text-lg font-semibold text-slate-900 mb-4">Client Overview</h3>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {teamMembers.map((member) => (
-              <div key={member.id} className="border border-slate-200 rounded-lg p-4 hover:shadow-md transition">
-                <h4 className="font-semibold text-slate-900">{member.name}</h4>
-                <p className="text-sm text-slate-600 mb-3">{member.role}</p>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-600 flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> Weekly:</span>
-                    <span className="font-medium text-slate-900">{member.weeklyCapacity}h</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-600 flex items-center gap-1"><PenTool className="w-3.5 h-3.5" /> Speed:</span>
-                    <span className="font-medium text-slate-900">{member.draftSpeed}w/hr</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-600 flex items-center gap-1"><Shield className="w-3.5 h-3.5" /> Buffer:</span>
-                    <span className="font-medium text-slate-900">{member.chaosBuffer}%</span>
+            {teamMembers.map((member) => {
+              const clientProjects = projects.filter(p => p.assignedTo === member.id);
+              const activeCount = clientProjects.filter(p => p.lifecycleState === "Production").length;
+              return (
+                <div key={member.id} className="border border-slate-200 rounded-lg p-4 hover:shadow-md transition">
+                  <h4 className="font-semibold text-slate-900">{member.name}</h4>
+                  <p className="text-sm text-slate-600 mb-3">{member.role}</p>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-600 flex items-center gap-1"><DollarSign className="w-3.5 h-3.5" /> Rate:</span>
+                      <span className="font-medium text-slate-900">${member.hourlyRate}/hr</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-600 flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> Weekly:</span>
+                      <span className="font-medium text-slate-900">{member.weeklyCapacity}h</span>
+                    </div>
+                    {clientProjects.length > 0 && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-600">Projects:</span>
+                        <span className="font-medium text-indigo-700">{activeCount} active / {clientProjects.length} total</span>
+                      </div>
+                    )}
+                    {member.preferredContact && (
+                      <p className="text-xs text-slate-500 pt-1">Contact: <span className="font-medium">{member.preferredContact}</span></p>
+                    )}
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

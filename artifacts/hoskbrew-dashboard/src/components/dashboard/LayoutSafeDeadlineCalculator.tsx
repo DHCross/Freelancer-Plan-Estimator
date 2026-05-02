@@ -181,7 +181,7 @@ export function LayoutSafeDeadlineCalculator({ onApplyDates }: LayoutSafeDeadlin
           <div className="bg-white border border-slate-200 rounded-xl p-5">
             <h4 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-amber-500" />
-              Chaos Buffer
+              Revision Buffer
             </h4>
             
             <div className="flex gap-2 mb-3">
@@ -303,7 +303,7 @@ export function LayoutSafeDeadlineCalculator({ onApplyDates }: LayoutSafeDeadlin
                 <span className="font-medium">{layoutDays} days</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-slate-100">
-                <span className="text-slate-600">Chaos Buffer</span>
+                <span className="text-slate-600">Revision Buffer</span>
                 <span className="font-medium text-amber-600">+{calculations.chaosBufferDays} days</span>
               </div>
               <div className="flex justify-between items-center py-2 font-bold">

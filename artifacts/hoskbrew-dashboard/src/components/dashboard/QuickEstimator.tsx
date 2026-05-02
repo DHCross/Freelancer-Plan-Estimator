@@ -320,7 +320,7 @@ export function QuickEstimator({ teamRoster }: { teamRoster: TeamMember[] }) {
               className="text-left lg:text-right hover:bg-slate-800 rounded-lg p-2 -m-2 transition-colors"
             >
               <p className="text-slate-400 text-xs uppercase tracking-wider flex items-center gap-1 lg:justify-end">
-                Chaos Buffer
+                Revision Buffer
                 <span className="text-slate-600 text-[10px]">(click)</span>
               </p>
               {showBufferBreakdown ? (

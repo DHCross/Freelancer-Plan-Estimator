@@ -191,9 +191,9 @@ This document provides a time and effort estimate for completing **${project.nam
 | Start Date | ${formatDate(startDate)} |
 | Daily Hours | ${dailyHours} hours/day |
 | Weekend Work | ${includeWeekends ? "Included" : "Excluded"} |
-| Draft Speed | ${formatNumber(draftSpeed)} words/hour |
+| Writing Speed | ${formatNumber(draftSpeed)} words/hour |
 ${compileSpeed ? `| Compile Speed | ${formatNumber(compileSpeed)} words/hour |` : ""}
-| Chaos Buffer | ${chaosBuffer}% |
+| Revision Buffer | ${chaosBuffer}% |
 
 ### Phase Estimates
 

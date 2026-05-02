@@ -94,7 +94,7 @@ export const tooltipContent = {
 
   // Production Terms
   'draft-speed': {
-    title: 'Draft Speed',
+    title: 'Writing Speed',
     content: 'Words per hour you can write in first draft quality. Typical range: 100-300 w/hr for creative writing.',
     icon: Clock,
     category: 'production'
@@ -106,8 +106,8 @@ export const tooltipContent = {
     category: 'production'
   },
   'chaos-buffer': {
-    title: 'Chaos Buffer',
-    content: 'Extra time added to account for unexpected delays, revisions, and real-world complications. 15% is typical.',
+    title: 'Revision Buffer',
+    content: 'Extra time added to account for unexpected delays, client revisions, and scope complications. 15% is typical.',
     icon: Clock,
     category: 'production'
   },

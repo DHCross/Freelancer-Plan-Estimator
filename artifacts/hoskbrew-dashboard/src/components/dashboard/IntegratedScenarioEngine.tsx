@@ -59,7 +59,7 @@ export function IntegratedScenarioEngine({ clientMode = false, onNavigateToTeamB
               <div className="w-8 h-8 bg-emerald-500 text-white rounded-full flex items-center justify-center text-sm font-medium mb-1">
                 ✓
               </div>
-              <span className="text-xs font-medium text-slate-700">1. Team Builder</span>
+              <span className="text-xs font-medium text-slate-700">1. Client Roster</span>
               <span className="text-xs text-emerald-600">Complete</span>
             </div>
           </div>
@@ -116,7 +116,7 @@ export function IntegratedScenarioEngine({ clientMode = false, onNavigateToTeamB
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 text-xs text-slate-500">
               <Link2 className="w-3 h-3" />
-              <span>Data from Team Builder &amp; Resource Validation</span>
+              <span>Data from Client Roster &amp; Resource Validation</span>
             </div>
             {onNavigateToTeamBuilder && (
               <button
@@ -132,7 +132,7 @@ export function IntegratedScenarioEngine({ clientMode = false, onNavigateToTeamB
 
         {/* Enhanced Input/Output Panel with Impact Analysis */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Target Inputs (from Team Builder) */}
+          {/* Target Inputs (from Client Roster) */}
           <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
             <h4 className="font-semibold text-slate-700 mb-4">Target Inputs</h4>
             <div className="space-y-3">
