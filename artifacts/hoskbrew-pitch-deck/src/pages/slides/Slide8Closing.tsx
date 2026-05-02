@@ -19,7 +19,7 @@ export default function Slide8Closing() {
         <div className="flex items-center gap-[1.5vw]" style={{ marginBottom: "4vh" }}>
           <div style={{ width: "4vw", height: "1px", backgroundColor: "#3b82f6" }} />
           <p style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: "1.5vw", fontWeight: 500, color: "#3b82f6", letterSpacing: "0.15em", textTransform: "uppercase" }}>
-            Hoskbrew Strategic Board
+            Freelance Forge
           </p>
           <div style={{ width: "4vw", height: "1px", backgroundColor: "#3b82f6" }} />
         </div>

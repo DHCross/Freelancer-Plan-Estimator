@@ -1,6 +1,6 @@
 kind = "web"
 previewPath = "/"
-title = "Hoskbrew Dashboard"
+title = "Freelance Forge"
 version = "1.0.0"
 id = "artifacts/hoskbrew-dashboard"
 router = "path"

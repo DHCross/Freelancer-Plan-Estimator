@@ -1,6 +1,6 @@
 kind = "slides"
 previewPath = "/hoskbrew-pitch-deck/"
-title = "Hoskbrew Production Engine — Pitch Deck"
+title = "Freelance Forge — Pitch Deck"
 version = "1.0.0"
 id = "artifacts/hoskbrew-pitch-deck"
 router = "path"

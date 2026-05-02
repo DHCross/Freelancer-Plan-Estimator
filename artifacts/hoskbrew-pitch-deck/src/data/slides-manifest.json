@@ -4,7 +4,7 @@
     "position": 1,
     "filepath": "src/pages/slides/Slide1Title.tsx",
     "title": "Production Engine",
-    "description": "Title slide — Hoskbrew Production Engine",
+    "description": "Title slide — Freelance Forge",
     "speakerNotes": ""
   },
   {
@@ -52,7 +52,7 @@
     "position": 7,
     "filepath": "src/pages/slides/Slide7Pipeline.tsx",
     "title": "Active Pipeline",
-    "description": "Chaos Rising, Eldritch 2E, and Infrastructure product lines",
+    "description": "Core Series, Core IP, and Infrastructure product lines",
     "speakerNotes": ""
   },
   {
@@ -60,7 +60,7 @@
     "position": 8,
     "filepath": "src/pages/slides/Slide8Closing.tsx",
     "title": "Closing",
-    "description": "Hoskbrew Strategic Board — Production Engine summary",
+    "description": "Freelance Forge — Production Engine summary",
     "speakerNotes": ""
   }
 ]

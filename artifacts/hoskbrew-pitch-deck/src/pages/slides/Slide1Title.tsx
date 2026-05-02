@@ -19,7 +19,7 @@ export default function Slide1Title() {
         <div className="flex items-center gap-[1.2vw]">
           <div style={{ width: "0.35vw", height: "3vh", backgroundColor: "#3b82f6", borderRadius: "2px" }} />
           <p style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: "1.5vw", fontWeight: 500, color: "#94a3b8", letterSpacing: "0.15em", textTransform: "uppercase" }}>
-            Hoskbrew Strategic Board
+            Freelance Forge
           </p>
         </div>
 

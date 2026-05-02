@@ -4,11 +4,12 @@
 
 pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
 
-This project is the **Hoskbrew Production Engine** — a comprehensive project management dashboard for a creative/publishing team. It tracks projects, team capacity, budgets, timelines, and reporting.
+This project is **Freelance Forge** — a business management suite for independent TTRPG industry freelancers. It tracks client projects, personal capacity, rates, budgets, timelines, and reporting.
 
 ## Artifacts
 
-- `artifacts/hoskbrew-dashboard` — Main web app (React + Vite), served at `/`. Purely frontend, all data in localStorage. Ported from Next.js/Vercel.
+- `artifacts/hoskbrew-dashboard` — Main web app (React + Vite), served at `/`. Purely frontend, all data in localStorage. The core Freelance Forge dashboard.
+- `artifacts/hoskbrew-pitch-deck` — Pitch deck slides artifact at `/hoskbrew-pitch-deck/`.
 - `artifacts/api-server` — Express API server (currently unused by the dashboard, available for future backend features)
 - `artifacts/mockup-sandbox` — Design sandbox (internal tooling)
 
