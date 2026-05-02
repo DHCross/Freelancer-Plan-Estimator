@@ -552,7 +552,7 @@ export function IntegratedScenarioEngine({ clientMode = false, onNavigateToTeamB
             <li>• <strong>Target Budget/Timeline</strong> are pulled from your client configuration</li>
             <li>• <strong>Total Cost</strong> is calculated from your project cost estimates</li>
             <li>• <strong>Timeline</strong> is validated by the Client Load page based on the longest critical path</li>
-            <li>• <strong>Bottleneck</strong> warnings come directly from overloaded clients in Resource Validation</li>
+            <li>• <strong>Bottleneck</strong> warnings come directly from capacity overload detection in Resource Validation</li>
             <li>• <strong>Scenarios</strong> can be saved and compared to analyze different approaches</li>
           </ul>
         </div>

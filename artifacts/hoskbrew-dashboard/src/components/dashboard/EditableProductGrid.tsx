@@ -428,8 +428,8 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
                   <td className={`px-4 ${isCompact ? "py-2" : "py-3"}`}>
                     {isEditing ? (
                       <select
-                        value={(project as any).rateType || ""}
-                        onChange={(e) => handleFieldChange(project.id, "rateType", e.target.value)}
+                        value={displayData.rateType || ""}
+                        onChange={(e) => handleFieldChange(project.id, "rateType", e.target.value as Project["rateType"])}
                         className="w-full px-2 py-1 border border-slate-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
                       >
                         <option value="">—</option>
@@ -439,9 +439,9 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
                       </select>
                     ) : (
                       <span className="text-xs text-slate-600">
-                        {(project as any).rateType === "flat-fee" ? "Flat Fee"
-                          : (project as any).rateType === "per-word" ? "Per Word"
-                          : (project as any).rateType === "hourly" ? "Hourly"
+                        {displayData.rateType === "flat-fee" ? "Flat Fee"
+                          : displayData.rateType === "per-word" ? "Per Word"
+                          : displayData.rateType === "hourly" ? "Hourly"
                           : "—"}
                       </span>
                     )}
@@ -450,8 +450,8 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
                   <td className={`px-4 ${isCompact ? "py-2" : "py-3"}`}>
                     {isEditing ? (
                       <select
-                        value={(project as any).invoiceStatus || ""}
-                        onChange={(e) => handleFieldChange(project.id, "invoiceStatus", e.target.value)}
+                        value={displayData.invoiceStatus || ""}
+                        onChange={(e) => handleFieldChange(project.id, "invoiceStatus", e.target.value as Project["invoiceStatus"])}
                         className="w-full px-2 py-1 border border-slate-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
                       >
                         <option value="">—</option>
@@ -461,15 +461,15 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
                       </select>
                     ) : (
                       <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
-                        (project as any).invoiceStatus === "paid"
+                        displayData.invoiceStatus === "paid"
                           ? "bg-emerald-100 text-emerald-700"
-                          : (project as any).invoiceStatus === "invoiced"
+                          : displayData.invoiceStatus === "invoiced"
                           ? "bg-amber-100 text-amber-700"
                           : "bg-slate-100 text-slate-500"
                       }`}>
-                        {(project as any).invoiceStatus === "paid" ? "Paid"
-                          : (project as any).invoiceStatus === "invoiced" ? "Awaiting"
-                          : (project as any).invoiceStatus === "not-invoiced" ? "Not Sent"
+                        {displayData.invoiceStatus === "paid" ? "Paid"
+                          : displayData.invoiceStatus === "invoiced" ? "Awaiting"
+                          : displayData.invoiceStatus === "not-invoiced" ? "Not Sent"
                           : "—"}
                       </span>
                     )}

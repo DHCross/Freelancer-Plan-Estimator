@@ -129,19 +129,41 @@ export function DashboardView({
   // Calculate timeline extension if there's a bottleneck
   const timelineExtension = useMemo(() => {
     if (teamMetrics.bottleneckPercent > 100) {
-      // Rough estimate: (bottleneck% - 100) / 100 * baseline months
       const baselineMonths = 12;
       return Math.round(((teamMetrics.bottleneckPercent - 100) / 100) * baselineMonths);
     }
     return 0;
   }, [teamMetrics.bottleneckPercent]);
 
-  // Capacity status for overall team
+  // Capacity status
   const capacityStatus = teamMetrics.overallLoad > 100 
     ? "critical" 
     : teamMetrics.overallLoad > 80 
     ? "warning" 
     : "healthy";
+
+  // Personal capacity bar: total weekly hours available vs committed
+  const personalCapacity = useMemo(() => {
+    const total = writers.reduce((sum, w) => sum + w.weeklyCapacity, 0);
+    // committedHours is annual, divide by 52 for weekly
+    const committed = writers.reduce((sum, w) => {
+      const injected = getInjectedHours?.(w.id) || 0;
+      return sum + (w.committedHours + injected) / 52;
+    }, 0);
+    const pct = total > 0 ? Math.round((committed / total) * 100) : 0;
+    return { total, committed, pct };
+  }, [writers, getInjectedHours]);
+
+  // Monthly income from active project pipeline (hours × client rate)
+  const projectMonthlyIncome = useMemo(() => {
+    return analysis
+      .filter(p => p.lifecycleState === "Production")
+      .reduce((sum, p) => {
+        const client = writers.find(w => w.id === p.assignedTo);
+        const rate = client?.hourlyRate ?? 0;
+        return sum + ((p.manualHours || 0) * rate) / 12;
+      }, 0);
+  }, [analysis, writers]);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -215,14 +237,14 @@ export function DashboardView({
       {/* Key Metrics Strip */}
       <MetricStrip>
         <MetricCard
-          title="My Capacity"
-          value={hasActiveExecution ? `${teamMetrics.overallLoad}%` : "0%"}
+          title="Your Load"
+          value={personalCapacity.total > 0 ? `${personalCapacity.pct}%` : "0%"}
           subtitle={
-            !hasActiveExecution
-              ? "No active work consuming capacity"
-              : teamMetrics.bottleneckCount > 0
-              ? `${teamMetrics.bottleneckCount} over-capacity client${teamMetrics.bottleneckCount === 1 ? "" : "s"} · View client load →`
-              : "All clients within capacity · View client load →"
+            personalCapacity.total === 0
+              ? "Add clients to track your workload"
+              : personalCapacity.pct > 100
+              ? `Overcommitted · ${Math.round(personalCapacity.committed - personalCapacity.total)}h/wk over capacity`
+              : `${Math.round(personalCapacity.committed)}h / ${Math.round(personalCapacity.total)}h per week`
           }
           icon={Users}
           status={!hasActiveExecution ? "healthy" : capacityStatus}
@@ -248,22 +270,13 @@ export function DashboardView({
 
         <MetricCard
           title="Monthly Income"
-          value={(() => {
-            const activeProjects = analysis.filter(p => p.lifecycleState === "Production");
-            if (activeProjects.length === 0 && writers.length === 0) return "—";
-            // Project-based: sum committed hours across clients, weighted by their rate
-            const total = writers.reduce((sum, w) => {
-              const monthlyHours = Math.min(w.committedHours / 12, w.weeklyCapacity * 4.3);
-              return sum + monthlyHours * w.hourlyRate;
-            }, 0);
-            return total > 0 ? `$${formatNumber(Math.round(total))}` : "—";
-          })()}
+          value={projectMonthlyIncome > 0 ? `$${formatNumber(Math.round(projectMonthlyIncome))}` : "—"}
           subtitle={
             writers.length === 0
               ? "Add clients to see income projection"
-              : hasActiveExecution
-              ? "From active project hours · View clients →"
-              : "Projected from committed project hours"
+              : hasActiveExecution && projectMonthlyIncome > 0
+              ? `From ${analysis.filter(p => p.lifecycleState === "Production").length} active project hours · View clients →`
+              : "No active projects contributing income yet"
           }
           icon={DollarSign}
           status="healthy"
@@ -289,31 +302,66 @@ export function DashboardView({
         />
       </MetricStrip>
 
-      {/* Team Load Overview Section */}
+      {/* Personal Capacity Bar */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-lg font-semibold text-slate-900">Client Load Overview</h3>
-            <p className="text-sm text-slate-500">
-              {clientMode 
-                ? "Current time allocation across active clients."
-                : "Capacity utilisation and project assignments per client."}
-            </p>
+            <h3 className="text-lg font-semibold text-slate-900">Your Weekly Workload</h3>
+            <p className="text-sm text-slate-500">Hours committed across all active projects and clients</p>
           </div>
           <button
             onClick={() => onNavigate?.("team", "team-overview")}
             className="text-sm text-blue-600 hover:text-blue-700 font-medium hover:underline transition-colors"
           >
-            Open Full Client View →
+            View by client →
           </button>
         </div>
-        
-        <TeamGrid
-          members={writers}
-          allProjects={analysis}
-          clientMode={clientMode}
-          getInjectedHours={getInjectedHours}
-        />
+
+        <div className="bg-white border border-slate-200 rounded-xl p-6">
+          {personalCapacity.total === 0 ? (
+            <p className="text-sm text-slate-400">No clients configured. Add clients to track your capacity.</p>
+          ) : (
+            <>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-slate-700">Total committed</span>
+                <span className="text-sm font-semibold text-slate-900">
+                  {Math.round(personalCapacity.committed)}h / {Math.round(personalCapacity.total)}h per week
+                </span>
+              </div>
+              <div className="w-full bg-slate-100 rounded-full h-3 mb-2">
+                <div
+                  className={`h-3 rounded-full transition-all ${
+                    personalCapacity.pct > 100 ? "bg-red-500" : personalCapacity.pct > 80 ? "bg-amber-400" : "bg-emerald-500"
+                  }`}
+                  style={{ width: `${Math.min(personalCapacity.pct, 100)}%` }}
+                />
+              </div>
+              <div className="flex items-center justify-between text-xs text-slate-500 mb-5">
+                <span>{personalCapacity.pct}% utilised</span>
+                <span>{Math.max(0, Math.round(personalCapacity.total - personalCapacity.committed))}h/wk remaining</span>
+              </div>
+
+              {writers.filter(w => w.committedHours > 0).length > 0 && (
+                <div className="space-y-2 border-t border-slate-100 pt-4">
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Hours by client</p>
+                  {writers.filter(w => w.committedHours > 0).map(w => {
+                    const weeklyHrs = Math.round((w.committedHours / 52) * 10) / 10;
+                    const clientPct = personalCapacity.total > 0 ? (weeklyHrs / personalCapacity.total) * 100 : 0;
+                    return (
+                      <div key={w.id} className="flex items-center gap-3">
+                        <span className="text-xs text-slate-600 w-36 truncate font-medium">{w.name}</span>
+                        <div className="flex-1 bg-slate-100 rounded-full h-2">
+                          <div className="bg-indigo-400 h-2 rounded-full" style={{ width: `${Math.min(clientPct, 100)}%` }} />
+                        </div>
+                        <span className="text-xs text-slate-500 w-20 text-right">{weeklyHrs}h/wk</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       {/* Quick Timeline Preview (optional, for visual context) */}

@@ -200,7 +200,7 @@ export function ResourceValidationHub({ clientMode = false, onReassignProjects, 
                 {/* Impact Preview */}
                 <div className={`${getCapacityColor(bottleneck?.loadPercentage || 0).bg} ${getCapacityColor(bottleneck?.loadPercentage || 0).border} rounded-lg p-3 mt-3`}>
                   <div className={`text-xs ${getCapacityColor(bottleneck?.loadPercentage || 0).text}`}>
-                    <span className="font-semibold">Impact Preview:</span> Reassigning 2 projects to other clients would reduce {bottleneck.teamMemberName}'s load to ~180% capacity.
+                    <span className="font-semibold">Impact Preview:</span> Deferring or reducing scope on 2 projects would bring your schedule load closer to a manageable level.
                   </div>
                 </div>
               </div>
