@@ -6,7 +6,6 @@ import {
   Calendar, 
   DollarSign, 
   Target,
-  Clock,
   Briefcase,
   Pencil
 } from "lucide-react";
@@ -386,56 +385,6 @@ export function DashboardView({
         </div>
       </div>
 
-      {/* Quick Timeline Preview (optional, for visual context) */}
-      {!clientMode && analysis.some(p => p.lifecycleState === "Production") && (
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-          <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50">
-            <div className="flex items-center gap-2">
-              <div className="bg-blue-100 p-1.5 rounded-lg">
-                <Clock className="w-4 h-4 text-blue-600" />
-              </div>
-              <h4 className="font-semibold text-slate-900">Upcoming Milestones</h4>
-            </div>
-            <button
-              onClick={() => onNavigate?.("planning", "budget")}
-              className="text-xs text-blue-600 hover:text-blue-700 font-medium hover:underline"
-            >
-              View full timeline →
-            </button>
-          </div>
-          <div className="divide-y divide-slate-100">
-            {analysis
-              .filter((p) => p.lifecycleState === "Production" && p.targetDate)
-              .sort((a, b) => new Date(a.targetDate!).getTime() - new Date(b.targetDate!).getTime())
-              .slice(0, 3)
-              .map((project) => (
-                <button
-                  key={project.id}
-                  onClick={() => onNavigate?.("planning", "products")}
-                  className="w-full flex items-center justify-between py-3 px-4 hover:bg-slate-50 transition-colors text-left group"
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                        project.internalStatus?.toLowerCase().includes("critical")
-                          ? "bg-red-500"
-                          : project.internalStatus?.toLowerCase().includes("draft")
-                          ? "bg-blue-500"
-                          : "bg-slate-300"
-                      }`}
-                    />
-                    <span className="text-sm font-medium text-slate-700 group-hover:text-slate-900">
-                      {project.name}
-                    </span>
-                  </div>
-                  <span className="text-xs text-slate-500 group-hover:text-slate-700">
-                    {project.displayDate || project.launchWindow}
-                  </span>
-                </button>
-              ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
