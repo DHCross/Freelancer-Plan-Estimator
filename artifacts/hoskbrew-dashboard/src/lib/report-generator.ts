@@ -147,79 +147,38 @@ ${cleanFixList}
 function generateRoleOwnershipAnalysis(roles: ReportConfig['roleOwnership'], headingNumeral: string = "V"): string {
   if (!roles) return "";
   
-  const {
-    narrativeLead,
-    systemsLead,
-    productionArbiter,
-    finalEditor,
-    assetCoordinator,
-    projectManager
-  } = roles;
+  const writer = roles.narrativeLead || "Me";
+  const editor = roles.finalEditor || "Me";
+  const layout = roles.productionArbiter || "Me";
   
-  return `## ${headingNumeral}. Role Ownership & Decision Authority
+  return `## ${headingNumeral}. Role Ownership
 
-### Explicit Role Coverage
+### Who Does What
 
-**1. Creative Lead / Setting Architect — ${narrativeLead || "Me"}**
-- Primary narrative authoring
-- Tone, theme, and scene conception
-- Module-level storytelling momentum
+**Writer — ${writer}**
+- First draft and full prose authoring
+- Tone, pacing, and scene-level decisions
+- Revisions based on client feedback
 
-**2. Systems & Structure Lead — ${systemsLead || "Me"}**
-- Rules translation & system fluency
-- Structural consistency across books
-- Layout-aware writing and editorial hygiene
-- Long-horizon continuity thinking
+**Editor — ${editor}**
+- Developmental and copy-editing pass
+- Consistency, clarity, and flow review
+- Final proofreading before delivery
 
-**3. Production Arbiter — ${productionArbiter || "Me"}**
-- Final calls on scope cuts
-- Priority conflict resolution
-- "Good enough" threshold decisions
-- Completion sign-off authority
+**Layout — ${layout}**
+- File preparation and InDesign/template work
+- Art placement and page flow
+- Export and print-ready delivery
 
-**4. Final Editor & Integrator — ${finalEditor || "Me"}**
-- Editorial enforcement phase
-- Cross-project consistency
-- Layout integration oversight
+### Delivery Responsibilities
 
-**5. Asset Coordinator — ${assetCoordinator || "TBD"}**
-- Art brief preparation
-- Map dependency tracking
-- Layout question triage
-- External creator liaison
-
-**6. Project Manager / Throughput Guardian — ${projectManager || "Me"}**
-- Calendar vs reality monitoring
-- Early slippage detection
-- Capacity bottleneck identification
-
-### Identified Gaps & Mitigations
-
-**GAP 1: Explicit Project Ownership**
-- **Risk:** Polite deadlocks, quiet rework, scope creep by omission
-- **Mitigation:** Single Final Arbiter per deliverable (not globally)
-
-**GAP 2: Production Management**
-- **Risk:** Discovering overload at worst possible moment
-- **Mitigation:** Named throughput guardian role
-
-**GAP 3: Editorial Phase Distinction**
-- **Risk:** Late-stage quality panic, tone drift, layout friction
-- **Mitigation:** Dedicated editorial pass boundary
-
-**GAP 4: Asset Coordination**
-- **Risk:** Last-minute scrambling, art mismatches, layout bottlenecks
-- **Mitigation:** Lightweight coordinator role (5 hrs/week)
-
-### Decision Authority Matrix
-
-| Decision Area | Primary Authority | Backup Authority | Escalation |
-|---------------|-------------------|------------------|------------|
-| Narrative Content | ${narrativeLead || "Me"} | ${systemsLead || "Me"} | Direct decision |
-| Rules & Systems | ${systemsLead || "Me"} | ${narrativeLead || "Me"} | ${productionArbiter || "Me"} final call |
-| Scope & Priority | ${productionArbiter || "Me"} | ${narrativeLead || "Me"} | Direct decision |
-| Editorial Quality | ${finalEditor || "Me"} | ${narrativeLead || "Me"} | ${productionArbiter || "Me"} final call |
-| Asset Integration | ${assetCoordinator || "TBD"} | ${finalEditor || "Me"} | ${projectManager || "Me"} escalation |
+| Decision Area | Owner | Notes |
+|---------------|-------|-------|
+| Content & Voice | ${writer} | Direct call |
+| Structural changes | ${editor} | Consult ${writer} |
+| Scope cuts | ${writer} | Client approval required |
+| Visual presentation | ${layout} | Consult ${writer} |
+| Delivery sign-off | ${writer} | All roles complete |
 
 ---
 `;

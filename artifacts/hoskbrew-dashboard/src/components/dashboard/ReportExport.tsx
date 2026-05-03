@@ -35,12 +35,9 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
   const [supportWeeklyHours, setSupportWeeklyHours] = useState(18);
   const [primaryWeeklyHours, setPrimaryWeeklyHours] = useState(30);
   const [workingWeeksPerYear, setWorkingWeeksPerYear] = useState(48);
-  const [narrativeLead, setNarrativeLead] = useState("Me");
-  const [systemsLead, setSystemsLead] = useState("Me");
-  const [productionArbiter, setProductionArbiter] = useState("Me");
-  const [finalEditor, setFinalEditor] = useState("Me");
-  const [assetCoordinator, setAssetCoordinator] = useState("TBD");
-  const [projectManagerRole, setProjectManagerRole] = useState("Me");
+  const [writerRole, setWriterRole] = useState("Me");
+  const [editorRole, setEditorRole] = useState("Me");
+  const [layoutRole, setLayoutRole] = useState("Me");
   const [marketPreset, setMarketPreset] = useState<ArtDensityPreset>("osr");
   const [showMarketComparison, setShowMarketComparison] = useState(true);
 
@@ -75,12 +72,12 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
       workingWeeksPerYear,
     },
     roleOwnership: {
-      narrativeLead,
-      systemsLead,
-      productionArbiter,
-      finalEditor,
-      assetCoordinator,
-      projectManager: projectManagerRole,
+      narrativeLead: writerRole,
+      systemsLead: editorRole,
+      productionArbiter: layoutRole,
+      finalEditor: editorRole,
+      assetCoordinator: layoutRole,
+      projectManager: writerRole,
     },
     marketPreset,
     showMarketComparison,
@@ -101,12 +98,9 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
     supportWeeklyHours,
     primaryWeeklyHours,
     workingWeeksPerYear,
-    narrativeLead,
-    systemsLead,
-    productionArbiter,
-    finalEditor,
-    assetCoordinator,
-    projectManagerRole,
+    writerRole,
+    editorRole,
+    layoutRole,
     marketPreset,
     showMarketComparison,
   ]);
@@ -301,65 +295,38 @@ export function ReportExport({ projects, metrics, teamRoster, clientMode = false
           <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-4">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Role Ownership</p>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3">
               <label className="block">
-                <span className="text-xs font-medium text-slate-600">Narrative Lead</span>
+                <span className="text-xs font-medium text-slate-600">Writer</span>
                 <input
                   type="text"
-                  value={narrativeLead}
-                  onChange={(e) => setNarrativeLead(e.target.value)}
+                  value={writerRole}
+                  onChange={(e) => setWriterRole(e.target.value)}
                   className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
                 />
               </label>
               <label className="block">
-                <span className="text-xs font-medium text-slate-600">Systems Lead</span>
+                <span className="text-xs font-medium text-slate-600">Editor</span>
                 <input
                   type="text"
-                  value={systemsLead}
-                  onChange={(e) => setSystemsLead(e.target.value)}
+                  value={editorRole}
+                  onChange={(e) => setEditorRole(e.target.value)}
                   className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
                 />
               </label>
               <label className="block">
-                <span className="text-xs font-medium text-slate-600">Production Arbiter</span>
+                <span className="text-xs font-medium text-slate-600">Layout</span>
                 <input
                   type="text"
-                  value={productionArbiter}
-                  onChange={(e) => setProductionArbiter(e.target.value)}
-                  className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
-                />
-              </label>
-              <label className="block">
-                <span className="text-xs font-medium text-slate-600">Final Editor</span>
-                <input
-                  type="text"
-                  value={finalEditor}
-                  onChange={(e) => setFinalEditor(e.target.value)}
-                  className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
-                />
-              </label>
-              <label className="block">
-                <span className="text-xs font-medium text-slate-600">Asset Coordinator</span>
-                <input
-                  type="text"
-                  value={assetCoordinator}
-                  onChange={(e) => setAssetCoordinator(e.target.value)}
-                  className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
-                />
-              </label>
-              <label className="block">
-                <span className="text-xs font-medium text-slate-600">Project Manager</span>
-                <input
-                  type="text"
-                  value={projectManagerRole}
-                  onChange={(e) => setProjectManagerRole(e.target.value)}
+                  value={layoutRole}
+                  onChange={(e) => setLayoutRole(e.target.value)}
                   className="mt-1 w-full border border-slate-200 rounded-lg px-3 py-2 text-sm"
                 />
               </label>
             </div>
 
             <p className="text-xs text-slate-500">
-              These assignments drive the Role Ownership & Decision Authority section.
+              These assignments drive the Role Ownership & Delivery Responsibilities section.
             </p>
           </div>
           <div className="flex items-center gap-2">

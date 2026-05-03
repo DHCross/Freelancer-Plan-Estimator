@@ -986,7 +986,7 @@ function DashboardPageContent() {
             <span className="mx-2">›</span>
             <span className="text-slate-900 font-medium">
               {subView === "financial-model" && "Income Projection"}
-              {subView === "cost-savings" && "Rate Benchmarking"}
+              {subView === "cost-savings" && "Rate Calculator"}
               {subView === "tool-costs" && "Tool Costs"}
             </span>
           </div>

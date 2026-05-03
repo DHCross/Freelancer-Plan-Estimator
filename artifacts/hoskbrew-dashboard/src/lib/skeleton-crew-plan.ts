@@ -1,5 +1,5 @@
-import { TeamMember, Project } from "./types";
-import { LEGACY_GHOST_CAPACITY, TEAM_ROSTER, INITIAL_PROJECTS } from "./constants";
+import { Project } from "./types";
+import { TEAM_ROSTER, INITIAL_PROJECTS } from "./constants";
 
 export interface CapacityAnalysis {
   totalLostHours: number;
@@ -25,19 +25,30 @@ export interface ReallocationStrategy {
   impact: string;
 }
 
+const PLANNING_WEEKS = 8;
+
 export function analyzeCapacityGap(): CapacityAnalysis {
-  const lostHours = LEGACY_GHOST_CAPACITY.reduce((sum, ghost) => {
-    const weeklyHours = parseInt(ghost.hours.replace('h/wk', ''));
-    return sum + weeklyHours;
+  const activeProjects = INITIAL_PROJECTS.filter(p =>
+    p.lifecycleState === "Production" || p.lifecycleState === "Planning"
+  );
+
+  const totalProjectHours = activeProjects.reduce((sum, p) => {
+    const writing = p.manualHours ?? 0;
+    const layout = p.layoutHours ?? 0;
+    return sum + writing + layout;
   }, 0);
 
-  const remainingCapacity = TEAM_ROSTER.reduce((sum, member) => sum + member.weeklyCapacity, 0);
-  const netGap = lostHours - remainingCapacity;
-  const coveragePercentage = (remainingCapacity / (lostHours + remainingCapacity)) * 100;
+  const weeklyDemand = Math.round(totalProjectHours / PLANNING_WEEKS);
+  const weeklyCapacity = TEAM_ROSTER.reduce((sum, m) => sum + m.weeklyCapacity, 0);
+  const netGap = Math.max(0, weeklyDemand - weeklyCapacity);
+  const outsourceHours = Math.round(netGap * 0.4);
+  const coveragePercentage = weeklyDemand > 0
+    ? Math.min(100, (weeklyCapacity / weeklyDemand) * 100)
+    : 100;
 
   return {
-    totalLostHours: lostHours,
-    remainingCapacity,
+    totalLostHours: outsourceHours,
+    remainingCapacity: weeklyCapacity,
     netGap,
     coveragePercentage,
   };
@@ -81,45 +92,38 @@ export function generateReallocationStrategy(): ReallocationStrategy[] {
   return [
     {
       priority: 1,
-      action: "Protect locked deadline project",
-      assignee: "Me",
-      hoursReallocated: 20,
-      impact: "Client-committed revenue — non-negotiable",
+      action: "Subcontract copyediting pass on locked-deadline project",
+      assignee: "Freelance Copyeditor",
+      hoursReallocated: 12,
+      impact: "Frees writing time for first draft; editor handles polish",
     },
     {
       priority: 2,
-      action: "Maintain production calendar",
-      assignee: "Me",
-      hoursReallocated: 15,
-      impact: "Keeps launch schedule intact",
+      action: "Hire layout contractor for production pipeline",
+      assignee: "Layout Designer",
+      hoursReallocated: 20,
+      impact: "Keeps delivery on schedule without learning curve",
     },
     {
       priority: 3,
-      action: "Document style guide and editorial standards",
-      assignee: "Me",
-      hoursReallocated: 10,
-      impact: "Preserves quality consistency across projects",
+      action: "Commission cartographer for map assets",
+      assignee: "Freelance Cartographer",
+      hoursReallocated: 8,
+      impact: "Removes art bottleneck; maps delivered in parallel with writing",
     },
     {
       priority: 4,
-      action: "Capture art coordination workflow",
-      assignee: "Me",
-      hoursReallocated: 5,
-      impact: "Maintains visual consistency for series",
+      action: "Bring in developmental editor for longer manuscript",
+      assignee: "Developmental Editor",
+      hoursReallocated: 15,
+      impact: "Improves structure and pacing before client review",
     },
     {
       priority: 5,
-      action: "Document production pipeline methods",
-      assignee: "Me",
-      hoursReallocated: 5,
-      impact: "Timeline management continuity",
-    },
-    {
-      priority: 6,
-      action: "Create reusable project scaffolding",
-      assignee: "Me",
-      hoursReallocated: 15,
-      impact: "Reduces setup time on future projects",
+      action: "Delegate art brief writing and artist liaison",
+      assignee: "Art Coordinator",
+      hoursReallocated: 6,
+      impact: "Reduces context-switching; keeps writing momentum",
     },
   ];
 }
@@ -129,21 +133,26 @@ export function generateSurvivalPlan() {
   const dependencies = identifyCriticalDependencies();
   const reallocations = generateReallocationStrategy();
 
+  const overloaded = capacity.netGap > 0;
+
   return {
     executiveSummary: {
-      situation: "Great Remote Purge eliminated 16 staff, removing 120h/wk operational capacity",
-      currentStatus: "Skeleton crew operations with 27% coverage of required hours",
-      immediateRisk: "A1 launch failure and Dec 22 deadline breach",
-      timeHorizon: "90 days to stabilize or accept major delays",
+      situation: overloaded
+        ? `Current workload exceeds solo capacity by ${capacity.netGap}h/wk — some work needs to be subcontracted to hit deadlines.`
+        : `Current client load is within solo capacity. Subcontracting can be used to increase output quality or speed.`,
+      immediateRisk: overloaded
+        ? "Deadline slippage on locked projects without contractor support for editing, layout, or art."
+        : "Consider hiring a copyeditor or layout contractor to free time for higher-value writing work.",
+      timeHorizon: "Next 4–8 weeks",
     },
     capacityAnalysis: capacity,
     criticalDependencies: dependencies,
     reallocationStrategy: reallocations,
     survivalMetrics: {
-      weeksOfRunway: Math.floor(capacity.remainingCapacity / 40), // Assuming 40h/wk burn rate
-      criticalPathCoverage: `${dependencies.filter(d => d.riskLevel === "critical").length} critical projects`,
-      documentationTasks: reallocations.filter(r => r.action.includes("Document")).length,
-      systemBuildingTasks: reallocations.filter(r => r.action.includes("scaffolding")).length,
+      weeksOfRunway: Math.max(4, Math.floor(capacity.remainingCapacity / 8)),
+      criticalPathCoverage: `${dependencies.filter(d => d.riskLevel === "critical").length} locked projects`,
+      documentationTasks: 2,
+      systemBuildingTasks: 1,
     },
   };
 }

@@ -50,19 +50,19 @@ const getTimeColor = (hours: number) => {
 };
 
 export function QuickEstimator({ teamRoster }: { teamRoster: TeamMember[] }) {
-  const defaultMember = teamRoster[0]?.id ?? "";
-  const [selectedSize, setSize] = useState(SIZES[0]);
+  const defaultClient = teamRoster[0]?.id ?? "";
+  const [selectedSize, setSize] = useState(SIZES[1]);
   const [selectedComplexity, setComplexity] = useState(COMPLEXITY[0]);
-  const [selectedMember, setMember] = useState(defaultMember);
+  const [selectedClient, setSelectedClient] = useState(defaultClient);
   const [showBufferBreakdown, setShowBufferBreakdown] = useState(false);
-  const [dailyHours, setDailyHours] = useState(4);
+  const [dailyHours, setDailyHours] = useState(5);
   const [useMemberBuffer, setUseMemberBuffer] = useState(true);
   const [customBufferPercent, setCustomBufferPercent] = useState(15);
   const [copiedSummary, setCopiedSummary] = useState(false);
 
-  const member = useMemo(() => teamRoster.find((m) => m.id === selectedMember), [selectedMember, teamRoster]);
-  const speed = member ? Math.max(50, Math.round(member.draftSpeed * selectedComplexity.multiplier)) : 200;
-  const baseBufferPercent = member?.chaosBuffer ?? 15;
+  const client = useMemo(() => teamRoster.find((m) => m.id === selectedClient), [selectedClient, teamRoster]);
+  const speed = client ? Math.max(50, Math.round(client.draftSpeed * selectedComplexity.multiplier)) : 200;
+  const baseBufferPercent = client?.chaosBuffer ?? 15;
   const effectiveBufferPercent = useMemberBuffer ? baseBufferPercent : customBufferPercent;
 
   const result = runEstimator({
@@ -71,7 +71,7 @@ export function QuickEstimator({ teamRoster }: { teamRoster: TeamMember[] }) {
     draftSpeed: speed,
     bufferPercent: effectiveBufferPercent,
     dailyHours,
-    teamMemberId: member?.id,
+    teamMemberId: client?.id,
   });
 
   const timeColor = getTimeColor(result.hours);
@@ -90,7 +90,7 @@ export function QuickEstimator({ teamRoster }: { teamRoster: TeamMember[] }) {
       "Quick Estimate",
       `Size: ${selectedSize.label} (${selectedSize.words.toLocaleString()} words)`,
       `Complexity: ${selectedComplexity.label}`,
-      `Owner: ${member?.name ?? "Unassigned"}`,
+      `Client: ${client?.name ?? "Unassigned"}`,
       `Estimated time: ${result.hours} hrs (~${result.days} days)`,
       `Finish by: ${format(finishDate, "MMM d, yyyy")}`,
       `Daily focus: ${dailyHours} hrs/day`,
@@ -122,22 +122,22 @@ export function QuickEstimator({ teamRoster }: { teamRoster: TeamMember[] }) {
       </div>
 
       <div className="p-6 space-y-6">
-        {/* Who is doing it? - With Avatars */}
+        {/* For which client? - With Avatars */}
         <div>
           <p className="text-xs font-bold uppercase text-slate-400 mb-3 flex items-center gap-1">
             <User className="w-3 h-3" />
-            Who is doing it?
+            For which client?
           </p>
           <div className="flex gap-2 flex-wrap">
             {teamRoster.map((m) => {
-              const isActive = selectedMember === m.id;
+              const isActive = selectedClient === m.id;
               const initials = getInitials(m.name);
               const avatarColor = getAvatarColor(m.name);
               
               return (
                 <button
                   key={m.id}
-                  onClick={() => setMember(m.id)}
+                  onClick={() => setSelectedClient(m.id)}
                   className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm transition-all ${
                     isActive
                       ? "bg-indigo-600 text-white font-medium shadow-lg shadow-indigo-200 scale-105"
@@ -261,7 +261,7 @@ export function QuickEstimator({ teamRoster }: { teamRoster: TeamMember[] }) {
                 }}
                 className="rounded border-slate-300"
               />
-              Use member chaos buffer
+              Use client's chaos buffer
             </label>
             <label className="block">
               <span className="text-xs font-medium text-slate-600">Buffer %</span>
@@ -338,17 +338,17 @@ export function QuickEstimator({ teamRoster }: { teamRoster: TeamMember[] }) {
           </div>
         </div>
 
-        {/* Member context */}
-        {member && (
+        {/* Client context */}
+        {client && (
           <div className="mt-4 pt-4 border-t border-slate-700 flex items-center justify-between text-sm">
             <div className="flex items-center gap-2">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${getAvatarColor(member.name)}`}>
-                {getInitials(member.name)}
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white ${getAvatarColor(client.name)}`}>
+                {getInitials(client.name)}
               </div>
-              <span className="text-slate-400">{member.name}</span>
+              <span className="text-slate-400">{client.name}</span>
             </div>
             <div className="text-slate-500">
-              {speed} w/hr effective • {member.weeklyCapacity}h/week capacity
+              {speed} w/hr expected • {client.weeklyCapacity}h/week allocated
             </div>
           </div>
         )}
