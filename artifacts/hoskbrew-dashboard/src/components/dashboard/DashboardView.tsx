@@ -14,6 +14,7 @@ import { formatNumber } from "@/lib/utils";
 import { MetricCard, MetricStrip } from "./MetricCard";
 import { BottleneckAlert, AlertBanner } from "./AlertBanner";
 import { TeamGrid } from "./CollapsibleTeamCard";
+import { ActionItemsCard } from "./ActionItemsCard";
 
 interface DashboardViewProps {
   writers: WriterLoad[];
@@ -239,6 +240,9 @@ export function DashboardView({
           ]}
         />
       )}
+
+      {/* Needs Your Attention - actionable items from invoices, leads, deadlines */}
+      {!clientMode && <ActionItemsCard projects={analysis} onNavigate={onNavigate} />}
 
       {/* Critical Alert Banner (only if we have execution or bottlenecks that matter) */}
       {teamMetrics.hasBottleneck && teamMetrics.bottleneckMember && (

@@ -21,6 +21,8 @@ import {
   Shield,
   Lock,
   Pencil,
+  Target,
+  TrendingUp,
 } from "lucide-react";
 
 import {
@@ -85,6 +87,8 @@ import { DeadlineEstimator } from "@/components/dashboard/DeadlineEstimator";
 import { TeamLoadProvider, useTeamLoad } from "@/lib/TeamLoadContext";
 import { migrateLocalStorageKeys } from "@/lib/utils";
 import { ToolCostsView } from "@/components/dashboard/ToolCostsView";
+import { CashFlowView } from "@/components/dashboard/CashFlowView";
+import { PipelineView } from "@/components/dashboard/PipelineView";
 import type { IndustryMode } from "@/components/layout/IndustryToggle";
 
 // Migrate any legacy studio_* localStorage keys to forge_* on module load
@@ -153,6 +157,7 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
                 badgeColor: "red" as const,
               },
               { id: "teambuilder", label: "Client Details", icon: Wrench },
+              { id: "pipeline", label: "Pipeline", icon: Target },
               { 
                 id: "team-health", 
                 label: "Capacity Health", 
@@ -181,6 +186,7 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
             label: "Income & Rates",
             items: [
               { id: "financial-model", label: "Revenue Model", icon: DollarSign },
+              { id: "cash-flow", label: "Cash Flow & Invoices", icon: TrendingUp },
               { id: "cost-savings", label: "Rate Calculator", icon: Calculator },
               ...(industryMode === "vibe-coding" ? [{ id: "tool-costs", label: "Tool Costs", icon: Calculator }] : []),
             ],
@@ -870,6 +876,7 @@ function DashboardPageContent() {
             <span className="text-slate-900 font-medium">
               {subView === "team-overview" && "Client Overview"}
               {subView === "teambuilder" && "Client Details"}
+              {subView === "pipeline" && "Pipeline"}
               {subView === "team-health" && "Capacity Health"}
               {subView === "estimator-tools" && "Estimator Tools"}
               {subView === "my-estimate" && "My Estimate"}
@@ -894,6 +901,8 @@ function DashboardPageContent() {
               />
             </div>
           )}
+
+          {subView === "pipeline" && <PipelineView />}
 
           {subView === "team-health" && (
             isClientMode ? (
@@ -986,6 +995,7 @@ function DashboardPageContent() {
             <span className="mx-2">›</span>
             <span className="text-slate-900 font-medium">
               {subView === "financial-model" && "Income Projection"}
+              {subView === "cash-flow" && "Cash Flow & Invoices"}
               {subView === "cost-savings" && "Rate Calculator"}
               {subView === "tool-costs" && "Tool Costs"}
             </span>
@@ -1007,6 +1017,8 @@ function DashboardPageContent() {
               onMetricsUpdate={handleMetricsUpdate}
             />
           )}
+
+          {subView === "cash-flow" && <CashFlowView teamMembers={teamRoster} projects={projects} />}
 
           {subView === "tool-costs" && <ToolCostsView />}
         </div>
