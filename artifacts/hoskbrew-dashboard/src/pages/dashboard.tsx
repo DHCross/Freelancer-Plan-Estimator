@@ -84,6 +84,8 @@ import { NotebookLMImporter } from "@/components/dashboard/NotebookLMImporter";
 import { DeadlineEstimator } from "@/components/dashboard/DeadlineEstimator";
 import { TeamLoadProvider, useTeamLoad } from "@/lib/TeamLoadContext";
 import { migrateLocalStorageKeys } from "@/lib/utils";
+import { ToolCostsView } from "@/components/dashboard/ToolCostsView";
+import type { IndustryMode } from "@/components/layout/IndustryToggle";
 
 // Migrate any legacy studio_* localStorage keys to forge_* on module load
 if (typeof window !== "undefined") migrateLocalStorageKeys();
@@ -92,7 +94,7 @@ if (typeof window !== "undefined") migrateLocalStorageKeys();
 // SIDEBAR CONFIGURATION BY TAB
 // ============================================================================
 
-const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottleneckCount: number) => {
+const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottleneckCount: number, industryMode: IndustryMode = "ttrpg") => {
   switch (primaryTab) {
     case "dashboard":
       return null; // No sidebar for dashboard
@@ -180,6 +182,7 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
             items: [
               { id: "financial-model", label: "Revenue Model", icon: DollarSign },
               { id: "cost-savings", label: "Rate Calculator", icon: Calculator },
+              ...(industryMode === "vibe-coding" ? [{ id: "tool-costs", label: "Tool Costs", icon: Calculator }] : []),
             ],
             defaultExpanded: true,
           },
@@ -314,6 +317,12 @@ function DashboardPageContent() {
 
   // ========== MODE & NAVIGATION STATE ==========
   const [isClientMode, setIsClientMode] = useState(false);
+  const [industryMode, setIndustryMode] = useState<IndustryMode>(() => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("forge_industry_mode") as IndustryMode) || "ttrpg";
+    }
+    return "ttrpg";
+  });
   const [primaryTab, setPrimaryTab] = useState<PrimaryTab>("dashboard");
   const [subView, setSubView] = useState("dashboard");
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -651,8 +660,18 @@ function DashboardPageContent() {
     }
   }, [estimationBuckets]);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("forge_industry_mode", industryMode);
+    }
+  }, [industryMode]);
+
+  const handleIndustryToggle = useCallback(() => {
+    setIndustryMode(prev => prev === "ttrpg" ? "vibe-coding" : "ttrpg");
+  }, []);
+
   // ========== SIDEBAR CONFIGURATION ==========
-  const sidebarConfig = getSidebarConfig(primaryTab, isClientMode, bottleneckCount);
+  const sidebarConfig = getSidebarConfig(primaryTab, isClientMode, bottleneckCount, industryMode);
 
   const renderSidebar = () => {
     if (!sidebarConfig) return null;
@@ -968,6 +987,7 @@ function DashboardPageContent() {
             <span className="text-slate-900 font-medium">
               {subView === "financial-model" && "Income Projection"}
               {subView === "cost-savings" && "Rate Benchmarking"}
+              {subView === "tool-costs" && "Tool Costs"}
             </span>
           </div>
 
@@ -987,6 +1007,8 @@ function DashboardPageContent() {
               onMetricsUpdate={handleMetricsUpdate}
             />
           )}
+
+          {subView === "tool-costs" && <ToolCostsView />}
         </div>
       );
     }
@@ -1084,6 +1106,8 @@ function DashboardPageContent() {
       onTabChange={handleTabChange}
       isClientMode={isClientMode}
       onModeToggle={handleModeToggle}
+      industryMode={industryMode}
+      onIndustryToggle={handleIndustryToggle}
       onExport={handleExportData}
       onImport={handleImportData}
       sidebar={renderSidebar()}

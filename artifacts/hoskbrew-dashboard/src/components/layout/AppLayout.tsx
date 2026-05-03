@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { ModeToggle } from "./ModeToggle";
+import { IndustryToggle, IndustryMode } from "./IndustryToggle";
 import { CommandPalette } from "./CommandPalette";
 import { useKeyboardShortcuts } from "@/lib/hooks/useKeyboardShortcuts";
 
@@ -27,6 +28,8 @@ interface AppLayoutProps {
   onTabChange: (tab: PrimaryTab) => void;
   isClientMode: boolean;
   onModeToggle: () => void;
+  industryMode?: IndustryMode;
+  onIndustryToggle?: () => void;
   onExport?: () => void;
   onImport?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   sidebar?: ReactNode;
@@ -48,6 +51,8 @@ export function AppLayout({
   onTabChange,
   isClientMode,
   onModeToggle,
+  industryMode = "ttrpg",
+  onIndustryToggle,
   onExport,
   onImport,
   sidebar,
@@ -113,6 +118,9 @@ export function AppLayout({
                   </kbd>
                 </button>
 
+                {onIndustryToggle && (
+                  <IndustryToggle mode={industryMode} onToggle={onIndustryToggle} />
+                )}
                 <ModeToggle isClientMode={isClientMode} onToggle={onModeToggle} />
                 
                 {!isClientMode && onExport && onImport && (
