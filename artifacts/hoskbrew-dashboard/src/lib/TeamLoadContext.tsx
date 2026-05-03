@@ -52,7 +52,7 @@ export function TeamLoadProvider({ children }: { children: ReactNode }) {
             },
             {} as Record<string, TeamLoadUpdate[]>
           );
-          localStorage.setItem("studio_team_loads", JSON.stringify(loadData));
+          localStorage.setItem("forge_team_loads", JSON.stringify(loadData));
         }
 
         return newMap;

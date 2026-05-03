@@ -182,7 +182,7 @@ export function TeamConfiguration({ clientMode = false }: { clientMode?: boolean
   return (
     <div className="bg-white border border-slate-200 rounded-xl p-6 space-y-6">
       <div className="flex items-center gap-2">
-        <h3 className="text-lg font-semibold text-slate-900">Team Configuration Model</h3>
+        <h3 className="text-lg font-semibold text-slate-900">Forge Configuration Model</h3>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

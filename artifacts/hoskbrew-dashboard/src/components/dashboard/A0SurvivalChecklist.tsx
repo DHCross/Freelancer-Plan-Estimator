@@ -65,7 +65,7 @@ const INITIAL_TASKS: SurvivalTask[] = [
     id: "npc-consolidation",
     category: "Data",
     title: "NPC Consolidation",
-    description: "Compile every survivor into a single master document to support Martin’s Hero Lab conversion.",
+    description: "Compile every survivor into a single master document to support Hero Lab conversion.",
     completed: false,
     priority: "High",
     icon: Users,

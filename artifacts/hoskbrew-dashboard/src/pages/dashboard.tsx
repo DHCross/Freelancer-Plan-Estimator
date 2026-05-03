@@ -63,7 +63,7 @@ import {
   ProductLinesView,
   TeamHealthDashboard,
   A0SurvivalChecklist,
-  LeadAuthorWorkloadView,
+  WorkloadBriefView,
 } from "@/components/dashboard";
 import { ScenarioWorkspace } from "@/components/dashboard/scenarios/ScenarioWorkspace";
 import { FailureAnalysis } from "@/components/dashboard/FailureAnalysis";
@@ -83,6 +83,10 @@ import { EnhancedEstimatorTools } from "@/components/dashboard/EnhancedEstimator
 import { NotebookLMImporter } from "@/components/dashboard/NotebookLMImporter";
 import { DeadlineEstimator } from "@/components/dashboard/DeadlineEstimator";
 import { TeamLoadProvider, useTeamLoad } from "@/lib/TeamLoadContext";
+import { migrateLocalStorageKeys } from "@/lib/utils";
+
+// Migrate any legacy studio_* localStorage keys to forge_* on module load
+if (typeof window !== "undefined") migrateLocalStorageKeys();
 
 // ============================================================================
 // SIDEBAR CONFIGURATION BY TAB
@@ -195,7 +199,7 @@ const getSidebarConfig = (primaryTab: PrimaryTab, isClientMode: boolean, bottlen
               { id: "layout-safe", label: "Layout-Safe Calculator", icon: Shield },
               { id: "production-readiness", label: "Delivery Checklist", icon: Lock },
               { id: "a0-survival", label: "Project Checklist", icon: AlertTriangle },
-              { id: "martin-workload", label: "Capacity Summary", icon: Users },
+              { id: "workload-brief", label: "Capacity Summary", icon: Users },
               { id: "export-report", label: "Project Proposal", icon: FileText },
               { id: "lessons-learned", label: "Lessons Learned", icon: Lightbulb },
             ],
@@ -303,7 +307,7 @@ function DashboardPageContent() {
   const [isAuthed, setIsAuthed] = useState(() => {
     if (import.meta.env.MODE === "development") return true;
     if (typeof window === "undefined") return false;
-    return window.localStorage.getItem("studio_authed") === "true";
+    return window.localStorage.getItem("forge_authed") === "true";
   });
   const [password, setPassword] = useState("");
   const [authError, setAuthError] = useState<string | null>(null);
@@ -318,7 +322,7 @@ function DashboardPageContent() {
   // ========== DATA STATE ==========
   const [projects, setProjects] = useState(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("studio_projects");
+      const saved = localStorage.getItem("forge_projects");
       return saved ? JSON.parse(saved) : INITIAL_PROJECTS;
     }
     return INITIAL_PROJECTS;
@@ -326,7 +330,7 @@ function DashboardPageContent() {
 
   const [metrics, setMetrics] = useState(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("studio_metrics");
+      const saved = localStorage.getItem("forge_metrics");
       return saved ? JSON.parse(saved) : DEFAULT_METRICS;
     }
     return DEFAULT_METRICS;
@@ -334,7 +338,7 @@ function DashboardPageContent() {
 
   const [teamRoster, setTeamRoster] = useState<TeamMember[]>(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("studio_team_roster");
+      const saved = localStorage.getItem("forge_team_roster");
       return saved ? JSON.parse(saved) : TEAM_ROSTER;
     }
     return TEAM_ROSTER;
@@ -342,7 +346,7 @@ function DashboardPageContent() {
 
   const [estimationBuckets, setEstimationBuckets] = useState<EstimationBucketEntry[]>(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("studio_estimation_buckets");
+      const saved = localStorage.getItem("forge_estimation_buckets");
       return saved ? JSON.parse(saved) : DEFAULT_ESTIMATION_BUCKETS;
     }
     return DEFAULT_ESTIMATION_BUCKETS;
@@ -496,7 +500,7 @@ function DashboardPageContent() {
       setIsAuthed(true);
       setAuthError(null);
       if (typeof window !== "undefined") {
-        window.localStorage.setItem("studio_authed", "true");
+        window.localStorage.setItem("forge_authed", "true");
       }
     } else {
       setAuthError("Incorrect password.");
@@ -625,25 +629,25 @@ function DashboardPageContent() {
   // ========== PERSISTENCE ==========
   useEffect(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("studio_projects", JSON.stringify(projects));
+      localStorage.setItem("forge_projects", JSON.stringify(projects));
     }
   }, [projects]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("studio_metrics", JSON.stringify(metrics));
+      localStorage.setItem("forge_metrics", JSON.stringify(metrics));
     }
   }, [metrics]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("studio_team_roster", JSON.stringify(teamRoster));
+      localStorage.setItem("forge_team_roster", JSON.stringify(teamRoster));
     }
   }, [teamRoster]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("studio_estimation_buckets", JSON.stringify(estimationBuckets));
+      localStorage.setItem("forge_estimation_buckets", JSON.stringify(estimationBuckets));
     }
   }, [estimationBuckets]);
 
@@ -1001,7 +1005,7 @@ function DashboardPageContent() {
               {subView === "layout-safe" && "Layout-Safe Calculator"}
               {subView === "production-readiness" && "Delivery Checklist"}
               {subView === "a0-survival" && "Project Checklist"}
-              {subView === "martin-workload" && "Capacity Summary"}
+              {subView === "workload-brief" && "Capacity Summary"}
               {subView === "export-report" && "Project Proposal"}
               {subView === "lessons-learned" && "Lessons Learned"}
             </span>
@@ -1052,8 +1056,8 @@ function DashboardPageContent() {
             <A0SurvivalChecklist />
           )}
 
-          {subView === "martin-workload" && (
-            <LeadAuthorWorkloadView />
+          {subView === "workload-brief" && (
+            <WorkloadBriefView />
           )}
 
           {subView === "export-report" && (

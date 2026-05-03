@@ -52,12 +52,12 @@ export function ProductProvider({ children, initialProducts = [], onProductsChan
 
     // Persist to localStorage for now
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("studio_products");
+      const saved = localStorage.getItem("forge_products");
       const existing = saved ? JSON.parse(saved) : [];
       const updated = existing.map((p: Project) =>
         p.id === projectId ? { ...p, ...changes } : p
       );
-      localStorage.setItem("studio_products", JSON.stringify(updated));
+      localStorage.setItem("forge_products", JSON.stringify(updated));
     }
 
     // Propagate to parent if provided

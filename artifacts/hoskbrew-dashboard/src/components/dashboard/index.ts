@@ -31,7 +31,7 @@ export * from "./LayoutSafeDeadlineCalculator";
 export * from "./ProductionReadinessChecklist";
 export * from "./TeamHealthDashboard";
 export * from "./A0SurvivalChecklist";
-export * from "./MartinWorkloadView";
+export * from "./WorkloadBriefView";
 
 // New Dashboard Components
 export * from "./DashboardView";

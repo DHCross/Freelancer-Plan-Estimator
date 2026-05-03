@@ -34,7 +34,7 @@ const WORKLOAD_CATEGORIES: WorkloadCategory[] = [
     description: "Narrative transitions, salvage audits, and world-building research.",
     items: [
       "Scrubbing back-half narrative transitions",
-      "Auditing 'Jon's' legacy material",
+      "Auditing legacy material",
       "Drafting Act 3 Sewer Trial notes",
       "Researching Portuguese flora for realism"
     ]
@@ -48,7 +48,7 @@ const WORKLOAD_CATEGORIES: WorkloadCategory[] = [
     items: [
       "Converting Survivors to Hero Lab",
       "Calibrating 'Watchful Rest' proprietor stats",
-      "Tuning Keruc’Tuk ambush encounters"
+      "Tuning Keruc'Tuk ambush encounters"
     ]
   },
   {
@@ -94,7 +94,7 @@ const ACTION_ITEMS: ActionItem[] = [
   { id: "campfire", label: "Campfire & Cuddles Prompts (Re-assigned)", status: "delegated", icon: ArrowRightCircle },
 ];
 
-export function LeadAuthorWorkloadView() {
+export function WorkloadBriefView() {
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -104,7 +104,7 @@ export function LeadAuthorWorkloadView() {
             <Brain className="w-8 h-8" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-white">Lead Author's Role: The Creative Engine</h2>
+            <h2 className="text-xl font-bold text-white">Workload Brief: The Creative Engine</h2>
             <p className="text-slate-400 mt-2 text-sm leading-relaxed max-w-3xl">
               "He views himself as the high-level visionary... trying to translate 30 years of imagination into a functional Pathfinder product. He is focusing on the 'World of Consequence', leaving the technical durability to the Workbench."
             </p>
@@ -178,3 +178,4 @@ export function LeadAuthorWorkloadView() {
     </div>
   );
 }
+

@@ -19,11 +19,36 @@ export function formatCurrency(value: number) {
   });
 }
 
+// One-time migration: move old studio_* localStorage keys to forge_* keys
+export function migrateLocalStorageKeys(): void {
+  if (typeof window === "undefined") return;
+  const migrations: [string, string][] = [
+    ["studio_authed", "forge_authed"],
+    ["studio_projects", "forge_projects"],
+    ["studio_metrics", "forge_metrics"],
+    ["studio_team_roster", "forge_team_roster"],
+    ["studio_estimation_buckets", "forge_estimation_buckets"],
+    ["studio_team_loads", "forge_team_loads"],
+    ["studio_products", "forge_products"],
+    ["studio_overrides", "forge_overrides"],
+    ["studio_published", "forge_published"],
+  ];
+  for (const [oldKey, newKey] of migrations) {
+    const oldVal = localStorage.getItem(oldKey);
+    if (oldVal !== null && localStorage.getItem(newKey) === null) {
+      localStorage.setItem(newKey, oldVal);
+    }
+    if (oldVal !== null) {
+      localStorage.removeItem(oldKey);
+    }
+  }
+}
+
 // Local-storage helpers (simple, non-secure persistence for internal edits)
 export function loadOverrides(): Record<string, any> {
   if (typeof window === "undefined") return {};
   try {
-    const raw = window.localStorage.getItem("studio_overrides");
+    const raw = window.localStorage.getItem("forge_overrides");
     return raw ? JSON.parse(raw) : {};
   } catch {
     return {};
@@ -33,7 +58,7 @@ export function loadOverrides(): Record<string, any> {
 export function saveOverrides(overrides: Record<string, any>) {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem("studio_overrides", JSON.stringify(overrides));
+    window.localStorage.setItem("forge_overrides", JSON.stringify(overrides));
   } catch {
     /* noop */
   }
@@ -54,7 +79,7 @@ export function setProjectOverride(projectId: number, patch: Record<string, any>
 export function loadPublished(): Record<string, any> {
   if (typeof window === "undefined") return {};
   try {
-    const raw = window.localStorage.getItem("studio_published");
+    const raw = window.localStorage.getItem("forge_published");
     return raw ? JSON.parse(raw) : {};
   } catch {
     return {};
@@ -64,7 +89,7 @@ export function loadPublished(): Record<string, any> {
 export function savePublished(published: Record<string, any>) {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem("studio_published", JSON.stringify(published));
+    window.localStorage.setItem("forge_published", JSON.stringify(published));
   } catch {
     /* noop */
   }
