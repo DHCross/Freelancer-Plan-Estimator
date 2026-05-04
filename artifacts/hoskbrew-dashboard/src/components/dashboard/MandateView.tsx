@@ -5,7 +5,7 @@ import { Briefcase } from "lucide-react";
 import { DisplayProject } from "@/lib/types";
 import { setProjectOverride, getProjectOverride, setPublished, getPublished, getQuarterLabel } from "@/lib/utils";
 import { runEstimator } from "@/lib/calculations";
-import { TEAM_ROSTER } from "@/lib/constants";
+import { TEAM_ROSTER, PRODUCT_LINES } from "@/lib/constants";
 
 
 interface MandateViewProps {
@@ -75,7 +75,7 @@ export function MandateView({ projects, clientMode = false }: MandateViewProps) 
           <thead className="bg-slate-50 text-slate-500 uppercase text-xs">
             <tr>
               <th className="px-4 py-3 text-left">Project</th>
-              <th className="px-4 py-3 text-left">Owner</th>
+              <th className="px-4 py-3 text-left">Client</th>
               <th className="px-4 py-3 text-left">Type</th>
               <th className="px-4 py-3 text-left">Status</th>
               <th className="px-4 py-3 text-left">Launch Window</th>
@@ -88,7 +88,22 @@ export function MandateView({ projects, clientMode = false }: MandateViewProps) 
                   <p className="font-semibold text-slate-800">{project.name}</p>
                   <p className="text-xs text-slate-500">{project.revenuePotential}</p>
                 </td>
-                <td className="px-4 py-3 text-slate-600">{project.stakeholder}</td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    {(() => {
+                      const color = PRODUCT_LINES.find((pl) => pl.id === project.assignedTo)?.color;
+                      return color ? (
+                        <span
+                          className="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: color }}
+                        />
+                      ) : null;
+                    })()}
+                    <span className="text-slate-700 font-medium">
+                      {TEAM_ROSTER.find((t) => t.id === project.assignedTo)?.name || project.stakeholder}
+                    </span>
+                  </div>
+                </td>
                 <td className="px-4 py-3 text-slate-600">{project.displayType ?? project.type}</td>
                 <td className="px-4 py-3">
                   <span className="text-xs font-semibold text-slate-700 bg-slate-100 rounded-full px-2 py-1">

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Edit3, Save, X, Split } from "lucide-react";
-import { Project, ExecutionTask } from "@/lib/types";
+import { Project, ExecutionTask, TeamMember } from "@/lib/types";
 import { LaborSplitModal } from "./LaborSplitModal";
 import { TEAM_ROSTER } from "@/lib/constants";
 
@@ -10,9 +10,10 @@ interface ProjectEditorProps {
   project: Project;
   onUpdate: (field: keyof Project, value: any) => void;
   clientMode?: boolean;
+  teamRoster?: TeamMember[];
 }
 
-export function ProjectEditor({ project, onUpdate, clientMode = false }: ProjectEditorProps) {
+export function ProjectEditor({ project, onUpdate, clientMode = false, teamRoster = TEAM_ROSTER }: ProjectEditorProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValues, setEditValues] = useState<Partial<Project>>({});
 
@@ -132,10 +133,15 @@ export function ProjectEditor({ project, onUpdate, clientMode = false }: Project
             <label className="block text-xs font-medium text-slate-700 mb-1">Client</label>
             <select
               value={editValues.assignedTo || ""}
-              onChange={(e) => handleFieldChange("assignedTo", e.target.value)}
+              onChange={(e) => {
+                const clientId = e.target.value;
+                const clientName = teamRoster.find((c) => c.id === clientId)?.name || "";
+                handleFieldChange("assignedTo", clientId);
+                handleFieldChange("stakeholder", clientName);
+              }}
               className="w-full px-2 py-1 text-sm border border-slate-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500"
             >
-              {TEAM_ROSTER.map((c) => (
+              {teamRoster.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>
@@ -194,7 +200,7 @@ export function ProjectEditor({ project, onUpdate, clientMode = false }: Project
                 <div>
                   <div className="font-medium text-slate-800">{task.name || `Task ${task.id}`}</div>
                   <div className="text-xs text-slate-500 flex gap-3 mt-1">
-                    <span>Assignee: {TEAM_ROSTER.find(m => m.id === task.assigneeId)?.name || task.assigneeId}</span>
+                    <span>Assignee: {teamRoster.find(m => m.id === task.assigneeId)?.name || task.assigneeId}</span>
                     <span>Category: {task.laborCategory?.replace("_", " ") || "Standard"}</span>
                     {task.dependencyIds && task.dependencyIds.length > 0 && (
                       <span className="text-amber-600">Depends on: {task.dependencyIds.join(", ")}</span>
@@ -220,7 +226,7 @@ export function ProjectEditor({ project, onUpdate, clientMode = false }: Project
       {taskToSplit && (
         <LaborSplitModal
           task={taskToSplit}
-          teamMembers={TEAM_ROSTER}
+          teamMembers={teamRoster}
           isOpen={!!taskToSplit}
           onClose={() => setTaskToSplit(null)}
           onSave={handleSaveSplit}

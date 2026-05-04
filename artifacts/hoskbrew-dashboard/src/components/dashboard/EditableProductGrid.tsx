@@ -80,6 +80,12 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
     ];
   }, []);
 
+  const clientColorMap = useMemo(() => {
+    const map = new Map<string, string>();
+    PRODUCT_LINES.forEach((line) => map.set(line.id, line.color));
+    return map;
+  }, []);
+
   // Filter and sort products
   const filteredAndSortedProducts = useMemo(() => {
     let filtered = products;
@@ -257,7 +263,7 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="text-xs text-slate-500">Client</label>
+            <label className="text-xs text-slate-500">Product Line</label>
             <div className="relative">
               <select
                 value={productLineFilter}
@@ -387,7 +393,12 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
                     {isEditing ? (
                       <select
                         value={displayData.assignedTo}
-                        onChange={(e) => handleFieldChange(project.id, "assignedTo", e.target.value)}
+                        onChange={(e) => {
+                          const clientId = e.target.value;
+                          const clientName = teamRoster.find((t) => t.id === clientId)?.name || "";
+                          handleFieldChange(project.id, "assignedTo", clientId);
+                          handleFieldChange(project.id, "stakeholder", clientName);
+                        }}
                         className="w-full px-2 py-1 border border-slate-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
                       >
                         <option value="">Unassigned</option>
@@ -398,9 +409,17 @@ export function EditableProductGrid({ teamRoster, onNavigateToProductLines }: Ed
                         ))}
                       </select>
                     ) : (
-                      <span className="text-sm text-slate-600">
-                        {teamRoster.find((t) => t.id === displayData.assignedTo)?.name || "Unassigned"}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        {clientColorMap.get(displayData.assignedTo) && (
+                          <span
+                            className="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: clientColorMap.get(displayData.assignedTo) }}
+                          />
+                        )}
+                        <span className="text-sm text-slate-700 font-medium">
+                          {teamRoster.find((t) => t.id === displayData.assignedTo)?.name || "Unassigned"}
+                        </span>
+                      </div>
                     )}
                   </td>
                   <td className={`px-4 ${isCompact ? "py-2" : "py-3"}`}>
