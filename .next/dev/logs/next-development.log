@@ -1,0 +1,79 @@
+[00:00:02.351] Server  LOG      ✓ Ready in 1990ms
+[00:50:54.569] Browser ERROR   uncaughtError: Error: Hydration failed because the server rendered HTML didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <SegmentViewNode type="page" pagePath="/Dev/GitHu...">
+      <SegmentTrieNode>
+      <ClientPageRoot Component={function DashboardPage} serverProvidedParams={{...}}>
+        <DashboardPage params={Promise} searchParams={Promise}>
+          <TeamLoadProvider>
+            <DashboardPageContent>
+              <AppLayout activeTab="dashboard" onTabChange={function handleTabChange} isClientMode={false} ...>
+                <div className="min-h-scre...">
+                  <header>
+                  <div className={"max-w-[1..."}>
+                    <main className="flex-1 p-4...">
+                      <div className="transition...">
+                        <DashboardView writers={[...]} analysis={[...]} clientMode={false} ...>
+                          <div className="space-y-6 ...">
+                            <div>
+                            <AlertBanner severity="info" title="Nothing is..." description="Planning a..." ...>
+                              <div
++                               className={"bg-blue-50 border border-blue-200 rounded-xl p-4 "}
+-                               className={"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 "}
+                              >
++                               <div className="flex items-start gap-3">
+-                               <button className="w-full text-left">
+                            ...
+                  ...
+    ...
+
+[00:50:55.012] Browser ERROR   uncaughtError: Error: Hydration failed because the server rendered HTML didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <SegmentViewNode type="page" pagePath="/Dev/GitHu...">
+      <SegmentTrieNode>
+      <ClientPageRoot Component={function DashboardPage} serverProvidedParams={{...}}>
+        <DashboardPage params={Promise} searchParams={Promise}>
+          <TeamLoadProvider>
+            <DashboardPageContent>
+              <AppLayout activeTab="dashboard" onTabChange={function handleTabChange} isClientMode={false} ...>
+                <div className="min-h-scre...">
+                  <header>
+                  <div className={"max-w-[1..."}>
+                    <main className="flex-1 p-4...">
+                      <div className="transition...">
+                        <DashboardView writers={[...]} analysis={[...]} clientMode={false} ...>
+                          <div className="space-y-6 ...">
+                            <div>
+                            <AlertBanner severity="info" title="Nothing is..." description="Planning a..." ...>
+                              <div
++                               className={"bg-blue-50 border border-blue-200 rounded-xl p-4 "}
+-                               className={"grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 "}
+                              >
++                               <div className="flex items-start gap-3">
+-                               <button className="w-full text-left">
+                            ...
+                  ...
+    ...
+
